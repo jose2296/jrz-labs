@@ -1,5 +1,5 @@
 const CACHE = 'jrz-labs-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/icon.svg'];
+const ASSETS = ['/', '/index.html', '/manifest.json', '/icon.svg', '/siege-forge-maze-defense.html'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
