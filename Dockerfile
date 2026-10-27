@@ -1,14 +1,13 @@
-# Static site served by nginx. No S3, no Railway template, no runtime deps.
 FROM nginx:1.27-alpine
 
-# Remove default nginx content and copy our static files.
 RUN rm -rf /usr/share/nginx/html/*
 COPY . /usr/share/nginx/html
 
-# Custom nginx config for SPA-style fallback to 404.html.
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Railway injects $PORT; nginx template is envsubst'd at startup.
+COPY default.conf.template /etc/nginx/templates/default.conf.template
 
+ENV PORT=8080
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost/ || exit 1
+  CMD wget -qO- http://localhost:${PORT}/ || exit 1

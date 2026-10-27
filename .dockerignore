@@ -4,3 +4,4 @@ Dockerfile
 README.md
 *.md
 .DS_Store
+!default.conf.template
