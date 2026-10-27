@@ -9,76 +9,86 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
-  .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
-  .card-hover:hover { transform: translateY(-4px); }
-  .services-foldable { max-height: 0; overflow: hidden; opacity: 0; transition: max-height .35s ease, opacity .25s ease, margin-top .25s ease; margin-top: 0; }
-  .project-card.expanded .services-foldable { max-height: 320px; opacity: 1; margin-top: 1rem; }
+  .card-hover { transition: transform .25s ease, box-shadow .25s ease; }
+  .card-hover:hover { transform: translateY(-6px); }
+  .services-foldable { max-height: 0; overflow: hidden; opacity: 0; transition: max-height .4s ease, opacity .3s ease, margin-top .3s ease; margin-top: 0; }
+  .project-card.expanded .services-foldable { max-height: 360px; opacity: 1; margin-top: 1rem; }
   .project-card.expanded .chevron { transform: rotate(180deg); }
   .chevron { transition: transform .25s ease; }
-  .toast { transform: translateY(100px); opacity: 0; transition: all .3s cubic-bezier(.175,.885,.32,1.275); }
+  .toast { transform: translateY(120px); opacity: 0; transition: all .35s cubic-bezier(.175,.885,.32,1.275); }
   .toast.show { transform: translateY(0); opacity: 1; }
+  .hero-glow { background: radial-gradient(ellipse at 20% 0%, oklch(var(--p)/.18), transparent 55%), radial-gradient(ellipse at 80% 10%, oklch(var(--s)/.12), transparent 50%); }
+  .dropdown-content { max-height: 60vh; overflow-y: auto; }
 </style>
 </head>
 <body class="min-h-screen bg-base-100">
 
-<div class="navbar bg-base-200/60 backdrop-blur sticky top-0 z-30 border-b border-base-300">
+<!-- NAVBAR -->
+<div class="navbar bg-base-200/70 backdrop-blur sticky top-0 z-40 border-b border-base-300 shadow-sm">
   <div class="navbar-start">
-    <a class="btn btn-ghost text-xl font-extrabold tracking-tight" href="#">
-      <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary grid place-items-center text-primary-content shadow">
+    <a class="btn btn-ghost text-xl font-black tracking-tight gap-2" href="#">
+      <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary grid place-items-center text-primary-content shadow-lg">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5"><circle cx="12" cy="12" r="8.2"/><ellipse cx="12" cy="12" rx="11" ry="4.2" transform="rotate(-35 12 12)"/><circle cx="17.8" cy="6.8" r="1.5" fill="currentColor" stroke="none"/></svg>
       </span>
       jrz<span class="text-primary">labs</span>
     </a>
   </div>
   <div class="navbar-end gap-2">
-    <span class="hidden sm:inline-flex items-center gap-2 text-sm opacity-70">
+    <span class="hidden lg:inline-flex items-center gap-2 text-sm opacity-70">
       <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span> Tu centro de proyectos
     </span>
-    <span id="today" class="badge badge-ghost badge-sm"></span>
-    <select id="themeSelect" class="select select-bordered select-xs w-36" aria-label="Tema">
-      <optgroup label="☀️ Light">
-        <option value="light">Light</option>
-        <option value="cupcake">Cupcake</option>
-        <option value="bumblebee">Bumblebee</option>
-        <option value="emerald">Emerald</option>
-        <option value="corporate">Corporate</option>
-        <option value="retro">Retro</option>
-        <option value="valentine">Valentine</option>
-        <option value="garden">Garden</option>
-        <option value="lofi">Lofi</option>
-        <option value="pastel">Pastel</option>
-        <option value="fantasy">Fantasy</option>
-        <option value="wireframe">Wireframe</option>
-        <option value="cmyk">CMYK</option>
-        <option value="autumn">Autumn</option>
-        <option value="acid">Acid</option>
-        <option value="lemonade">Lemonade</option>
-        <option value="winter">Winter</option>
-        <option value="nord">Nord</option>
-        <option value="caramellatte">Caramellatte</option>
-        <option value="silk">Silk</option>
-      </optgroup>
-      <optgroup label="🌙 Dark">
-        <option value="dark">Dark</option>
-        <option value="synthwave">Synthwave</option>
-        <option value="cyberpunk">Cyberpunk</option>
-        <option value="halloween">Halloween</option>
-        <option value="forest">Forest</option>
-        <option value="aqua">Aqua</option>
-        <option value="black">Black</option>
-        <option value="luxury">Luxury</option>
-        <option value="dracula">Dracula</option>
-        <option value="business" selected>Business</option>
-        <option value="night">Night</option>
-        <option value="coffee">Coffee</option>
-        <option value="dim">Dim</option>
-        <option value="sunset">Sunset</option>
-        <option value="abyss">Abyss</option>
-      </optgroup>
-    </select>
+    <span id="today" class="badge badge-ghost badge-sm hidden sm:inline-flex"></span>
+
+    <!-- Theme dropdown (DaisyUI) -->
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-1" aria-label="Cambiar tema">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 0 1-4-4V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a4 4 0 0 1-4 4zm0 0h12a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 0 1 2.828 0l2.829 2.829a2 2 0 0 1 0 2.828l-8.486 8.485M7 17h.01"/></svg>
+        <span class="hidden sm:inline">Tema</span>
+      </div>
+      <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-[1] w-56 p-2 shadow-2xl border border-base-300">
+        <li class="menu-title text-xs opacity-60">☀️ Light</li>
+        <li><a data-theme="light">Light</a></li>
+        <li><a data-theme="cupcake">Cupcake</a></li>
+        <li><a data-theme="bumblebee">Bumblebee</a></li>
+        <li><a data-theme="emerald">Emerald</a></li>
+        <li><a data-theme="corporate">Corporate</a></li>
+        <li><a data-theme="retro">Retro</a></li>
+        <li><a data-theme="valentine">Valentine</a></li>
+        <li><a data-theme="garden">Garden</a></li>
+        <li><a data-theme="lofi">Lofi</a></li>
+        <li><a data-theme="pastel">Pastel</a></li>
+        <li><a data-theme="fantasy">Fantasy</a></li>
+        <li><a data-theme="wireframe">Wireframe</a></li>
+        <li><a data-theme="cmyk">CMYK</a></li>
+        <li><a data-theme="autumn">Autumn</a></li>
+        <li><a data-theme="acid">Acid</a></li>
+        <li><a data-theme="lemonade">Lemonade</a></li>
+        <li><a data-theme="winter">Winter</a></li>
+        <li><a data-theme="nord">Nord</a></li>
+        <li><a data-theme="caramellatte">Caramellatte</a></li>
+        <li><a data-theme="silk">Silk</a></li>
+        <li class="menu-title text-xs opacity-60 mt-2">🌙 Dark</li>
+        <li><a data-theme="dark">Dark</a></li>
+        <li><a data-theme="synthwave">Synthwave</a></li>
+        <li><a data-theme="cyberpunk">Cyberpunk</a></li>
+        <li><a data-theme="halloween">Halloween</a></li>
+        <li><a data-theme="forest">Forest</a></li>
+        <li><a data-theme="aqua">Aqua</a></li>
+        <li><a data-theme="black">Black</a></li>
+        <li><a data-theme="luxury">Luxury</a></li>
+        <li><a data-theme="dracula">Dracula</a></li>
+        <li><a data-theme="business">Business</a></li>
+        <li><a data-theme="night">Night</a></li>
+        <li><a data-theme="coffee">Coffee</a></li>
+        <li><a data-theme="dim">Dim</a></li>
+        <li><a data-theme="sunset">Sunset</a></li>
+        <li><a data-theme="abyss">Abyss</a></li>
+      </ul>
+    </div>
+
     <a class="btn btn-ghost btn-sm gap-2" href="https://github.com/jose2296/jrz-labs" target="_blank" rel="noopener noreferrer" title="Repositorio en GitHub">
       <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.7c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.2c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
       <span class="hidden sm:inline">GitHub</span>
@@ -86,50 +96,70 @@
   </div>
 </div>
 
-<main class="container mx-auto px-4 py-10 max-w-7xl">
-  <section class="mb-10">
-    <p class="text-primary font-semibold text-sm tracking-widest uppercase mb-2">J R Z · L A B S</p>
-    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">Mis proyectos</h1>
-    <p class="text-base-content/60 text-lg">Acceso rápido a mis aplicaciones y videojuegos.</p>
-  </section>
+<!-- HERO -->
+<section class="hero-glow">
+  <div class="container mx-auto px-4 py-14 max-w-7xl">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <div class="badge badge-primary badge-outline mb-3">J R Z · L A B S</div>
+        <h1 class="text-5xl md:text-6xl font-black tracking-tight mb-3">Mis proyectos</h1>
+        <p class="text-lg text-base-content/70 max-w-xl">Acceso rápido a mis aplicaciones y videojuegos. Un centro creativo para pensar, construir y jugar.</p>
+      </div>
+      <div class="stats shadow bg-base-200/60 border border-base-300">
+        <div class="stat py-3 px-5">
+          <div class="stat-title text-xs">Proyectos</div>
+          <div class="stat-value text-2xl text-primary" id="projectCount">0</div>
+        </div>
+        <div class="stat py-3 px-5">
+          <div class="stat-title text-xs">Servicios</div>
+          <div class="stat-value text-2xl text-secondary" id="serviceCount">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
+<main class="container mx-auto px-4 py-8 max-w-7xl">
   <section>
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
       <div>
         <h2 class="text-2xl font-bold">Proyectos</h2>
         <p class="text-sm text-base-content/60">Haz clic en un proyecto para desplegar sus servicios o copiar enlaces.</p>
       </div>
-      <label class="input input-bordered flex items-center gap-2 w-full md:w-80">
+      <label class="input input-bordered flex items-center gap-2 w-full md:w-80 shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
         <input id="search" type="search" class="grow" placeholder="Buscar proyectos…" aria-label="Buscar proyectos" />
       </label>
     </div>
 
     <div class="flex flex-wrap gap-2 mb-8" role="group" aria-label="Filtrar proyectos">
-      <button class="filter btn btn-sm btn-outline" data-filter="all">Todos</button>
+      <button class="filter btn btn-sm btn-outline btn-active" data-filter="all">Todos</button>
       <button class="filter btn btn-sm btn-outline" data-filter="apps">Aplicaciones</button>
       <button class="filter btn btn-sm btn-outline" data-filter="games">Juegos</button>
     </div>
 
-    <div class="group mb-10" data-group="apps">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-9 h-9 grid place-items-center rounded-xl bg-primary/15 text-primary text-lg">▦</div>
+    <div class="group mb-12" data-group="apps">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 grid place-items-center rounded-xl bg-primary/15 text-primary text-xl border border-base-300">▦</div>
         <div>
-          <h3 class="font-bold text-lg">Aplicaciones</h3>
+          <h3 class="font-bold text-xl">Aplicaciones</h3>
           <p class="text-xs text-base-content/60">Herramientas y productos digitales</p>
         </div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
+        <!-- OrbitHub -->
         <div class="project-card card bg-base-200 shadow-xl border border-base-300 card-hover" data-category="apps" data-name="orbithub orbit hub web api" data-status="active">
-          <div class="card-body p-5">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div class="w-12 h-12 grid place-items-center rounded-2xl bg-primary/15 text-primary text-2xl border border-base-300">◎</div>
-              <span class="badge badge-success badge-sm">2 Servicios</span>
+          <div class="card-body p-6">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="w-14 h-14 grid place-items-center rounded-2xl bg-primary/15 text-primary text-3xl border border-base-300 shadow">◎</div>
+              <div class="flex flex-col items-end gap-1">
+                <span class="badge badge-success badge-sm">2 Servicios</span>
+                <a class="btn btn-ghost btn-xs gap-1" href="https://github.com/jose2296/orbit-hub-app" target="_blank" rel="noopener" title="Repo GitHub">⌥ GitHub</a>
+              </div>
             </div>
-            <h4 class="card-title text-lg">OrbitHub</h4>
-            <a class="link link-hover text-xs inline-flex items-center gap-1 mb-3 opacity-70" href="https://github.com/jose2296/orbit-hub-app" target="_blank" rel="noopener">GitHub ↗</a>
-            <p class="text-sm text-base-content/60 mb-4">Un espacio para organizar tareas, notas, colecciones, hábitos y conocimiento.</p>
+            <h4 class="card-title text-xl mb-1">OrbitHub</h4>
+            <p class="text-sm text-base-content/60 mb-5">Un espacio para organizar tareas, notas, colecciones, hábitos y conocimiento.</p>
             <button class="btn btn-primary btn-sm btn-block" onclick="toggleFoldable(this)" aria-expanded="false">
               <span>Ver servicios</span>
               <svg class="chevron w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -161,15 +191,18 @@
           </div>
         </div>
 
+        <!-- Marvel Tracker -->
         <div class="project-card card bg-base-200 shadow-xl border border-base-300 card-hover" data-category="apps" data-name="marvel tracker marvel cronologia" data-status="active">
-          <div class="card-body p-5">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div class="w-12 h-12 grid place-items-center rounded-2xl bg-error/15 text-error text-2xl border border-base-300">◉</div>
-              <span class="badge badge-success badge-sm">1 Servicio</span>
+          <div class="card-body p-6">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="w-14 h-14 grid place-items-center rounded-2xl bg-error/15 text-error text-3xl border border-base-300 shadow">◉</div>
+              <div class="flex flex-col items-end gap-1">
+                <span class="badge badge-success badge-sm">1 Servicio</span>
+                <a class="btn btn-ghost btn-xs gap-1" href="https://github.com/jose2296?tab=repositories" target="_blank" rel="noopener" title="Repos GitHub">⌥ GitHub</a>
+              </div>
             </div>
-            <h4 class="card-title text-lg">Marvel Tracker</h4>
-            <a class="link link-hover text-xs inline-flex items-center gap-1 mb-3 opacity-70" href="https://github.com/jose2296?tab=repositories" target="_blank" rel="noopener">GitHub ↗</a>
-            <p class="text-sm text-base-content/60 mb-4">Seguimiento cronológico de películas, series y especiales del universo Marvel.</p>
+            <h4 class="card-title text-xl mb-1">Marvel Tracker</h4>
+            <p class="text-sm text-base-content/60 mb-5">Seguimiento cronológico de películas, series y especiales del universo Marvel.</p>
             <button class="btn btn-primary btn-sm btn-block" onclick="toggleFoldable(this)" aria-expanded="false">
               <span>Ver servicios</span>
               <svg class="chevron w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -191,15 +224,18 @@
           </div>
         </div>
 
+        <!-- Bingo Scanner -->
         <div class="project-card card bg-base-200 shadow-xl border border-base-300 card-hover" data-category="apps" data-name="bingo scanner escáner cartones juegos" data-status="active">
-          <div class="card-body p-5">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div class="w-12 h-12 grid place-items-center rounded-2xl bg-warning/15 text-warning text-2xl border border-base-300">🎯</div>
-              <span class="badge badge-success badge-sm">1 Servicio</span>
+          <div class="card-body p-6">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="w-14 h-14 grid place-items-center rounded-2xl bg-warning/15 text-warning text-3xl border border-base-300 shadow">🎯</div>
+              <div class="flex flex-col items-end gap-1">
+                <span class="badge badge-success badge-sm">1 Servicio</span>
+                <a class="btn btn-ghost btn-xs gap-1" href="https://github.com/jose2296?tab=repositories" target="_blank" rel="noopener" title="Repos GitHub">⌥ GitHub</a>
+              </div>
             </div>
-            <h4 class="card-title text-lg">Bingo Scanner</h4>
-            <a class="link link-hover text-xs inline-flex items-center gap-1 mb-3 opacity-70" href="https://github.com/jose2296?tab=repositories" target="_blank" rel="noopener">GitHub ↗</a>
-            <p class="text-sm text-base-content/60 mb-4">Escaner inteligente y herramienta de verificación para cartones de bingo.</p>
+            <h4 class="card-title text-xl mb-1">Bingo Scanner</h4>
+            <p class="text-sm text-base-content/60 mb-5">Escaner inteligente y herramienta de verificación para cartones de bingo.</p>
             <button class="btn btn-primary btn-sm btn-block" onclick="toggleFoldable(this)" aria-expanded="false">
               <span>Ver servicios</span>
               <svg class="chevron w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -221,15 +257,18 @@
           </div>
         </div>
 
+        <!-- Finance Tracker -->
         <div class="project-card card bg-base-200 shadow-xl border border-base-300 card-hover" data-category="apps" data-name="finance tracker finanzas gastos" data-status="active">
-          <div class="card-body p-5">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div class="w-12 h-12 grid place-items-center rounded-2xl bg-success/15 text-success text-2xl border border-base-300">＄</div>
-              <span class="badge badge-success badge-sm">1 Servicio</span>
+          <div class="card-body p-6">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="w-14 h-14 grid place-items-center rounded-2xl bg-success/15 text-success text-3xl border border-base-300 shadow">＄</div>
+              <div class="flex flex-col items-end gap-1">
+                <span class="badge badge-success badge-sm">1 Servicio</span>
+                <a class="btn btn-ghost btn-xs gap-1" href="https://github.com/jose2296/finance-tracker" target="_blank" rel="noopener" title="Repo GitHub">⌥ GitHub</a>
+              </div>
             </div>
-            <h4 class="card-title text-lg">Finance Tracker</h4>
-            <a class="link link-hover text-xs inline-flex items-center gap-1 mb-3 opacity-70" href="https://github.com/jose2296/finance-tracker" target="_blank" rel="noopener">GitHub ↗</a>
-            <p class="text-sm text-base-content/60 mb-4">Aplicación para consultar y organizar tus finanzas personales.</p>
+            <h4 class="card-title text-xl mb-1">Finance Tracker</h4>
+            <p class="text-sm text-base-content/60 mb-5">Aplicación para consultar y organizar tus finanzas personales.</p>
             <button class="btn btn-primary btn-sm btn-block" onclick="toggleFoldable(this)" aria-expanded="false">
               <span>Ver servicios</span>
               <svg class="chevron w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -255,24 +294,27 @@
     </div>
 
     <div class="group" data-group="games">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-9 h-9 grid place-items-center rounded-xl bg-secondary/15 text-secondary text-lg">✦</div>
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 grid place-items-center rounded-xl bg-secondary/15 text-secondary text-xl border border-base-300">✦</div>
         <div>
-          <h3 class="font-bold text-lg">Juegos</h3>
+          <h3 class="font-bold text-xl">Juegos</h3>
           <p class="text-xs text-base-content/60">Videojuegos y herramientas de desarrollo</p>
         </div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
+        <!-- Brutal Brawl Arena -->
         <div class="project-card card bg-base-200 shadow-xl border border-base-300 card-hover" data-category="games" data-name="brutal brawl arena brawl backoffice api juego" data-status="active">
-          <div class="card-body p-5">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div class="w-12 h-12 grid place-items-center rounded-2xl bg-secondary/15 text-secondary text-2xl border border-base-300">⚔</div>
-              <span class="badge badge-success badge-sm">2 Servicios</span>
+          <div class="card-body p-6">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="w-14 h-14 grid place-items-center rounded-2xl bg-secondary/15 text-secondary text-3xl border border-base-300 shadow">⚔</div>
+              <div class="flex flex-col items-end gap-1">
+                <span class="badge badge-success badge-sm">2 Servicios</span>
+                <a class="btn btn-ghost btn-xs gap-1" href="https://github.com/jose2296/brutal-brawl-arena" target="_blank" rel="noopener" title="Repo GitHub">⌥ GitHub</a>
+              </div>
             </div>
-            <h4 class="card-title text-lg">Brutal Brawl Arena</h4>
-            <a class="link link-hover text-xs inline-flex items-center gap-1 mb-3 opacity-70" href="https://github.com/jose2296/brutal-brawl-arena" target="_blank" rel="noopener">GitHub ↗</a>
-            <p class="text-sm text-base-content/60 mb-4">Juego de combate competitivo con panel de administración y servicios de API.</p>
+            <h4 class="card-title text-xl mb-1">Brutal Brawl Arena</h4>
+            <p class="text-sm text-base-content/60 mb-5">Juego de combate competitivo con panel de administración y servicios de API.</p>
             <button class="btn btn-primary btn-sm btn-block" onclick="toggleFoldable(this)" aria-expanded="false">
               <span>Ver servicios</span>
               <svg class="chevron w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -313,8 +355,8 @@
   </section>
 </main>
 
-<footer class="footer footer-center p-6 bg-base-200 text-base-content/60 text-sm border-t border-base-300">
-  <div>
+<footer class="footer footer-center p-8 bg-base-200 text-base-content/60 text-sm border-t border-base-300 mt-10">
+  <div class="flex flex-col items-center gap-2">
     <p>© <span id="year"></span> <strong>JRZ Labs</strong> · Tu centro creativo</p>
     <p>Hecho para pensar, construir y jugar. · <a class="link link-primary" href="https://github.com/jose2296/jrz-labs" target="_blank" rel="noopener">Código fuente en GitHub</a></p>
   </div>
@@ -328,21 +370,38 @@
 </div>
 
 <script>
-
-  // Theme selector
-  const themeSelect = document.getElementById('themeSelect');
+  // Theme (DaisyUI) — dropdown, grouped light/dark, persisted
+  const THEMES = {
+    light: ['light','cupcake','bumblebee','emerald','corporate','retro','valentine','garden','lofi','pastel','fantasy','wireframe','cmyk','autumn','acid','lemonade','winter','nord','caramellatte','silk'],
+    dark:  ['dark','synthwave','cyberpunk','halloween','forest','aqua','black','luxury','dracula','business','night','coffee','dim','sunset','abyss']
+  };
   const savedTheme = localStorage.getItem('theme') || 'business';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  themeSelect.value = savedTheme;
-  themeSelect.addEventListener('change', (e) => {
-    document.documentElement.setAttribute('data-theme', e.target.value);
-    localStorage.setItem('theme', e.target.value);
+
+  document.querySelectorAll('[data-theme]').forEach(el => {
+    if (el.tagName === 'A') {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const t = el.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme', t);
+        // close dropdown
+        document.activeElement?.blur();
+      });
+    }
   });
+
   const today = new Date();
   document.getElementById('today').textContent = today.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
   document.getElementById('year').textContent = today.getFullYear();
 
+  // Stats
   const cards = [...document.querySelectorAll('.project-card')];
+  document.getElementById('projectCount').textContent = cards.length;
+  let svc = 0;
+  cards.forEach(c => { const m = c.querySelector('.badge')?.textContent.match(/(\d+)/); if (m) svc += parseInt(m[1]); });
+  document.getElementById('serviceCount').textContent = svc;
+
   const groups = [...document.querySelectorAll('.group')];
   const filters = [...document.querySelectorAll('.filter')];
   const search = document.getElementById('search');
@@ -370,7 +429,6 @@
     activeFilter = btn.dataset.filter;
     update();
   }));
-  filters[0].classList.add('btn-active');
   search.addEventListener('input',update);
   update();
 
