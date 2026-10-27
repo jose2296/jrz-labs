@@ -97,18 +97,53 @@
         #troop-panel .troop-btn.troop-hidden{display:none!important}
         .troop-btn.troop-exhausted{opacity:.32!important;filter:grayscale(1);cursor:not-allowed;transform:none!important}
         .army-config-row{display:grid;grid-template-columns:1fr 82px;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(15,23,42,.7)}
-        .army-config-row input{width:100%;background:#020617;color:#f8fafc;border:1px solid #475569;border-radius:8px;padding:7px;text-align:center;font-weight:800}
+        .army-config-row input{width:100%;min-width:0;background:#020617;color:#f8fafc;border:1px solid #475569;border-radius:8px;padding:7px 2px;text-align:center;font-weight:800;appearance:textfield}.army-config-row input::-webkit-inner-spin-button,.army-config-row input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.army-count-step{width:30px;height:32px;flex:none;border-radius:8px;background:#1e293b;border:1px solid #475569;color:#e2e8f0;font-weight:900;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .15s}.army-count-step:active{transform:scale(.92);background:#0891b2}.army-row-selected{outline:1px solid #22d3ee;background:rgba(8,145,178,.18)}.army-config-row .army-count-controls{display:grid;grid-template-columns:30px minmax(34px,1fr) 30px;gap:4px;align-items:center}.mode-btn[data-mode=erase].mode-active{background:#dc2626!important;color:#fff!important;box-shadow:0 0 0 2px #fca5a5,0 8px 20px #dc262644}
         #army-config-modal{background:rgba(2,6,23,.82);backdrop-filter:blur(8px)}
         .army-config-mode{border:1px solid #475569;border-radius:12px;padding:10px;background:#0f172a;color:#e2e8f0;text-align:left}
         .army-config-mode.active{border-color:#22d3ee;background:rgba(8,145,178,.2)}
         @media(max-width:800px){#troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} #troop-panel .troop-btn{flex-basis:78px;min-width:78px;min-height:108px;padding:6px 4px 5px!important}.troop-avatar{transform:scale(.94)}.turret-type-btn{min-width:38px;min-height:38px}}
-        @media(max-width:800px){#battle-hud{top:56px!important;left:8px!important}#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{right:8px!important;top:56px!important}#gesture-hint{display:none}}
+        .battle-top-objective{min-width:205px;border-color:rgba(251,146,60,.45);box-shadow:0 10px 32px #0009,0 0 24px #f9731618}
+        #battle-clock{font-variant-numeric:tabular-nums;text-shadow:0 2px 12px #000}
+        #battle-controls #battle-status{max-width:none;overflow-wrap:anywhere}
+        @media(max-width:800px){
+          .battle-top-objective{min-width:158px;padding:7px 10px;border-radius:14px;gap:5px}
+          #battle-clock{font-size:17px}
+          #battle-controls{top:58px!important;right:6px!important;max-height:calc(100dvh - 122px);width:min(190px,48vw)}
+          #battle-controls .battle-panel-toggle{font-size:10px;padding:7px 8px}
+          #battle-controls #battle-controls-content{gap:5px}
+          #battle-controls #battle-controls-content>.hud-card{padding:6px}
+          #battle-controls #battle-controls-content button{font-size:9px;padding:7px 8px}
+          #battle-status{font-size:9px;max-width:none}
+          #troop-panel{left:6px!important;right:6px!important;bottom:max(6px,env(safe-area-inset-bottom))!important;max-width:none!important;gap:4px;padding:5px;justify-content:flex-start}
+          #troop-panel .troop-btn{flex:0 0 57px;min-width:57px;min-height:70px;padding:3px!important}
+          #troop-panel .troop-avatar{width:34px;height:36px;transform:scale(.82);margin-bottom:0}
+          #troop-panel .troop-btn .troop-name{font-size:8px;min-height:17px}
+          #troop-panel .troop-count-badge{font-size:9px;min-width:15px;padding:1px 3px}
+          #btn-gesture-mode{min-width:50px!important;padding:4px!important}
+          #btn-gesture-mode>div:first-child{font-size:15px}
+        }
+        @media(max-height:480px) and (orientation:landscape){
+          .battle-top-objective{padding:5px 10px;gap:3px}
+          #battle-clock{font-size:15px}
+          #battle-controls{top:52px!important;max-height:calc(100dvh - 108px)}
+          #troop-panel .troop-btn{min-height:57px}
+          #troop-panel .troop-avatar{height:26px;transform:scale(.68);transform-origin:center center}
+          #troop-panel .troop-btn .troop-name{min-height:13px}
+        }
+        @media(max-width:800px){#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{right:8px!important;top:56px!important}#gesture-hint{display:none}}
 
         @media (orientation: portrait) {
             #landscape-prompt {
                 display: flex;
             }
         }
+        #main-menu{background:radial-gradient(ellipse at top,#164e63 0%,#0f172a 48%,#020617 100%)}
+        .menu-card{position:relative;overflow:hidden;min-height:178px;background:linear-gradient(145deg,rgba(30,41,59,.98),rgba(15,23,42,.98));border:1px solid #475569;border-radius:20px;padding:20px;text-align:left;box-shadow:0 14px 35px #0005;transition:transform .18s,border-color .18s,box-shadow .18s;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}.menu-card:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(#22d3ee,#f59e0b);opacity:.8}.menu-card:focus-visible{outline:2px solid #67e8f9;outline-offset:3px}.menu-card .menu-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);font-size:27px;margin-bottom:8px}.menu-card h3{font-size:16px;letter-spacing:-.02em}.menu-card p{font-size:12px}.menu-card:after{content:"ENTRAR  →";font-size:9px;letter-spacing:.14em;font-weight:900;color:#67e8f9;margin-top:8px}
+        .menu-card:hover{transform:translateY(-2px);border-color:#22d3ee}
+        .menu-card .menu-icon{font-size:27px;margin-bottom:8px}
+        .menu-card h3{font-weight:900;font-size:15px;color:#f8fafc}
+        .menu-card p{font-size:11px;color:#94a3b8;line-height:1.45;margin-top:5px}
+        .menu-village{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;background:#0f172a;border:1px solid #334155;text-align:left}
     </style>
 </head>
 <body class="bg-slate-950 text-white select-none">
@@ -122,6 +157,23 @@
         <p class="text-xs text-slate-300 max-w-xs leading-relaxed">Gira tu dispositivo para disfrutar de la experiencia completa en orientación Landscape.</p>
     </div>
 
+    <div id="main-menu" class="fixed inset-0 z-[80] overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+      <div class="w-full max-w-5xl mx-auto py-4">
+        <div class="text-center mb-7"><div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300 text-[10px] font-black tracking-[.2em] mb-3">VOXEL STRATEGY · LOCAL SAVE</div><h1 class="text-4xl sm:text-5xl font-black tracking-tight">ALDEA <span class="text-amber-400">VOXEL</span></h1><p class="text-slate-300 mt-2 text-sm">Construye tu fortaleza, lanza incursiones y pon a prueba tus defensas.</p><p id="save-status" class="text-[10px] text-emerald-300 mt-2">Partida guardada en este navegador</p></div>
+        <div id="menu-home" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button class="menu-card" data-menu="build"><div class="menu-icon">🏗️</div><h3>Configurar mi aldea</h3><p>Construye, coloca muros y torretas. Los cambios se guardan automáticamente.</p></button>
+          <button class="menu-card" data-menu="attack"><div class="menu-icon">⚔️</div><h3>Atacar aldeas</h3><p>Elige una aldea de ejemplo y prepara tu ejército para asaltarla.</p></button>
+          <button class="menu-card" data-menu="attack-own"><div class="menu-icon">🎯</div><h3>Atacar mi aldea</h3><p>Usa el configurador de ejército para comprobar cómo penetrarías tus propias defensas.</p></button>
+          <button class="menu-card" data-menu="defend"><div class="menu-icon">🛡️</div><h3>Probar mi defensa</h3><p>Defiende tu diseño contra ejércitos predefinidos y compara los resultados.</p></button>
+        </div>
+        <div id="menu-villages" class="hidden mt-5 max-w-2xl mx-auto"><div class="flex items-center justify-between mb-3"><div><h2 class="text-xl font-black">Selecciona una aldea</h2><p class="text-xs text-slate-400">Se cargará como objetivo de la incursión; tu aldea guardada no se sobrescribe.</p></div><button class="bg-slate-700 rounded-lg px-3 py-2 text-xs font-bold" data-menu-back>Volver</button></div><div class="grid gap-2">
+          <button class="menu-village" data-raid-village="balanced"><span><b>🏘️ Bastión equilibrado</b><span class="block text-[11px] text-slate-400 mt-1">Defensas variadas y perímetro compacto.</span></span><span class="text-amber-300 font-black">›</span></button>
+          <button class="menu-village" data-raid-village="maze"><span><b>🧱 Laberinto de obsidiana</b><span class="block text-[11px] text-slate-400 mt-1">Capas de muros y rutas estrechas.</span></span><span class="text-amber-300 font-black">›</span></button>
+          <button class="menu-village" data-raid-village="air"><span><b>🪽 Fortaleza antiaérea</b><span class="block text-[11px] text-slate-400 mt-1">Torretas preparadas para cubrir distintos ángulos.</span></span><span class="text-amber-300 font-black">›</span></button>
+        </div></div>
+        <div class="flex justify-center gap-2 mt-5"><button id="menu-reset" class="text-[10px] text-slate-500 hover:text-red-300 underline">Borrar partida local y empezar de cero</button></div>
+      </div>
+    </div>
     <!-- Canvas principal 3D -->
     <div id="canvas-container" class="w-full h-full absolute inset-0"></div>
 
@@ -144,6 +196,7 @@
             <span class="text-[9px] bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded-full text-amber-400 font-bold ml-1">32x32</span>
         </div>
 
+        <button id="btn-main-menu" class="pointer-events-auto mr-2 bg-slate-900/90 border border-slate-700 px-3 py-2 rounded-xl text-[10px] font-black">☰ MENÚ</button>
         <!-- Botones de Perspectiva y Utilidades de Cámara -->
         <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-1 rounded-2xl shadow-xl pointer-events-auto flex items-center gap-1">
             <button id="btn-view-iso" class="view-btn px-2 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[10px] flex items-center gap-1 transition" title="Vista Isométrica">
@@ -280,20 +333,23 @@
     </div>
 
     <!-- Modo ataque: interfaz de batalla -->
-    <div class="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex gap-2 pointer-events-auto">
+    <div id="mode-switcher" class="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex gap-2 pointer-events-auto">
       <button id="btn-mode-build" class="mode-pill game-btn bg-emerald-500 text-slate-950">🏗️ CONSTRUIR</button>
       <button id="btn-mode-attack" class="mode-pill game-btn bg-slate-800 text-white">⚔️ PROBAR DEFENSA</button>
     </div>
-    <div id="battle-hud" class="hidden absolute top-16 left-3 z-20 hud-card rounded-2xl px-4 py-3 min-w-44 battle-banner">
-      <div class="flex items-center justify-between gap-4"><span class="text-[10px] uppercase tracking-widest font-black text-orange-300">Incursión en curso</span><span id="battle-clock" class="font-mono font-black text-white">01:30</span></div>
-      <div class="mt-2 h-2 w-44 bg-slate-700 rounded-full overflow-hidden"><div id="townhall-health" class="h-full bg-emerald-400 transition-all" style="width:100%"></div></div>
-      <div class="flex justify-between mt-1 text-[10px] text-slate-300"><span>Ayuntamiento</span><span id="health-label">100%</span></div>
-      <div id="battle-status" class="text-[11px] text-slate-300 mt-2">Elige una tropa y toca el terreno azul para desplegarla.</div><div class="text-[9px] text-cyan-300 mt-1">▰ Zona azul: despliegue permitido</div>
+    <div id="battle-hud" class="hidden absolute top-[max(8px,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-40 battle-banner pointer-events-none">
+      <div class="battle-top-objective hud-card rounded-2xl px-4 py-2.5 flex flex-col items-center gap-1.5">
+        <div id="battle-clock" class="font-mono font-black text-white text-xl leading-none tracking-wider">01:30</div>
+        <div class="w-44 max-w-[48vw] h-2.5 bg-slate-900/90 rounded-full overflow-hidden border border-white/20 shadow-inner"><div id="townhall-health" class="h-full bg-emerald-400 transition-all duration-200" style="width:100%"></div></div>
+        <div class="flex justify-between w-44 max-w-[48vw] text-[9px] leading-none text-slate-200 font-bold"><span>AYUNTAMIENTO</span><span id="health-label">100%</span></div>
+      </div>
     </div>
     <div id="battle-controls" class="hidden absolute top-16 right-3 z-20 flex flex-col gap-2">
       <button id="btn-collapse-battle-panel" class="battle-panel-toggle" aria-expanded="true"><span>⚙️ Controles de incursión</span><span id="battle-panel-chevron">▾</span></button>
       <div id="battle-controls-content" class="flex flex-col gap-2">
       <button id="btn-start-attack" class="game-btn rounded-xl px-4 py-3 bg-orange-500 text-slate-950 text-xs font-black shadow-xl">▶ INICIAR OLEADA</button>
+      <div id="battle-status" class="hud-card rounded-xl px-3 py-2 text-[10px] text-slate-200 leading-snug">Elige una tropa y toca el terreno azul para desplegarla.</div>
+      <div class="px-2 py-1 text-[9px] text-cyan-200">▰ Zona azul: despliegue permitido</div>
       <div class="hud-card rounded-xl p-2 flex flex-col gap-1">
         <div class="text-[9px] uppercase tracking-widest text-slate-400 font-black">Aldeas de prueba</div>
         <button id="preset-village-balanced" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🏘️ Aldea equilibrada</button>
@@ -304,7 +360,6 @@
         <button id="preset-army-wall" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">🧨 Asalto a muros</button>
         <button id="preset-army-air" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">🪽 Escuadrón aéreo</button>
         <button id="preset-army-manual" class="game-btn rounded-lg px-3 py-2 bg-cyan-800 text-white text-[10px] font-bold">🎮 Sin ejército automático · Desplegar yo</button>
-        <div class="px-2 py-1 text-[9px] leading-snug text-cyan-200">Zona azul = zona de despliegue. Se amplía al destruir muros y defensas.</div>
       </div>
       <div class="hud-card rounded-xl p-2 flex flex-col gap-1">
         <div class="text-[9px] uppercase tracking-widest text-slate-400 font-black">Depuración en partida</div>
@@ -321,15 +376,15 @@
       <div id="troop-inspector-details" class="text-[10px] text-slate-300 mt-2 leading-relaxed"></div>
     </div>
     <div id="army-config-modal" class="hidden fixed inset-0 z-[90] items-center justify-center p-3"><div class="hud-card rounded-3xl w-full max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-5 border border-cyan-500/40"><div class="flex items-start justify-between gap-3"><div><div class="text-[10px] uppercase tracking-widest text-cyan-300 font-black">Preparación de incursión</div><h2 class="text-xl font-black mt-1">Configura tu ejército</h2><p class="text-xs text-slate-400 mt-1">En modo limitado, cada despliegue consume una unidad.</p></div><button id="btn-army-config-close" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">✕</button></div><div class="grid grid-cols-2 gap-2 mt-4"><button id="army-config-limited" class="army-config-mode active"><div class="font-black text-sm">🎒 Ejército limitado</div><div class="text-[10px] text-slate-400 mt-1">Límites por unidad</div></button><button id="army-config-infinite" class="army-config-mode"><div class="font-black text-sm">♾️ Despliegue infinito</div><div class="text-[10px] text-slate-400 mt-1">Sin límite de unidades</div></button></div><div id="army-config-limited-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-<label class="army-config-row"><span>🪓 Bárbaros</span><input data-army-count="barbarian" type="number" min="0" max="40" value="8" /></label>
-<label class="army-config-row"><span>🏹 Arqueras</span><input data-army-count="archer" type="number" min="0" max="40" value="10" /></label>
-<label class="army-config-row"><span>🛡️ Gigantes</span><input data-army-count="giant" type="number" min="0" max="20" value="4" /></label>
-<label class="army-config-row"><span>💣 Bombarderos</span><input data-army-count="bomber" type="number" min="0" max="20" value="3" /></label>
-<label class="army-config-row"><span>🎯 Cazatorres</span><input data-army-count="hunter" type="number" min="0" max="20" value="3" /></label>
-<label class="army-config-row"><span>🧨 Rompemuros</span><input data-army-count="wallbreaker" type="number" min="0" max="20" value="4" /></label>
-<label class="army-config-row"><span>🦘 Saltamuros</span><input data-army-count="jumper" type="number" min="0" max="20" value="2" /></label>
-<label class="army-config-row"><span>🪽 Voladores</span><input data-army-count="flyer" type="number" min="0" max="20" value="2" /></label>
-</div><div class="flex items-center justify-between gap-3 mt-4"><div class="text-xs text-slate-300">Total: <b id="army-config-total" class="text-cyan-300">36</b></div><button id="btn-army-config-save" class="game-btn rounded-xl bg-cyan-500 text-slate-950 font-black px-5 py-3 text-xs">GUARDAR EJÉRCITO</button></div></div></div>
+<label class="army-config-row"><span>🪓 Bárbaros</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="barbarian" type="number" min="0" max="40" value="8" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>🏹 Arqueras</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="archer" type="number" min="0" max="40" value="10" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>🛡️ Gigantes</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="giant" type="number" min="0" max="20" value="4" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>💣 Bombarderos</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="bomber" type="number" min="0" max="20" value="3" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>🎯 Cazatorres</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="hunter" type="number" min="0" max="20" value="3" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>🧨 Rompemuros</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="wallbreaker" type="number" min="0" max="20" value="4" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>🦘 Saltamuros</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="jumper" type="number" min="0" max="20" value="2" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+<label class="army-config-row"><span>🪽 Voladores</span><span class="army-count-controls"><button type="button" class="army-count-step" data-count-step="-1" aria-label="Restar una unidad">−</button><input data-army-count="flyer" type="number" min="0" max="20" value="2" inputmode="numeric" /><button type="button" class="army-count-step" data-count-step="1" aria-label="Añadir una unidad">+</button></span></label>
+</div><div class="flex items-center justify-between gap-2 mt-4 flex-wrap"><div class="flex gap-2"><button id="btn-army-remove-type" type="button" class="rounded-lg bg-rose-950 border border-rose-700 text-rose-200 px-3 py-2 text-[10px] font-black">ELIMINAR TIPO</button><button id="btn-army-reset" type="button" class="rounded-lg bg-slate-800 border border-slate-600 text-slate-200 px-3 py-2 text-[10px] font-black">RESETEAR TODO</button></div><div class="text-xs text-slate-300">Total: <b id="army-config-total" class="text-cyan-300">36</b></div><button id="btn-army-config-save" class="game-btn rounded-xl bg-cyan-500 text-slate-950 font-black px-5 py-3 text-xs">GUARDAR EJÉRCITO</button></div></div></div>
     <div id="battle-result-modal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
       <div class="hud-card rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 border border-slate-500/50">
         <div id="result-icon" class="text-4xl text-center">🏆</div><h2 id="result-title" class="text-2xl font-black text-center mt-2">Resultado de la incursión</h2><p id="result-subtitle" class="text-sm text-slate-300 text-center mt-1"></p>
@@ -407,8 +462,9 @@
         let planeGrid, cursorMesh, townHallMesh;
         let raycaster, mouse;
         const animatedMeshes = [];
+        const destructionAnimations = []; // animaciones de demolición con fragmentación visual
         let rangeRing=null, rangeRingOwner=null, rangeRingMode='hidden';
-        const troops = [], projectiles = [], particles = [];
+        const troops = [], projectiles = [], particles = [], floatingDamage = [];
         let battleActive = false, battleStarted = false, battleTime = 90, townHallHP = 1000, selectedTroop = 'barbarian', lastBattleTick = 0;
         const troopStats = {barbarian:{name:'Bárbaro',hp:115,speed:2.8,damage:18,range:1.0,radius:.29,color:0xef4444,role:'nearest'},archer:{name:'Arquera',hp:68,speed:2.35,damage:13,range:5.4,radius:.25,color:0x22c55e,role:'nearest',projectile:'arrow'},giant:{name:'Gigante',hp:390,speed:1.35,damage:34,range:1.1,radius:.48,color:0x3b82f6,role:'defense'},bomber:{name:'Bombardero',hp:85,speed:2.05,damage:40,range:4.0,radius:.29,color:0xf59e0b,role:'nearest',splash:1.2,projectile:'bomb'},hunter:{name:'Cazatorres',hp:95,speed:2.45,damage:27,range:1.15,radius:.29,color:0xc084fc,role:'defense'},wallbreaker:{name:'Rompemuros',hp:55,speed:3.0,damage:115,range:0.85,radius:.23,color:0xf97316,role:'wall'},jumper:{name:'Saltamuros',hp:130,speed:2.7,damage:19,range:1.0,radius:.30,color:0x06b6d4,role:'defense',jump:true},flyer:{name:'Volador',hp:90,speed:3.0,damage:16,range:1.1,radius:.31,color:0xe879f9,role:'defense',flying:true}};
         let attackGestureMode='deploy',lastDeployCell='',lastDeployAt=0;
@@ -446,6 +502,39 @@
         let strokeStartCell = null;
         let strokeLockedAxis = null;
         let lastTapTime = 0;
+
+        const SAVE_KEY='aldea-voxel-save-v1';
+        let currentMenuMode='home';
+        let currentVillageIsOwn=true;
+        let activeIntent='build';
+        function hideMainMenu(){document.getElementById('main-menu').classList.add('hidden');}
+        function showMainMenu(){document.getElementById('main-menu').classList.remove('hidden');document.getElementById('menu-home').classList.remove('hidden');document.getElementById('menu-villages').classList.add('hidden');currentMenuMode='home';}
+        function saveGame(force=false){
+          if(!currentVillageIsOwn||activeIntent!=='build')return;
+          try{
+            const structures=[];const seen=new Set();
+            for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){
+              const base=state.grid[x][z],top=state.topGrid[x][z];
+              for(const d of [base,top]){if(!d||d.isTownHall||seen.has(d))continue;seen.add(d);structures.push({x,z,layer:d.layer,type:d.type?.id,level:d.level||1});}
+            }
+            const payload={version:1,savedAt:Date.now(),structures,army:{counts:configuredArmyCounts,infinite:infiniteDeployMode,enabled:armyConfigEnabled}};
+            localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
+            const status=document.getElementById('save-status');if(status)status.textContent='Guardado automáticamente · '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+          }catch(e){const status=document.getElementById('save-status');if(status)status.textContent='No se pudo guardar: almacenamiento del navegador no disponible';}
+        }
+        function restoreSavedVillage(){
+          let data;try{data=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(e){data=null;}
+          if(!data||!Array.isArray(data.structures))return false;
+          if(battleActive){battleActive=false;clearBattleEntities();}
+          clearVillagePreset();
+          for(const d of data.structures){if(!Number.isInteger(d.x)||!Number.isInteger(d.z)||d.x<0||d.z<0||d.x>=GRID_SIZE||d.z>=GRID_SIZE)continue;
+            if(d.layer===2){const t=TURRET_TYPES.find(v=>v.id===d.type);if(t){if(!state.grid[d.x][d.z])createBlock(d.x,d.z,1,BLOCK_TYPES.find(v=>v.id==='grass'),1);createTurretBlock(d.x,d.z,d.level||1,t);}}
+            else {const t=BLOCK_TYPES.find(v=>v.id===d.type);if(t&&!isCellTownHall(d.x,d.z))createBlock(d.x,d.z,1,t,d.level||1);}
+          }
+          if(data.army){configuredArmyCounts={...configuredArmyCounts,...(data.army.counts||{})};infiniteDeployMode=!!data.army.infinite;armyConfigEnabled=!!data.army.enabled;}
+          updateTroopCards();return true;
+        }
+        function loadSavedGame(){const ok=restoreSavedVillage();if(!ok){loadVillagePreset('balanced');saveGame(true);} }
 
         function init() {
             const container = document.getElementById('canvas-container');
@@ -503,6 +592,10 @@
             mouse = new THREE.Vector2();
             setupEvents();
             setupUI();
+            loadSavedGame();
+            showMainMenu();
+            setInterval(()=>saveGame(false),2000);
+            window.addEventListener('beforeunload',()=>saveGame(true));
 
             // Bucle Principal
             animate();
@@ -955,8 +1048,10 @@
                         const cz = z + dz;
                         if (cx >= 0 && cx < GRID_SIZE && cz >= 0 && cz < GRID_SIZE) {
                             if (isCellTownHall(cx, cz)) continue;
-
-                            removeBlock(cx, cz, 1);
+                            // No recrear ni animar piezas en una casilla ya ocupada.
+                            if (state.topGrid[cx][cz]) continue;
+                            if(state.grid[cx][cz]?.type?.id===state.selectedBlockType.id) continue;
+                            if(state.grid[cx][cz]) removeBlock(cx,cz,1);
                             createBlock(cx, cz, 1, state.selectedBlockType);
                         }
                     }
@@ -968,11 +1063,8 @@
                         const cz = z + dz;
                         if (cx >= 0 && cx < GRID_SIZE && cz >= 0 && cz < GRID_SIZE) {
                             if (isCellTownHall(cx, cz)) continue;
-
-                            if (state.grid[cx][cz]) {
-                                removeBlock(cx, cz, 2);
-                                createTurretBlock(cx, cz, 1, selectedTurretType);
-                            }
+                            if (state.topGrid[cx][cz]?.type?.id===selectedTurretType.id) continue; // no repetir la animación de una torreta idéntica
+                            if (state.grid[cx][cz]) { if(state.topGrid[cx][cz]) removeBlock(cx,cz,2); createTurretBlock(cx, cz, 1, selectedTurretType); }
                         }
                     }
                 }
@@ -1006,6 +1098,15 @@
         function triggerPopAnimation(mesh) {
             mesh.scale.set(0.01, 0.01, 0.01);
             animatedMeshes.push({ mesh, progress: 0 });
+        }
+
+        function animateStructureDestruction(mesh, callback=null, battle=false) {
+            if(!mesh){callback?.();return;}
+            if(mesh.userData.destroying)return;
+            mesh.userData.destroying=true;
+            const origin=mesh.position.clone();
+            spawnBurst(origin.clone().add(new THREE.Vector3(0,.45,0)),battle?0xfb923c:0xf97316,battle?20:12,'debris');
+            destructionAnimations.push({mesh,callback,started:performance.now(),duration:battle?420:320,origin,rotationY:mesh.rotation.y,scale:mesh.scale.clone()});
         }
 
         function createBlock(x, z, layer, type, level = 1) {
@@ -1073,10 +1174,8 @@
 
         function removeBlock(x, z, layer) {
             const target = layer === 1 ? state.grid : state.topGrid;
-            if (target[x] && target[x][z]) {
-                scene.remove(target[x][z].mesh);
-                target[x][z] = null; structureRevision++;
-            }
+            const data=target[x]&&target[x][z];
+            if(data){target[x][z]=null;structureRevision++;animateStructureDestruction(data.mesh,()=>{if(data.mesh.parent)scene.remove(data.mesh);},false);}
         }
 
         function ensureRangeRing(){
@@ -1193,6 +1292,13 @@
         }
 
         function setupUI() {
+            document.querySelectorAll('[data-menu="build"]').forEach(b=>b.addEventListener('click',()=>{currentVillageIsOwn=true;activeIntent='build';restoreSavedVillage();hideMainMenu();setGameMode('build');applyModeIntent();}));
+            document.querySelector('[data-menu="attack"]').addEventListener('click',()=>{document.getElementById('menu-home').classList.add('hidden');document.getElementById('menu-villages').classList.remove('hidden');});
+            document.querySelector('[data-menu-back]').addEventListener('click',()=>{document.getElementById('menu-villages').classList.add('hidden');document.getElementById('menu-home').classList.remove('hidden');});
+            document.querySelectorAll('[data-raid-village]').forEach(b=>b.addEventListener('click',()=>{currentVillageIsOwn=false;activeIntent='raid';loadVillagePreset(b.dataset.raidVillage);setArmyPreset('balanced');hideMainMenu();setGameMode('attack');applyModeIntent();document.getElementById('battle-status').textContent='Aldea rival lista. Elige un ejército y pulsa iniciar oleada.';}));
+            document.querySelector('[data-menu="attack-own"]').addEventListener('click',()=>{currentVillageIsOwn=true;activeIntent='attack-own';restoreSavedVillage();setManualArmy();hideMainMenu();setGameMode('attack');applyModeIntent();openArmyConfigurator();document.getElementById('battle-status').textContent='Ataca tu propia aldea: configura el ejército atacante y pulsa iniciar.';});
+            document.querySelector('[data-menu="defend"]').addEventListener('click',()=>{currentVillageIsOwn=true;activeIntent='defend';restoreSavedVillage();setArmyPreset('balanced');hideMainMenu();setGameMode('attack');applyModeIntent();document.getElementById('battle-status').textContent='Prueba de defensa: selecciona un ejército predefinido y pulsa iniciar.';});
+            document.getElementById('menu-reset').addEventListener('click',()=>{if(confirm('¿Borrar la aldea y la partida guardada en este navegador?')){localStorage.removeItem(SAVE_KEY);currentVillageIsOwn=true;activeIntent='build';clearVillagePreset();hideMainMenu();setGameMode('build');applyModeIntent();saveGame(true);}});
             const palette = document.getElementById('color-palette');
             palette.innerHTML = '';
 
@@ -1219,6 +1325,7 @@
                 palette.appendChild(btn);
             });
 
+            document.getElementById('btn-main-menu').addEventListener('click',()=>{saveGame(true);if(battleActive)endBattle();currentVillageIsOwn=true;restoreSavedVillage();showMainMenu();});
             // Toggle Principal Modo Pintar vs Modo Cámara
             const toggleBuildModeBtn = document.getElementById('btn-toggle-build-mode');
 
@@ -1265,7 +1372,7 @@
 
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    switchMode(e.currentTarget.dataset.mode);
+                    const nextMode=e.currentTarget.dataset.mode; switchMode(state.mode===nextMode&&nextMode==='erase'?'build':nextMode);
                 });
             });
 
@@ -1352,8 +1459,8 @@
                 }
                 hideBlockDrawer();
             });
-            document.getElementById('btn-mode-build').addEventListener('click',()=>setGameMode('build'));
-            document.getElementById('btn-mode-attack').addEventListener('click',()=>setGameMode('attack'));
+            document.getElementById('btn-mode-build').addEventListener('click',()=>{if(activeIntent==='build'){setGameMode('build');applyModeIntent();}});
+            document.getElementById('btn-mode-attack').addEventListener('click',()=>{if(activeIntent==='defend'){setGameMode('attack');applyModeIntent();}});
             document.getElementById('btn-start-attack').addEventListener('click',()=>{if(!battleStarted)startBattle();else startBattle();});
             document.getElementById('btn-end-attack').addEventListener('click',endBattle);
             document.getElementById('btn-collapse-battle-panel').addEventListener('click',()=>{const panel=document.getElementById('battle-controls'),collapsed=panel.classList.toggle('collapsed');document.getElementById('btn-collapse-battle-panel').setAttribute('aria-expanded',String(!collapsed));document.getElementById('battle-panel-chevron').textContent=collapsed?'◂':'▾';document.querySelector('#btn-collapse-battle-panel span:first-child').textContent=collapsed?'⚙️ Controles':'⚙️ Controles de incursión';});
@@ -1366,7 +1473,11 @@
             document.getElementById('preset-army-balanced').addEventListener('click',()=>setArmyPreset('balanced'));
             document.getElementById('preset-army-wall').addEventListener('click',()=>setArmyPreset('wall'));
             document.getElementById('preset-army-air').addEventListener('click',()=>setArmyPreset('air'));
-            document.getElementById('preset-army-manual').addEventListener('click',setManualArmy);document.getElementById('btn-open-army-config').addEventListener('click',openArmyConfigurator);document.getElementById('btn-army-config-close').addEventListener('click',closeArmyConfigurator);document.getElementById('army-config-limited').addEventListener('click',()=>chooseArmyConfigMode(false));document.getElementById('army-config-infinite').addEventListener('click',()=>chooseArmyConfigMode(true));document.getElementById('btn-army-config-save').addEventListener('click',saveArmyConfig);document.querySelectorAll('[data-army-count]').forEach(i=>i.addEventListener('input',updateArmyConfigTotal));chooseArmyConfigMode(false);updateArmyConfigTotal();updateTroopCards();
+            document.getElementById('preset-army-manual').addEventListener('click',setManualArmy);document.getElementById('btn-open-army-config').addEventListener('click',openArmyConfigurator);document.getElementById('btn-army-config-close').addEventListener('click',closeArmyConfigurator);document.getElementById('army-config-limited').addEventListener('click',()=>chooseArmyConfigMode(false));document.getElementById('army-config-infinite').addEventListener('click',()=>chooseArmyConfigMode(true));document.getElementById('btn-army-config-save').addEventListener('click',saveArmyConfig);document.querySelectorAll('[data-army-count]').forEach(i=>{i.addEventListener('input',updateArmyConfigTotal);i.addEventListener('focus',()=>{document.querySelectorAll('.army-config-row').forEach(r=>r.classList.remove('army-row-selected'));i.closest('.army-config-row')?.classList.add('army-row-selected');});});
+            document.querySelectorAll('[data-count-step]').forEach(b=>b.addEventListener('click',()=>{const input=b.closest('.army-count-controls')?.querySelector('[data-army-count]');if(!input)return;const step=Number(b.dataset.countStep)||0,min=Number(input.min)||0,max=Number(input.max)||40;input.value=String(Math.max(min,Math.min(max,(parseInt(input.value||'0',10)||0)+step)));updateArmyConfigTotal();}));
+            document.getElementById('btn-army-remove-type').addEventListener('click',()=>{const focused=document.querySelector('.army-row-selected [data-army-count]')||document.querySelector('[data-army-count]:focus')||document.querySelector('[data-army-count]');if(focused){focused.value='0';updateArmyConfigTotal();focused.focus();}});
+            document.getElementById('btn-army-reset').addEventListener('click',()=>{document.querySelectorAll('[data-army-count]').forEach(i=>i.value='0');updateArmyConfigTotal();});
+            chooseArmyConfigMode(false);updateArmyConfigTotal();updateTroopCards();
             document.querySelectorAll('.troop-btn').forEach(btn=>btn.addEventListener('click',()=>{if(btn.disabled)return;selectedTroop=btn.dataset.troop;if(attackGestureMode==='camera')setAttackGestureMode('deploy');if(deploymentGhost)createDeploymentGhost(selectedTroop);document.querySelectorAll('.troop-btn').forEach(b=>b.classList.remove('deploy-selected'));btn.classList.add('deploy-selected');document.getElementById('battle-status').textContent=`${troopStats[selectedTroop].name} seleccionado: toca o arrastra sobre el terreno azul para desplegar.`;updateDeploymentGhost();}));
             document.getElementById('btn-toggle-routes')?.addEventListener('click',()=>setPathDebug(!pathDebugEnabled));
             document.getElementById('btn-toggle-unit-labels')?.addEventListener('click',()=>setTroopLabels(!troopLabelsEnabled));
@@ -1390,8 +1501,10 @@
 
             document.querySelectorAll('.mode-btn').forEach(b => {
                 if (b.dataset.mode === newMode) {
+                    b.classList.toggle('mode-active',newMode==='erase');
                     b.className = 'mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 bg-amber-500 text-slate-950 font-bold shadow-lg transition-all w-16';
                 } else {
+                    b.classList.remove('mode-active');
                     b.className = 'mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16';
                 }
             });
@@ -1429,9 +1542,23 @@
           document.getElementById('action-bar').classList.toggle('hidden', !build);
           document.getElementById('btn-toggle-build-mode').classList.toggle('hidden', !build);
           document.getElementById('gesture-hint').classList.toggle('hidden', !build);
+          document.getElementById('mode-switcher').classList.add('hidden');
           hideBlockDrawer();
           if(!build){hideRangeRing();hideTroopInspector();document.getElementById('battle-controls').classList.remove('collapsed');document.getElementById('btn-collapse-battle-panel').setAttribute('aria-expanded','true');document.getElementById('battle-panel-chevron').textContent='▾';document.querySelector('#btn-collapse-battle-panel span:first-child').textContent='⚙️ Controles de incursión';}
+          applyModeIntent();
           if (!build) { cameraTarget.set(0,0,0); cameraDistance=25; cameraAngleX=Math.PI/4; cameraAngleY=Math.PI/3.4; updateCameraPosition(); }
+        }
+        function applyModeIntent(){
+          const villageButtons=['preset-village-balanced','preset-village-maze','preset-village-air'];
+          const armyPresetButtons=['preset-army-balanced','preset-army-wall','preset-army-air'];
+          const configure=document.getElementById('btn-open-army-config');
+          const manual=document.getElementById('preset-army-manual');
+          villageButtons.forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('hidden',activeIntent!=='raid');});
+          armyPresetButtons.forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('hidden',activeIntent==='attack-own');});
+          if(configure)configure.classList.toggle('hidden',activeIntent==='defend');
+          if(manual)manual.classList.toggle('hidden',activeIntent==='defend');
+          document.getElementById('mode-switcher').classList.add('hidden');
+          document.getElementById('btn-main-menu').textContent='← VOLVER AL MENÚ';
         }
         function attachHealthBar(parent, maxHp, yOffset, visibleInitially=false) {
           const canvas=document.createElement('canvas');canvas.width=256;canvas.height=64;
@@ -1458,12 +1585,32 @@
         function recordBattleKill(attacker){if(!attacker||!attacker.kind)return;const kind=attacker.kind;battleStats.killsByKind[kind]=(battleStats.killsByKind[kind]||0)+1;}
         function damageStructure(data, amount, color=0xfbbf24, attacker=null) {
           if(!data||!data.mesh)return false;
-          if(data.isTownHall){const dealt=Math.min(townHallHP,amount);townHallHP=Math.max(0,townHallHP-amount);recordBattleDamage(attacker,dealt,'townhall');const b=data.mesh.userData.healthBar;if(b){b.hp=townHallHP;showHealthBar(data.mesh);drawHealthBar(b);}spawnBurst(new THREE.Vector3(0,1.6,0),color,14,'impact');return townHallHP<=0;}
-          const oldHp=data.hp??data.maxHp??100;data.hp=Math.max(0,oldHp-amount);recordBattleDamage(attacker,Math.min(oldHp,amount),data);const b=data.mesh.userData.healthBar;if(b){b.hp=data.hp;showHealthBar(data.mesh);drawHealthBar(b);}
+          if(data.isTownHall){const dealt=Math.min(townHallHP,amount);townHallHP=Math.max(0,townHallHP-amount);recordBattleDamage(attacker,dealt,'townhall');const b=data.mesh.userData.healthBar;if(b){b.hp=townHallHP;showHealthBar(data.mesh);drawHealthBar(b);}spawnDamageNumber(data.mesh.position.clone().add(new THREE.Vector3((Math.random()-.5)*.55,2.1,(Math.random()-.5)*.55)),dealt,color,'townhall');spawnBurst(new THREE.Vector3(0,1.6,0),color,14,'impact');return townHallHP<=0;}
+          const oldHp=data.hp??data.maxHp??100;data.hp=Math.max(0,oldHp-amount);const dealt=Math.min(oldHp,amount);recordBattleDamage(attacker,dealt,data);const cat=structureDamageCategory(data);spawnDamageNumber(data.mesh.position.clone().add(new THREE.Vector3((Math.random()-.5)*.5,1.15+(data.layer===2?.45:0),(Math.random()-.5)*.5)),dealt,color,cat);const b=data.mesh.userData.healthBar;if(b){b.hp=data.hp;showHealthBar(data.mesh);drawHealthBar(b);}
           spawnBurst(data.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),color,8,'impact');
           data.mesh.scale.setScalar(1.06);data.mesh.userData.hitScaleUntil=performance.now()+110;
-          if(data.hp<=0){battleStats.structuresDestroyed=(battleStats.structuresDestroyed||0)+1;deploymentBreaches.add(`${data.x}:${data.z}`);spawnBurst(data.mesh.position.clone().add(new THREE.Vector3(0,.5,0)),0xf97316,24,'debris');scene.remove(data.mesh);const grid=data.layer===2?state.topGrid:state.grid;grid[data.x][data.z]=null;structureRevision++;updateDeploymentZone(true);return true;}
+          if(data.hp<=0){battleStats.structuresDestroyed=(battleStats.structuresDestroyed||0)+1;spawnBurst(data.mesh.position.clone().add(new THREE.Vector3(0,.5,0)),0xf97316,24,'debris');const grid=data.layer===2?state.topGrid:state.grid;grid[data.x][data.z]=null;if(!state.grid[data.x][data.z]&&!state.topGrid[data.x][data.z])deploymentBreaches.add(`${data.x}:${data.z}`);deploymentReachCache=null;deploymentReachCacheKey='';animateStructureDestruction(data.mesh,()=>{if(data.mesh.parent)scene.remove(data.mesh);},true);structureRevision++;updateDeploymentZone(true);return true;}
           return false;
+        }
+        function spawnDamageNumber(pos,amount,color,category='buildings'){
+          if(!Number.isFinite(amount)||amount<=0)return;
+          const value=Math.round(amount),canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;
+          const ctx=canvas.getContext('2d'),hex='#'+Number(color||0xffffff).toString(16).padStart(6,'0');
+          const fontSize=value>=80?64:value>=30?56:value>=15?48:40;
+          ctx.clearRect(0,0,256,128);ctx.font=`1000 ${fontSize}px system-ui, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.lineWidth=11;ctx.strokeStyle='#07111f';ctx.lineJoin='round';ctx.strokeText(String(value),128,63);
+          ctx.fillStyle=value>=80?'#fb7185':value>=30?'#fbbf24':hex;ctx.shadowColor=hex;ctx.shadowBlur=18;ctx.fillText(String(value),128,63);
+          if(value>=30){ctx.font='900 18px system-ui';ctx.fillStyle='#fff';ctx.shadowBlur=0;ctx.fillText(value>=80?'¡IMPACTO!':'IMPACTO',128,105);}
+          const texture=new THREE.CanvasTexture(canvas);texture.minFilter=THREE.LinearFilter;
+          const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));sprite.scale.set(value>=80?1.35:value>=30?1.12:.85,.43,1);sprite.position.copy(pos);sprite.renderOrder=1002;scene.add(sprite);
+          floatingDamage.push({sprite,texture,life:.9,maxLife:.9,velocity:new THREE.Vector3((Math.random()-.5)*.35,1.05+Math.random()*.25,(Math.random()-.5)*.2),category});
+        }
+        function spawnSlash(from,to,color){
+          const dx=to.x-from.x,dz=to.z-from.z,angle=Math.atan2(dx,dz);
+          const geo=new THREE.PlaneGeometry(1.35,.16),mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.98,side:THREE.DoubleSide,depthWrite:false});
+          const mesh=new THREE.Mesh(geo,mat);mesh.position.copy(to).add(new THREE.Vector3(0,.88,0));mesh.rotation.set(-.18,angle,.45);mesh.renderOrder=1001;scene.add(mesh);
+          particles.push({mesh,life:.2,maxLife:.2,v:new THREE.Vector3(0,0,0),style:'slash'});
+          spawnBurst(to.clone().add(new THREE.Vector3(0,.65,0)),color,6,'spark');
         }
         function makeTroopMesh(kind, x, z) {
           const st=troopStats[kind], g=new THREE.Group();
@@ -1474,7 +1621,7 @@
           if(kind==='hunter'){const blade=new THREE.Mesh(new THREE.BoxGeometry(.12,.58,.12),new THREE.MeshStandardMaterial({color:0xe9d5ff,metalness:.65,roughness:.25}));blade.position.set(.28,.55,0);blade.rotation.z=-.45;g.add(blade)}
           if(kind==='jumper'){const ring=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,6,12),new THREE.MeshStandardMaterial({color:0x67e8f9,emissive:0x0891b2,emissiveIntensity:.8}));ring.position.y=.2;g.add(ring)}
           if(kind==='flyer'){const wingMat=new THREE.MeshStandardMaterial({color:0xf5d0fe,emissive:0xc026d3,emissiveIntensity:.25,side:THREE.DoubleSide});for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.48,.08,.22),wingMat);wing.position.set(side*.32,.72,0);wing.rotation.z=side*.35;g.add(wing)}}
-          g.position.set(x,0,z);scene.add(g);attachHealthBar(g,st.hp,1.55,false);
+          g.position.set(x,st.flying?2.55:0,z);scene.add(g);attachHealthBar(g,st.hp,1.55,false);
           return {kind,mesh:g,hp:st.hp,maxHp:st.hp,attackCooldown:.12,dead:false,walkPhase:Math.random()*6,slowUntil:0,thinkClock:Math.random()*.08,pathCache:null,currentTarget:null,stuckTime:0,lastX:x,lastZ:z,unitId:nextUnitId++};
         }
         function spawnTroop(kind,x,z){if(state.gameMode!=='attack'||!battleActive)return false;if(!infiniteDeployMode&&(remainingArmyCounts[kind]||0)<=0){document.getElementById('battle-status').textContent=`No quedan ${troopStats[kind].name} en tu ejército.`;updateTroopCards();return false;}const gx=Math.floor(x+GRID_SIZE/2),gz=Math.floor(z+GRID_SIZE/2);if(gx<0||gz<0||gx>=GRID_SIZE||gz>=GRID_SIZE)return false;if(!isDeploymentCellAllowed(gx,gz)){document.getElementById('battle-status').textContent='No puedes desplegar ahí todavía. Destruye muros o defensas para ampliar la zona azul.';return false;}const occupied=isDeployCellOccupied(gx,gz);if(occupied){document.getElementById('battle-status').textContent='Despliega sobre terreno libre de la zona azul, fuera de edificios y muros.';return false;}const st=troopStats[kind],radius=st.radius||.28;for(const other of troops){if(!other.dead&&Math.hypot(other.mesh.position.x-x,other.mesh.position.z-z)<radius+(troopStats[other.kind].radius||.28)+.08){document.getElementById('battle-status').textContent='Hay otra unidad ocupando ese espacio.';return false;}}const troop=makeTroopMesh(kind,x,z);troop.flying=!!st.flying;troops.push(troop);if(!infiniteDeployMode)remainingArmyCounts[kind]=Math.max(0,(remainingArmyCounts[kind]||0)-1);battleStats.deployedByKind[kind]=(battleStats.deployedByKind[kind]||0)+1;updateTroopCards();spawnBurst(troop.mesh.position.clone().add(new THREE.Vector3(0,.3,0)),st.color,18,'spawn');document.getElementById('battle-status').textContent=`${st.name} desplegado. Toca otro punto para enviar más tropas.`;return true;}
@@ -1538,7 +1685,7 @@
         function startBattle(){
           if(battleActive)return; if(troops.length||projectiles.length||particles.length)clearBattleEntities();
           document.getElementById('battle-result-modal').classList.add('hidden');document.getElementById('battle-result-modal').classList.remove('flex');battleFinishShown=false;selectedTroopInspect=null;hideTroopInspector();
-          battleInitialStructureCount=Math.max(1,allStructures().length+1);battleStats={damageByKind:{},damageByStructureByKind:{},killsByKind:{},deployedByKind:{},damageTotal:0,structuresDestroyed:0};deploymentBreaches.clear();
+          battleInitialStructureCount=Math.max(1,allStructures().length+1);battleStats={damageByKind:{},damageByStructureByKind:{},killsByKind:{},deployedByKind:{},damageTotal:0,structuresDestroyed:0};deploymentBreaches.clear();deploymentReachCache=null;deploymentReachCacheKey='';
           battleActive=true;battleStarted=true;battleTime=90;townHallHP=1000;remainingArmyCounts=infiniteDeployMode?{}:{...configuredArmyCounts};updateTroopCards();
           const th=townHallMesh?.userData?.healthBar;if(th){th.hp=1000;drawHealthBar(th);th.sprite.visible=false;}
           document.getElementById('btn-start-attack').textContent='OLEADA EN CURSO';document.getElementById('btn-start-attack').disabled=true;
@@ -1547,13 +1694,22 @@
           updateDeploymentZone(true);updateDeploymentGhost();
         }
         function findInitialDeployCell(seed=0){for(let r=0;r<4;r++)for(let i=0;i<GRID_SIZE*4;i++){const n=(i+seed*7)%(GRID_SIZE*4),side=Math.floor(n/GRID_SIZE),off=n%GRID_SIZE;let x=side===0?off:side===1?GRID_SIZE-1:side===2?off:0,z=side===0?0:side===1?off:side===2?GRID_SIZE-1:off;if(r>0){if(side===0)z+=r;else if(side===1)x-=r;else if(side===2)z-=r;else x+=r;}if(isDeploymentCellAllowed(x,z)&&!isDeployCellOccupied(x,z)){const w=cellWorld(x,z);if(!troops.some(t=>!t.dead&&Math.hypot(t.mesh.position.x-w.x,t.mesh.position.z-w.z)<.72))return w;}}return null;}
-        function isDeploymentCellAllowed(x,z){if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return false;const edgeDepth=Math.min(x,z,GRID_SIZE-1-x,GRID_SIZE-1-z);if(edgeDepth<3)return true;for(const key of deploymentBreaches){const [bx,bz]=key.split(':').map(Number),d=Math.abs(x-bx)+Math.abs(z-bz);/* Keep a buffer around the destroyed piece: deployments unlock as a ring, never directly in the breach or deep inside the base. */if(d>=3&&d<=5)return true;}return false;}
+        let deploymentReachCache=null,deploymentReachCacheKey='';
+        function getConnectedDeploymentBreaches(){
+          const key=[...deploymentBreaches].sort().join('|');if(key===deploymentReachCacheKey&&deploymentReachCache)return deploymentReachCache;
+          deploymentReachCacheKey=key;const connected=new Set(),queue=[];
+          // Solo se abre camino hacia dentro cuando una cadena de piezas destruidas conecta con el perímetro.
+          for(const k of deploymentBreaches){const [x,z]=k.split(':').map(Number);if(Math.min(x,z,GRID_SIZE-1-x,GRID_SIZE-1-z)<=3){connected.add(k);queue.push({x,z});}}
+          const dirs=[[1,0],[-1,0],[0,1],[0,-1]];for(let i=0;i<queue.length;i++){const c=queue[i];for(const [dx,dz] of dirs){const x=c.x+dx,z=c.z+dz,k=`${x}:${z}`;if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE||connected.has(k)||!deploymentBreaches.has(k))continue;connected.add(k);queue.push({x,z});}}
+          deploymentReachCache=connected;return connected;
+        }
+        function isDeploymentCellAllowed(x,z){if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return false;const edgeDepth=Math.min(x,z,GRID_SIZE-1-x,GRID_SIZE-1-z);if(edgeDepth<3)return true;const connected=getConnectedDeploymentBreaches();for(const key of connected){const [bx,bz]=key.split(':').map(Number),d=Math.abs(x-bx)+Math.abs(z-bz);if(d===1)return true;}return false;}
         function isDeployCellOccupied(x,z){if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return true;if(state.topGrid[x][z])return true;const base=state.grid[x][z];if(!base)return false;return base.type?.id!=='grass';}
         function updateDeploymentZone(force=false){if(!scene)return;const breachCount=deploymentBreaches.size;if(!force&&deploymentZoneRevision===structureRevision&&deploymentZoneBreachCount===breachCount)return;deploymentZoneRevision=structureRevision;deploymentZoneBreachCount=breachCount;const wanted=new Set();if(battleActive){for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){if(!isDeploymentCellAllowed(x,z)||isDeployCellOccupied(x,z))continue;const key=`${x}:${z}`;wanted.add(key);if(!deploymentZoneMeshes.has(key)){const geo=new THREE.PlaneGeometry(.94,.94);const mat=new THREE.MeshBasicMaterial({color:0x06b6d4,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide});const tile=new THREE.Mesh(geo,mat);tile.rotation.x=-Math.PI/2;tile.position.set(x-GRID_SIZE/2+.5,.035,z-GRID_SIZE/2+.5);tile.renderOrder=4;tile.userData.deployZone=true;scene.add(tile);deploymentZoneMeshes.set(key,tile);}}}
           for(const [key,tile] of deploymentZoneMeshes){if(!wanted.has(key)){scene.remove(tile);tile.geometry.dispose();tile.material.dispose();deploymentZoneMeshes.delete(key);}}
         }
         function clearDeploymentZone(){for(const tile of deploymentZoneMeshes.values()){scene.remove(tile);tile.geometry.dispose();tile.material.dispose();}deploymentZoneMeshes.clear();deploymentZoneRevision=-1;deploymentZoneBreachCount=-1;}
-        function clearBattleEntities(){clearDebugLines();for(const t of troops){if(t.debugLabel){t.mesh.remove(t.debugLabel.sprite);t.debugLabel.texture.dispose();t.debugLabel.sprite.material.dispose();}scene.remove(t.mesh);}troops.length=0;troopDebugSprites.clear();for(const p of projectiles)scene.remove(p.mesh);projectiles.length=0;for(const p of particles)scene.remove(p.mesh);particles.length=0;}
+        function clearBattleEntities(){clearDebugLines();for(const t of troops){if(t.debugLabel){t.mesh.remove(t.debugLabel.sprite);t.debugLabel.texture.dispose();t.debugLabel.sprite.material.dispose();}scene.remove(t.mesh);}troops.length=0;troopDebugSprites.clear();for(const p of projectiles)scene.remove(p.mesh);projectiles.length=0;for(const p of particles){scene.remove(p.mesh);p.mesh.geometry?.dispose();if(p.mesh.material?.dispose)p.mesh.material.dispose();}particles.length=0;for(const d of floatingDamage){scene.remove(d.sprite);d.texture.dispose();d.sprite.material.dispose();}floatingDamage.length=0;}
         function endBattle(){battleActive=false;battleStarted=false;clearDeploymentZone();deploymentBreaches.clear();document.getElementById('battle-result-modal').classList.add('hidden');document.getElementById('battle-result-modal').classList.remove('flex');clearBattleEntities();destroyDeploymentGhost();hideTroopInspector();document.getElementById('btn-start-attack').textContent='▶ INICIAR OLEADA';document.getElementById('btn-start-attack').disabled=false;setGameMode('build');}
         function finishBattle(reason){if(battleFinishShown)return;battleFinishShown=true;battleActive=false;battleStarted=false;clearDeploymentZone();destroyDeploymentGhost();hideTroopInspector();const live=troops.filter(t=>!t.dead).length;const maxStructures=battleInitialStructureCount,destroyed=battleStats.structuresDestroyed+(townHallHP<=0?1:0),pct=Math.min(100,Math.round(destroyed/maxStructures*100));const won=townHallHP<=0||pct>=50;document.getElementById('result-icon').textContent=won?'🏆':'🛡️';document.getElementById('result-title').textContent=won?'¡Incursión ganada!':'Incursión perdida';document.getElementById('result-subtitle').textContent=reason;document.getElementById('result-destruction').textContent=`${pct}%`;document.getElementById('result-damage').textContent=Math.round(battleStats.damageTotal||0).toLocaleString('es-ES');document.getElementById('result-survivors').textContent=String(live);const stats=document.getElementById('result-unit-stats');stats.innerHTML='';const kinds=Object.keys(troopStats).filter(k=>(battleStats.deployedByKind[k]||0)>0);if(!kinds.length)stats.innerHTML='<div class="p-3 text-xs text-slate-400">No se desplegaron tropas.</div>';for(const kind of kinds){const st=troopStats[kind],deployed=battleStats.deployedByKind[kind]||0,damage=Math.round(battleStats.damageByKind[kind]||0),kills=battleStats.killsByKind[kind]||0,share=battleStats.damageTotal>0?Math.round((battleStats.damageByKind[kind]||0)/battleStats.damageTotal*100):0,parts=battleStats.damageByStructureByKind[kind]||{},unitDamage=Object.values(parts).reduce((a,b)=>a+b,0);const row=document.createElement('div');row.className='result-row';const segments=['walls','turrets','townhall','buildings'].map(cat=>{const value=parts[cat]||0,pct=unitDamage>0?(value/unitDamage*100):0;return value>0?`<div class="result-damage-segment" title="${structureDamageLabels[cat]}: ${Math.round(value).toLocaleString('es-ES')} (${Math.round(pct)}%)" style="width:${pct}%;background:${structureDamageColors[cat]}"></div>`:''}).join('');const detail=['walls','turrets','townhall','buildings'].filter(cat=>(parts[cat]||0)>0).map(cat=>`<span class="result-legend-item"><i class="result-legend-dot" style="background:${structureDamageColors[cat]}"></i>${structureDamageLabels[cat]} ${Math.round((parts[cat]||0)).toLocaleString('es-ES')} (${unitDamage?Math.round((parts[cat]||0)/unitDamage*100):0}%)</span>`).join('');row.innerHTML=`<div class="min-w-0"><div class="flex items-center justify-between gap-2"><div class="font-black" style="color:#${st.color.toString(16).padStart(6,'0')}">${st.name}</div><div class="text-[10px] text-slate-400">${share}% del daño total</div></div><div class="result-damage-stack">${segments||'<div class="result-damage-segment" style="width:100%;background:#475569"></div>'}</div><div class="result-legend mt-2">${detail||'<span>Sin daño a estructuras</span>'}</div><div class="text-[10px] text-slate-400 mt-1">${deployed} desplegadas · ${troops.filter(t=>t.kind===kind&&!t.dead).length} vivas · ${kills} bajas</div></div><div class="text-right"><div class="result-stat">${damage.toLocaleString('es-ES')}</div><div class="text-[9px] text-slate-400">daño total</div></div>`;stats.appendChild(row);}document.getElementById('btn-start-attack').disabled=false;document.getElementById('btn-start-attack').textContent='↻ REPETIR INCURSIÓN';document.getElementById('battle-status').textContent=reason;document.getElementById('battle-result-modal').classList.remove('hidden');document.getElementById('battle-result-modal').classList.add('flex');}
         function hideTroopInspector(){selectedTroopInspect=null;document.getElementById('troop-inspector').classList.add('hidden');if(rangeRingMode==='unit-selected')hideRangeRing();}
@@ -1583,9 +1739,12 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
         function troopMoveCellFree(t,x,z,target){
           if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return false;
           const d=getStructureAtCell(x,z);
-          if(!d)return true;
           if(d===target)return false;
-          return troopCanCross(t,d);
+          if(d&&!troopCanCross(t,d))return false;
+          // Every ground troop reserves a physical footprint. A* cannot route through another
+          // unit's occupied cell; routes are recomputed frequently as the formation moves.
+          if(!t.flying){const w=cellWorld(x,z);for(const other of troops){if(other===t||other.dead||!other.mesh?.parent||other.flying)continue;const r=(troopStats[t.kind].radius||.28)+(troopStats[other.kind].radius||.28)*.9;if(Math.hypot(other.mesh.position.x-w.x,other.mesh.position.z-w.z)<r&&Math.hypot(other.mesh.position.x-t.mesh.position.x,other.mesh.position.z-t.mesh.position.z)>.12)return false;}}
+          return true;
         }
         function attackRangeFor(t,target){
           const st=troopStats[t.kind];
@@ -1619,7 +1778,7 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
               // BFS guarantees path length order; first valid goal is the shortest.
               break;
             }
-            for(const [dx,dz] of dirs){const n={x:c.x+dx,z:c.z+dz},nk=key(n);if(prev.has(nk)||!troopMoveCellFree(t,n.x,n.z,target))continue;prev.set(nk,key(c));q.push(n);}
+            for(const [dx,dz] of dirs){const n={x:c.x+dx,z:c.z+dz},nk=key(n);if(prev.has(nk)||!troopMoveCellFree(t,n.x,n.z,target))continue;if(t.jump&&isWall(getStructureAtCell(n.x,n.z))&&isWall(getStructureAtCell(n.x+dx,n.z+dz)))continue;prev.set(nk,key(c));q.push(n);}
           }
           if(!best){t.pathCache={revision:structureRevision,targetId,at:now,path:[],unreachable:true};return null;}
           const path=[];let k=key(best);while(k!==key(start)){const [x,z]=k.split(',').map(Number);path.push({x,z});k=prev.get(k);if(!k)break;}path.reverse();
@@ -1630,7 +1789,7 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
             while(true){if(!(x0===start.x&&z0===start.z)&&!troopMoveCellFree(t,x0,z0,target))return false;if(x0===x1&&z0===z1)break;const e2=2*err;let nx=x0,nz=z0;if(e2>-dz){err-=dz;nx+=sx;}if(e2<dx){err+=dx;nz+=sz;}if(nx!==x0&&nz!==z0){if(!troopMoveCellFree(t,nx,z0,target)||!troopMoveCellFree(t,x0,nz,target))return false;}x0=nx;z0=nz;}
             return true;
           };
-          if(path.length>2){const smooth=[];let anchor={x:start.x,z:start.z},i=0;while(i<path.length){let far=i;for(let j=path.length-1;j>=i;j--){if(clearSegment(anchor,path[j])){far=j;break;}}smooth.push(path[far]);anchor=path[far];i=far+1;}path.splice(0,path.length,...smooth);}
+          if(path.length>2&&!t.jump){const smooth=[];let anchor={x:start.x,z:start.z},i=0;while(i<path.length){let far=i;for(let j=path.length-1;j>=i;j--){if(clearSegment(anchor,path[j])){far=j;break;}}smooth.push(path[far]);anchor=path[far];i=far+1;}path.splice(0,path.length,...smooth);}
           const result={revision:structureRevision,targetId,at:now,path,goal:best,unreachable:false};t.pathCache=result;return result;
         }
         function findPath(t,targetCell){
@@ -1696,26 +1855,43 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
           return scored[0]?.d||hall;
         }
         function structureRadius(d){return d?.isTownHall?1.58:(isWall(d)?.55:.62);}
-        function damageTroop(t,amount,color,attacker=null){if(!t||t.dead)return;const oldHp=t.hp;t.hp=Math.max(0,t.hp-amount);recordBattleDamage(attacker,Math.min(oldHp,amount));const b=t.mesh.userData.healthBar;if(b){b.hp=t.hp;drawHealthBar(b);showHealthBar(t.mesh);}spawnBurst(t.mesh.position.clone().add(new THREE.Vector3(0,.6,0)),color,8,'impact');if(t.hp<=0){t.dead=true;recordBattleKill(attacker);spawnBurst(t.mesh.position.clone().add(new THREE.Vector3(0,.5,0)),color,30,'debris');scene.remove(t.mesh);}}
+        function damageTroop(t,amount,color,attacker=null){if(!t||t.dead)return;const oldHp=t.hp;t.hp=Math.max(0,t.hp-amount);const dealt=Math.min(oldHp,amount);recordBattleDamage(attacker,dealt);spawnDamageNumber(t.mesh.position.clone().add(new THREE.Vector3((Math.random()-.5)*.25,1.5,(Math.random()-.5)*.25)),dealt,color,'troop');const b=t.mesh.userData.healthBar;if(b){b.hp=t.hp;drawHealthBar(b);showHealthBar(t.mesh);}spawnBurst(t.mesh.position.clone().add(new THREE.Vector3(0,.6,0)),color,8,'impact');if(t.hp<=0){t.dead=true;recordBattleKill(attacker);spawnBurst(t.mesh.position.clone().add(new THREE.Vector3(0,.5,0)),color,30,'debris');scene.remove(t.mesh);}}
         function damageArea(pos,radius,amount,color,source,attacker=null){
-          if(!attacker?.kind)for(const t of troops){if(t.dead||t===source)continue;if(t.mesh.position.distanceTo(pos)<=radius)damageTroop(t,amount,color,attacker);}
+          // Las explosiones de defensas dañan únicamente tropas enemigas, nunca estructuras aliadas.
+          if(!attacker?.kind){for(const t of troops){if(t.dead||t===source)continue;if(t.mesh.position.distanceTo(pos)<=radius)damageTroop(t,amount,color,attacker);}return;}
+          // Los explosivos de las tropas sí pueden dañar estructuras cercanas.
           for(const d of allStructures()){if(d===source||!d.mesh)continue;if(d.mesh.position.distanceTo(pos)<=radius)damageStructure(d,amount,color,attacker);}
         }
         function resolveUnitSeparation(dt){
-          // Spatial hash keeps collision resolution cheap on mobile. Units have a personal
-          // radius; pairwise repulsion is deterministic by unitId and never teleports through walls.
           const live=troops.filter(t=>!t.dead&&t.mesh.parent);if(live.length<2)return;
-          const cellSize=1.25,buckets=new Map(),key=(x,z)=>`${Math.floor(x/cellSize)},${Math.floor(z/cellSize)}`;
+          // Stable spatial buckets + symmetric separation keep individual troop footprints apart.
+          const cellSize=1.4,buckets=new Map(),key=(x,z)=>`${Math.floor(x/cellSize)},${Math.floor(z/cellSize)}`;
           for(const t of live){const k=key(t.mesh.position.x,t.mesh.position.z);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(t);}
-          for(const t of live){const p=t.mesh.position,st=troopStats[t.kind],r=st.radius||.28;let sx=0,sz=0;
-            const cx=Math.floor(p.x/cellSize),cz=Math.floor(p.z/cellSize);
-            for(let ox=-1;ox<=1;ox++)for(let oz=-1;oz<=1;oz++)for(const other of buckets.get(`${cx+ox},${cz+oz}`)||[]){if(other===t)continue;const op=other.mesh.position,dx=p.x-op.x,dz=p.z-op.z,d=Math.hypot(dx,dz),need=r+(troopStats[other.kind].radius||.28);if(d>0.0001&&d<need){const force=(need-d)/need;sx+=(dx/d)*force;sz+=(dz/d)*force;}}
-            const mag=Math.hypot(sx,sz);if(mag<.001)continue;const push=Math.min(.07,mag*.045)*Math.min(1,dt*60);const nx=p.x+(sx/mag)*push,nz=p.z+(sz/mag)*push;
+          for(const t of live){const p=t.mesh.position,r=troopStats[t.kind].radius||.28,cx=Math.floor(p.x/cellSize),cz=Math.floor(p.z/cellSize);let sx=0,sz=0;
+            for(let ox=-1;ox<=1;ox++)for(let oz=-1;oz<=1;oz++)for(const o of buckets.get(`${cx+ox},${cz+oz}`)||[]){if(o===t)continue;const op=o.mesh.position,dx=p.x-op.x,dz=p.z-op.z,d=Math.hypot(dx,dz),need=r+(troopStats[o.kind].radius||.28)+.035;if(d<need){const nx=d>.001?dx/d:((t.unitId<o.unitId)?-1:1),nz=d>.001?dz/d:0,force=(need-Math.max(.001,d));sx+=nx*force;sz+=nz*force;}}
+            const mag=Math.hypot(sx,sz);if(mag<.001)continue;const push=Math.min(.11,mag*.42)*Math.min(1,dt*60),nx=p.x+sx/mag*push,nz=p.z+sz/mag*push;
             const gx=Math.floor(nx+GRID_SIZE/2),gz=Math.floor(nz+GRID_SIZE/2),occ=getStructureAtCell(gx,gz);
-            if(t.flying||!occ||troopCanCross(t,occ)){p.x=nx;p.z=nz;}
+            const blocked=occ&&!t.flying&&!troopCanCross(t,occ);
+            if(!blocked){let collides=false;for(const o of live){if(o===t||o.dead)continue;const need=r+(troopStats[o.kind].radius||.28);if(Math.hypot(nx-o.mesh.position.x,nz-o.mesh.position.z)<need*.82){collides=true;break;}}if(!collides){p.x=nx;p.z=nz;}}
           }
         }
 
+        function moveTroopAlongPath(t,path,dt,now){
+          if(!path?.length)return false;
+          const st=troopStats[t.kind],next=path[0],obstacle=getStructureAtCell(next.x,next.z),landingCell=path[1],jumpingOver=!!(t.jump&&obstacle&&isWall(obstacle)&&landingCell&&!isWall(getStructureAtCell(landingCell.x,landingCell.z)));
+          // A jumper takes off before the wall and lands on the cell after it, not on top of it.
+          const dest=jumpingOver&&path.length>1?path[1]:next,wp=cellWorld(dest.x,dest.z);
+          const dx=wp.x-t.mesh.position.x,dz=wp.z-t.mesh.position.z,dist=Math.hypot(dx,dz);
+          if(dist<.2){path.shift();if(t.jumpActive){t.jumpActive=false;t.jumpProgress=0;}return true;}
+          const step=Math.min(dist,st.speed*(t.slowUntil>now?.48:1)*dt),nx=t.mesh.position.x+dx/dist*step,nz=t.mesh.position.z+dz/dist*step;
+          if(jumpingOver&&!t.jumpActive){t.jumpActive=true;t.jumpProgress=0;t.jumpDestinationSteps=path.length>1?2:1;}
+          if(t.jumpActive){t.jumpProgress=Math.min(1,(t.jumpProgress||0)+step/Math.max(.7,dist));}
+          t.mesh.position.x=nx;t.mesh.position.z=nz;t.mesh.rotation.y=Math.atan2(dx,dz);
+          if(t.jumpActive){const u=t.jumpProgress||0;t.mesh.position.y=Math.sin(u*Math.PI)*1.9+.05;if(u>=1){t.jumpActive=false;t.jumpProgress=0;for(let i=0;i<(t.jumpDestinationSteps||1)&&path.length;i++)path.shift();t.jumpDestinationSteps=1;t.mesh.position.y=.05;}}
+          else if(t.flying)t.mesh.position.y=2.55+Math.sin(t.walkPhase*1.6)*.16;
+          else t.mesh.position.y=Math.abs(Math.sin(t.walkPhase))*.045;
+          return true;
+        }
         function battleUpdate(dt){
           const dtSafe=Math.min(dt,.05),now=performance.now();
           if(battleActive){battleTime=Math.max(0,battleTime-dt);const sec=Math.ceil(battleTime);document.getElementById('battle-clock').textContent=`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;if(townHallHP<=0){finishBattle('Ayuntamiento destruido: objetivo principal completado.');return;}if(sec===0){finishBattle('Tiempo agotado: se ha terminado el tiempo de incursión.');return;}}
@@ -1725,18 +1901,18 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
             if(t.dead)continue;
             const st=troopStats[t.kind];t.attackCooldown-=dtSafe;t.thinkClock=(t.thinkClock||0)-dtSafe;t.walkPhase+=dtSafe*8;
             const flying=!!st.flying,jumping=!!st.jump;t.flying=flying;t.jump=jumping;
-            const bob=flying?.38+Math.sin(t.walkPhase*1.6)*.11:(jumping&&t.jumping?Math.abs(Math.sin(t.walkPhase*1.8))*.48:Math.abs(Math.sin(t.walkPhase))*.045);t.mesh.position.y=bob;
+            const bob=flying?2.55+Math.sin(t.walkPhase*1.6)*.16:(t.jumpActive?t.mesh.position.y:Math.abs(Math.sin(t.walkPhase))*.045);if(!t.jumpActive)t.mesh.position.y=bob;
             const body=t.mesh.children[0];if(body){body.rotation.z=Math.sin(t.walkPhase)*.045;body.rotation.x=Math.sin(t.walkPhase*1.4)*.045;}
             for(let i=1;i<t.mesh.children.length;i++){const part=t.mesh.children[i];if(t.kind==='flyer'&&i>=3)part.rotation.z=Math.sin(t.walkPhase*2.5)*.5;}
             // Think at 8-10 Hz instead of doing expensive target/path searches every rendered frame.
             if(t.thinkClock>0&&t.currentTarget&&t.currentTarget.mesh) {
-              const target=t.currentTarget, dist=t.mesh.position.distanceTo(target.mesh.position), attackRange=attackRangeFor(t,target);
+              const target=t.currentTarget, dist=Math.hypot(t.mesh.position.x-target.mesh.position.x,t.mesh.position.z-target.mesh.position.z), attackRange=attackRangeFor(t,target);
               if(dist<=attackRange+.12){if(t.attackCooldown<=0){t.attackCooldown=t.kind==='wallbreaker'?.78:t.kind==='giant'? .92:t.kind==='hunter'?.66:st.range>1.3?.72:.58;const from=t.mesh.position.clone().add(new THREE.Vector3(0,flying?.9:.65,0));
-                  if(st.range>1.3||t.kind==='bomber'||t.kind==='wallbreaker')fireProjectile(from,target,st.color,st.damage,t.kind==='bomber'||t.kind==='wallbreaker'?'bomb':(t.kind==='archer'?'arrow':'troop'),t);else {damageStructure(target,st.damage,st.color,t);spawnBurst(target.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),st.color,t.kind==='giant'?16:7,t.kind==='giant'?'impact':'spark');}
+                  if(st.range>1.3||t.kind==='bomber'||t.kind==='wallbreaker')fireProjectile(from,target,st.color,st.damage,t.kind==='bomber'||t.kind==='wallbreaker'?'bomb':(t.kind==='archer'?'arrow':'troop'),t);else {const fromPos=t.mesh.position.clone(),toPos=target.mesh.position.clone();damageStructure(target,st.damage,st.color,t);spawnSlash(fromPos,toPos,st.color);spawnBurst(target.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),st.color,t.kind==='giant'?16:7,t.kind==='giant'?'impact':'spark');}
                   t.mesh.rotation.y=Math.atan2(target.mesh.position.x-t.mesh.position.x,target.mesh.position.z-t.mesh.position.z);if(t.kind==='wallbreaker')spawnBurst(t.mesh.position.clone(),0xf97316,8,'debris');}
                 continue;
               }
-              const path=t.pathCache?.path||[];if(path.length){const wp=cellWorld(path[0].x,path[0].z),dx=wp.x-t.mesh.position.x,dz=wp.z-t.mesh.position.z,ml=Math.hypot(dx,dz);if(ml<.22){path.shift();}else{const step=st.speed*(t.slowUntil>now?.48:1)*dtSafe;t.mesh.position.x+=dx/ml*step;t.mesh.position.z+=dz/ml*step;t.mesh.rotation.y=Math.atan2(dx,dz);if(jumping)t.jumping=true;}}
+              const path=t.pathCache?.path||[];if(path.length)moveTroopAlongPath(t,path,dtSafe,now);
               else t.thinkClock=0;
               continue;
             }
@@ -1745,13 +1921,12 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
             let target=t.currentTarget;
             if(!target||!target.mesh||(!target.isTownHall&&(target.hp??1)<=0)||(!target.isTownHall&&(!target.mesh.parent||!target.mesh.visible))){target=targetForTroop(t);t.currentTarget=target;t.pathCache=null;}
             if(!target||!target.mesh)continue;
-            const dist=t.mesh.position.distanceTo(target.mesh.position),effectiveRange=attackRangeFor(t,target);
+            const dist=Math.hypot(t.mesh.position.x-target.mesh.position.x,t.mesh.position.z-target.mesh.position.z),effectiveRange=attackRangeFor(t,target);
             if(dist<=effectiveRange+.12){if(t.attackCooldown<=0){t.attackCooldown=t.kind==='wallbreaker'?.78:t.kind==='giant'?.92:t.kind==='hunter'?.66:st.range>1.3?.72:.58;const from=t.mesh.position.clone().add(new THREE.Vector3(0,flying?.9:.65,0));
-                if(st.range>1.3||t.kind==='bomber'||t.kind==='wallbreaker')fireProjectile(from,target,st.color,st.damage,t.kind==='bomber'||t.kind==='wallbreaker'?'bomb':(t.kind==='archer'?'arrow':'troop'),t);else {damageStructure(target,st.damage,st.color,t);spawnBurst(target.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),st.color,t.kind==='giant'?16:7,t.kind==='giant'?'impact':'spark');}
+                if(st.range>1.3||t.kind==='bomber'||t.kind==='wallbreaker')fireProjectile(from,target,st.color,st.damage,t.kind==='bomber'||t.kind==='wallbreaker'?'bomb':(t.kind==='archer'?'arrow':'troop'),t);else {const fromPos=t.mesh.position.clone(),toPos=target.mesh.position.clone();damageStructure(target,st.damage,st.color,t);spawnSlash(fromPos,toPos,st.color);spawnBurst(target.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),st.color,t.kind==='giant'?16:7,t.kind==='giant'?'impact':'spark');}
                 t.mesh.rotation.y=Math.atan2(target.mesh.position.x-t.mesh.position.x,target.mesh.position.z-t.mesh.position.z);if(t.kind==='wallbreaker')spawnBurst(t.mesh.position.clone(),0xf97316,8,'debris');}continue;}
             const route=findAttackPath(t,target);
-            if(route&&route.path.length){t.pathCache=route;const wp=cellWorld(route.path[0].x,route.path[0].z),dx=wp.x-t.mesh.position.x,dz=wp.z-t.mesh.position.z,ml=Math.hypot(dx,dz);
-              if(ml<.24){route.path.shift();}else{const step=st.speed*(t.slowUntil>now?.48:1)*dtSafe;t.mesh.position.x+=dx/ml*step;t.mesh.position.z+=dz/ml*step;t.mesh.rotation.y=Math.atan2(dx,dz);if(jumping)t.jumping=true;}
+            if(route&&route.path.length){t.pathCache=route;moveTroopAlongPath(t,route.path,dtSafe,now);
               const moved=Math.hypot(t.mesh.position.x-(t.lastX??t.mesh.position.x),t.mesh.position.z-(t.lastZ??t.mesh.position.z));
               if(moved<.012)t.stuckTime=(t.stuckTime||0)+dtSafe;else t.stuckTime=0;
               t.lastX=t.mesh.position.x;t.lastZ=t.mesh.position.z;
@@ -1782,12 +1957,13 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
             const dir=targetPos.clone().sub(p.mesh.position),dist=dir.length();p.trailClock-=dtSafe;if(p.trailClock<=0){p.trailClock=.075;spawnBurst(p.mesh.position,p.color,p.kind==='cannon'||p.kind==='bomb'?3:p.kind==='arrow'?1:2,'trail');}
             if(dist<p.speed*dtSafe+.18){if(p.target?.isTownHall||p.target?.layer){damageStructure(p.target,p.damage,p.color,p.source?.kind?p.source:null);if(p.splash||p.kind==='cannon'||p.kind==='bomb')damageArea(targetPos,p.splash||1.65,p.damage*.45,p.color,p.target,p.source?.kind?p.source:null);if(p.kind==='ice'){for(const t of troops)if(!t.dead&&t.mesh.position.distanceTo(targetPos)<1.5)t.slowUntil=now+2100;}}
               else if(p.target?.kind){damageTroop(p.target,p.damage,p.color,p.source?.kind?p.source:null);if(p.splash||p.kind==='cannon'||p.kind==='bomb')damageArea(targetPos,p.splash||1.65,p.damage*.45,p.color,p.target,p.source?.kind?p.source:null);if(p.kind==='ice')p.target.slowUntil=now+2100;}
-              spawnBurst(targetPos,p.color,p.kind==='cannon'?36:p.kind==='ice'?22:18,'impact');scene.remove(p.mesh);projectiles.splice(i,1);
+              if(p.kind==='bomb'||p.kind==='cannon'){const ring=new THREE.Mesh(new THREE.RingGeometry(.25,p.splash||1.5,32),new THREE.MeshBasicMaterial({color:p.color,transparent:true,opacity:.72,side:THREE.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(targetPos.x,.08,targetPos.z);scene.add(ring);particles.push({mesh:ring,life:.32,maxLife:.32,v:new THREE.Vector3(0,0,0),style:'slash'});}spawnBurst(targetPos,p.color,p.kind==='cannon'?36:p.kind==='ice'?22:18,'impact');scene.remove(p.mesh);projectiles.splice(i,1);
             }else{p.mesh.position.add(dir.normalize().multiplyScalar(p.speed*dtSafe));p.mesh.rotation.x+=dtSafe*8;p.mesh.rotation.y+=dtSafe*10;}}
+          for(let i=floatingDamage.length-1;i>=0;i--){const d=floatingDamage[i];d.life-=dtSafe;d.sprite.position.addScaledVector(d.velocity,dtSafe);d.velocity.y-=.8*dtSafe;const a=Math.max(0,d.life/d.maxLife);d.sprite.material.opacity=a;const scale=1+(1-a)*.25;d.sprite.scale.set((d.category==='townhall'?1.3:1)*scale,(d.category==='townhall'?.5:.43)*scale,1);if(d.life<=0){scene.remove(d.sprite);d.texture.dispose();d.sprite.material.dispose();floatingDamage.splice(i,1);}}
           for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dtSafe;p.mesh.position.addScaledVector(p.v,dtSafe);p.v.y-=p.style==='trail'?-.25:5*dtSafe;if(p.style==='trail'){p.mesh.scale.multiplyScalar(.91);p.mesh.material.opacity=Math.max(0,p.life*2.2);}else{p.mesh.scale.multiplyScalar(p.style==='debris'?.975:.93);if(p.mesh.material.opacity!==undefined)p.mesh.material.opacity=Math.max(0,p.life/(p.maxLife||1));}if(p.life<=0){scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();particles.splice(i,1);}}
           // Defensa con perfiles distintos: selección de objetivo, tipo de daño y proyectil.
           if(battleActive&&now-lastBattleTick>65){lastBattleTick=now;for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){const d=state.topGrid[x][z];if(!d||!d.type?.range)continue;d.cooldown=(d.cooldown||0)-.065;if(d.cooldown>0)continue;const type=d.type,range=type.range;
-              let candidates=troops.filter(t=>!t.dead&&d.mesh.position.distanceTo(t.mesh.position)<=range&&((!t.flying&&type.targets!=='air')||(t.flying&&type.targets!=='ground')));
+              let candidates=troops.filter(t=>!t.dead&&(t.flying?Math.hypot(d.mesh.position.x-t.mesh.position.x,d.mesh.position.z-t.mesh.position.z):d.mesh.position.distanceTo(t.mesh.position))<=range&&((!t.flying&&type.targets!=='air')||(t.flying&&type.targets!=='ground')));
               if(!candidates.length)continue;
               candidates.sort((a,b)=>{const score=t=>{let s=d.mesh.position.distanceTo(t.mesh.position);if(type.id==='cannon_turret'||type.id==='mortar_turret')s+=(t.kind==='giant'?-3:0)+(t.flying?999:0);if(type.id==='frost_turret')s+=(t.kind==='jumper'||t.kind==='flyer'?-1.2:0);if(type.id==='purple_turret')s+=(t.flying?-1.4:0);if(type.id==='arrow_turret')s+=(t.hp<type.damage?-.7:0);return s;};return score(a)-score(b);});
               const target=candidates[0];d.cooldown=type.rate||1;const muzzle=d.mesh.position.clone().add(new THREE.Vector3(0,1.05,0));const kind=type.id==='cannon_turret'?'cannon':type.id==='mortar_turret'?'bomb':type.id==='frost_turret'?'ice':type.id==='arrow_turret'?'arrow':'defense';fireProjectile(muzzle,target,type.projectile||0xc084fc,type.damage||13,kind,d);d.mesh.rotation.y=Math.atan2(target.mesh.position.x-d.mesh.position.x,target.mesh.position.z-d.mesh.position.z);d.mesh.userData.firingUntil=now+150;
@@ -1865,6 +2041,8 @@ Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${tr
                 cursorMesh.material.opacity = 0.45 + Math.sin(time) * 0.15;
             }
 
+            // Demolición: encoger, inclinar, desvanecer y retirar la pieza al terminar.
+            for(let i=destructionAnimations.length-1;i>=0;i--){const a=destructionAnimations[i];const t=Math.min(1,(performance.now()-a.started)/a.duration),ease=t*t*(3-2*t);a.mesh.scale.set(a.scale.x*(1-ease*.94),a.scale.y*(1-ease*.94),a.scale.z*(1-ease*.94));a.mesh.position.y=a.origin.y+Math.sin(t*Math.PI)*.22-ease*.28;a.mesh.rotation.z=Math.sin(t*Math.PI)*.16*(i%2?1:-1);a.mesh.rotation.x=Math.sin(t*Math.PI)*.1; a.mesh.traverse(o=>{if(o.isMesh&&o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){m.transparent=true;m.opacity=1-ease;}}});if(t>=1){if(a.mesh.parent)scene.remove(a.mesh);a.callback?.();destructionAnimations.splice(i,1);}}
             // Actualización de animaciones Pop-in de escalado suave al construir
             for (let i = animatedMeshes.length - 1; i >= 0; i--) {
                 const item = animatedMeshes[i];
