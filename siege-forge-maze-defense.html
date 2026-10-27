@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Clash Voxel Builder 3D — v10 Manual Assault</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #020617;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .drawer-horizontal {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ui-animate-fade {
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .btn-shadow {
+            box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.45);
+        }
+        #landscape-prompt { display: none; }
+        .hud-card{background:rgba(15,23,42,.94);border:1px solid rgba(148,163,184,.28);backdrop-filter:blur(14px);box-shadow:0 12px 35px #0007}
+        .game-btn{border:1px solid #ffffff20;transition:transform .16s,filter .16s,background .16s}
+        .game-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+        .game-btn:active{transform:scale(.96)}
+        .mode-pill{padding:8px 12px;border-radius:12px;font-weight:900;font-size:11px;letter-spacing:.04em}
+        .battle-banner{animation:bannerIn .35s cubic-bezier(.2,.8,.2,1)}
+        @keyframes bannerIn{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 #f9731644}50%{box-shadow:0 0 0 8px #f9731600}}
+        .deploy-selected{outline:2px solid #fbbf24;outline-offset:2px;animation:pulseGlow 1.6s infinite}
+        .turret-type-btn{min-width:42px;min-height:42px;border:2px solid #ffffff24;box-shadow:0 3px 10px #0007;transition:transform .16s,box-shadow .16s,border-color .16s}
+        .turret-type-btn.selected-turret{border-color:#fff;box-shadow:0 0 0 3px #fbbf2466,0 0 18px #fff6;transform:translateY(-2px) scale(1.06)}
+        .hit-flash{animation:hitFlash .16s ease-out}@keyframes hitFlash{0%{filter:brightness(2.8)}100%{filter:brightness(1)}}
+        @keyframes battleShake{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}75%{transform:translate(2px,-1px)}}
+        #battle-status{max-width:230px;line-height:1.35} #drawer-desc{white-space:pre-line}
+        #battle-controls{max-height:calc(100vh - 95px);overflow-y:auto;overscroll-behavior:contain}
+        .preset-active{box-shadow:0 0 0 2px #fbbf24 inset;filter:brightness(1.15)}
+        #battle-controls.collapsed #battle-controls-content{display:none}
+        #battle-controls{width:min(244px,calc(100vw - 16px));transition:width .2s ease}
+        #battle-controls.collapsed{width:auto;overflow:visible}
+        #battle-controls.collapsed #btn-collapse-battle-panel{min-width:44px}
+        #troop-inspector{width:min(245px,calc(100vw - 24px));}
+        #battle-result-modal{background:rgba(2,6,23,.78);backdrop-filter:blur(8px)}
+        .result-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid #334155;font-size:12px}
+        .result-damage-track{height:7px;background:#1e293b;border-radius:999px;overflow:hidden;margin-top:6px}
+        .result-damage-fill{height:100%;border-radius:999px;transition:width .55s cubic-bezier(.2,.8,.2,1)}
+        .result-damage-stack{display:flex;height:10px;background:#1e293b;border-radius:999px;overflow:hidden;margin-top:6px;box-shadow:inset 0 0 0 1px #ffffff12}
+        .result-damage-segment{height:100%;min-width:0;transition:width .45s ease}
+        .result-legend{display:flex;flex-wrap:wrap;gap:5px 10px;font-size:9px;color:#cbd5e1}
+        .result-legend-item{display:inline-flex;align-items:center;gap:4px}
+        .result-legend-dot{width:7px;height:7px;border-radius:2px;display:inline-block;flex:none}
+        .deploy-zone-tile{pointer-events:none}
+        .result-row:last-child{border-bottom:0}
+        .result-stat{font-variant-numeric:tabular-nums;color:#f8fafc;font-weight:800}
+        .battle-panel-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(15,23,42,.96);border:1px solid #475569;border-radius:12px;padding:9px 11px;font-size:11px;font-weight:900;box-shadow:0 8px 22px #0006}
+        .ghost-invalid{filter:saturate(.65)}
+        #troop-panel.camera-mode .troop-btn{opacity:.5;filter:saturate(.7);transition:opacity .18s,filter .18s}
+        #troop-panel.camera-mode .troop-btn:hover,#troop-panel.camera-mode .troop-btn:focus{opacity:1;filter:none}
+        .troop-count-badge{display:block;margin:4px auto 0;min-width:28px;padding:2px 7px;border-radius:999px;background:#0f172a;color:#67e8f9;font:900 11px/1.2 system-ui;border:1px solid #155e75}
+        .troop-btn.troop-exhausted{opacity:.32!important;filter:grayscale(1);cursor:not-allowed;transform:none!important}
+        .army-config-row{display:grid;grid-template-columns:1fr 82px;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(15,23,42,.7)}
+        .army-config-row input{width:100%;background:#020617;color:#f8fafc;border:1px solid #475569;border-radius:8px;padding:7px;text-align:center;font-weight:800}
+        #army-config-modal{background:rgba(2,6,23,.82);backdrop-filter:blur(8px)}
+        .army-config-mode{border:1px solid #475569;border-radius:12px;padding:10px;background:#0f172a;color:#e2e8f0;text-align:left}
+        .army-config-mode.active{border-color:#22d3ee;background:rgba(8,145,178,.2)}
+        @media(max-width:800px){#troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} .troop-btn{min-width:76px;padding:7px!important}.turret-type-btn{min-width:38px;min-height:38px}}
+        @media(max-width:800px){#battle-hud{top:56px!important;left:8px!important}#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{right:8px!important;top:56px!important}#gesture-hint{display:none}}
+
+        @media (orientation: portrait) {
+            #landscape-prompt {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-white select-none">
+
+    <!-- Indicador para girar a modo horizontal -->
+    <div id="landscape-prompt" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-3xl mb-4 animate-bounce">
+            <i data-lucide="screen-share" class="w-12 h-12 text-amber-400 rotate-90"></i>
+        </div>
+        <h2 class="text-xl font-black text-amber-300 uppercase tracking-wider mb-2">Modo Horizontal Recomendado</h2>
+        <p class="text-xs text-slate-300 max-w-xs leading-relaxed">Gira tu dispositivo para disfrutar de la experiencia completa en orientación Landscape.</p>
+    </div>
+
+    <!-- Canvas principal 3D -->
+    <div id="canvas-container" class="w-full h-full absolute inset-0"></div>
+
+    <!-- Guía de Gestos Táctiles y Estado -->
+    <div id="gesture-hint" class="absolute top-14 left-3 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 px-3 py-1.5 rounded-xl text-[10px] text-slate-300 flex items-center gap-2 z-10 pointer-events-none ui-animate-fade">
+        <span id="hint-status-tag" class="font-bold text-emerald-400 flex items-center gap-1">
+            <i data-lucide="hammer" class="w-3.5 h-3.5"></i> Modo Pintar:
+        </span>
+        <span id="hint-status-text" class="text-slate-200">Tap / Arrastra para construir inmediatamente.</span>
+    </div>
+
+    <!-- UI Top Bar -->
+    <div class="absolute top-2 left-3 right-3 flex justify-between items-center pointer-events-none z-10">
+        <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 px-3 py-1.5 rounded-2xl shadow-xl pointer-events-auto flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>
+            <div>
+                <h1 class="font-black text-xs tracking-wider text-amber-300 uppercase leading-none">Aldea Voxel 3D</h1>
+                <p class="text-[9px] text-slate-400 font-medium leading-tight">Defiende el Ayuntamiento</p>
+            </div>
+            <span class="text-[9px] bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded-full text-amber-400 font-bold ml-1">32x32</span>
+        </div>
+
+        <!-- Botones de Perspectiva y Utilidades de Cámara -->
+        <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-1 rounded-2xl shadow-xl pointer-events-auto flex items-center gap-1">
+            <button id="btn-view-iso" class="view-btn px-2 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[10px] flex items-center gap-1 transition" title="Vista Isométrica">
+                <i data-lucide="box" class="w-3.5 h-3.5"></i>
+                <span>ISO</span>
+            </button>
+            <button id="btn-view-top" class="view-btn px-2 py-1 rounded-xl hover:bg-slate-800 text-slate-300 font-bold text-[10px] flex items-center gap-1 transition" title="Vista Cenital">
+                <i data-lucide="arrow-down-to-dot" class="w-3.5 h-3.5"></i>
+                <span>TOP</span>
+            </button>
+
+            <div class="w-[1px] h-4 bg-slate-800 mx-1"></div>
+
+            <button id="btn-focus-th" class="p-1.5 rounded-xl hover:bg-slate-800 active:scale-95 transition text-amber-400 flex items-center gap-1 px-2 text-[10px] font-bold" title="Centrar Ayuntamiento">
+                <i data-lucide="castle" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Centrar</span>
+            </button>
+            <button id="btn-clear-all" class="p-1.5 rounded-xl hover:bg-slate-800 active:scale-95 transition text-red-400" title="Vaciar Aldea">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Barra Lateral Izquierda -->
+    <div class="absolute left-3 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-10">
+        <!-- BOTÓN PRINCIPAL: TOGGLE MODO PINTAR vs NAVEGAR -->
+        <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-1.5 rounded-2xl shadow-2xl">
+            <button id="btn-toggle-build-mode" class="p-2 rounded-xl flex flex-col items-center gap-0.5 bg-emerald-500 text-slate-950 font-extrabold shadow-lg transition-all w-16" title="Activar/Desactivar Bloqueo de Cámara">
+                <i id="build-mode-icon" data-lucide="hammer" class="w-5 h-5"></i>
+                <span id="build-mode-label" class="text-[8px] uppercase tracking-wider font-extrabold text-center leading-tight">PINTAR ON</span>
+            </button>
+        </div>
+
+        <!-- HERRAMIENTAS DE CONSTRUCCIÓN (Animadas / Ocultables) -->
+        <div id="build-tools-panel" class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-1.5 rounded-2xl shadow-2xl flex flex-col gap-1.5 ui-animate-fade">
+            <button data-mode="build" class="mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 bg-amber-500 text-slate-950 font-bold shadow-lg transition-all w-16">
+                <i data-lucide="brick-wall" class="w-4 h-4"></i>
+                <span class="text-[8px] uppercase tracking-wider font-extrabold">Muros</span>
+            </button>
+            <button data-mode="top" class="mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16">
+                <i data-lucide="shield-zap" class="w-4 h-4 text-purple-400"></i>
+                <span class="text-[8px] uppercase tracking-wider font-extrabold">Torretas</span>
+            </button>
+            <button data-mode="erase" class="mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16">
+                <i data-lucide="eraser" class="w-4 h-4 text-red-400"></i>
+                <span class="text-[8px] uppercase tracking-wider font-extrabold">Demoler</span>
+            </button>
+            
+            <div class="w-full h-[1px] bg-slate-800 my-0.5"></div>
+
+            <button id="btn-toggle-drag" class="p-2 rounded-xl flex flex-col items-center gap-0.5 bg-cyan-500 text-slate-950 font-bold shadow-lg transition-all w-16" title="Pintar de forma continua al arrastrar">
+                <i data-lucide="paint-brush-broad" class="w-4 h-4"></i>
+                <span class="text-[7px] uppercase tracking-wider font-extrabold leading-tight text-center">Trazo Drag</span>
+            </button>
+            <button id="btn-toggle-snap" class="p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16" title="Bloquear trazo en línea recta (1 Eje)">
+                <i data-lucide="ruler" class="w-4 h-4 text-emerald-400"></i>
+                <span class="text-[7px] uppercase tracking-wider font-extrabold leading-tight text-center">Recta Snap</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Panel Inferior (Pinceles + Paleta) (Animado / Ocultable en Modo Cámara) -->
+    <div id="bottom-controls" class="absolute bottom-2 left-20 right-20 max-w-3xl mx-auto bg-slate-900/95 backdrop-blur-md border border-slate-700/60 p-2 rounded-2xl shadow-2xl z-10 flex items-center justify-between gap-3 ui-animate-fade">
+        <!-- Pinceles -->
+        <div class="flex items-center gap-2 border-r border-slate-800 pr-3">
+            <div class="flex items-center gap-1">
+                <i data-lucide="paint-bucket" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span id="brush-size-label" class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/60 border border-amber-800/60 px-1.5 py-0.5 rounded-md">1x1</span>
+            </div>
+
+            <div class="flex gap-1" id="brush-presets">
+                <button data-w="1" data-h="1" class="brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-500 text-slate-950">1x1</button>
+                <button data-w="1" data-h="2" class="brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">1x2</button>
+                <button data-w="1" data-h="4" class="brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">1x4</button>
+                <button data-w="2" data-h="2" class="brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">2x2</button>
+                <button data-w="3" data-h="3" class="brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700">3x3</button>
+                <button id="btn-custom-brush" class="px-1.5 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center gap-0.5" title="Personalizar Pincel">
+                    <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Paleta de Muros/Materiales -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1" id="color-palette"></div>
+    </div>
+
+    <!-- Panel Emergente Pincel Personalizado -->
+    <div id="custom-brush-panel" class="hidden absolute bottom-14 left-20 bg-slate-900/95 border border-slate-700/80 p-3 rounded-2xl shadow-2xl z-20 flex-col gap-2 w-64 text-xs backdrop-blur-md">
+        <div class="flex items-center justify-between">
+            <span class="text-slate-300 font-medium text-[11px]">Ancho (X):</span>
+            <input type="range" id="brush-width-slider" min="1" max="8" value="1" class="w-28 accent-amber-500 cursor-pointer">
+            <span id="brush-width-val" class="font-mono text-amber-400 font-bold w-4 text-right">1</span>
+        </div>
+        <div class="flex items-center justify-between">
+            <span class="text-slate-300 font-medium text-[11px]">Largo (Z):</span>
+            <input type="range" id="brush-height-slider" min="1" max="8" value="1" class="w-28 accent-amber-500 cursor-pointer">
+            <span id="brush-height-val" class="font-mono text-amber-400 font-bold w-4 text-right">1</span>
+        </div>
+    </div>
+
+    <!-- Botón Flotante de Acción -->
+    <div id="action-bar" class="absolute right-3 bottom-3 z-20 ui-animate-fade">
+        <button id="btn-apply-action" class="btn-shadow bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-black px-4 py-3 rounded-2xl flex items-center gap-2 active:scale-95 transition text-xs tracking-wider uppercase border border-emerald-300/40">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+            <span id="action-btn-text">COLOCAR MURO</span>
+        </button>
+    </div>
+
+    <!-- Drawer de Información de Estructuras -->
+    <div id="block-drawer" class="drawer-horizontal fixed top-12 bottom-12 right-3 w-72 bg-slate-900/95 border border-slate-700/80 p-4 rounded-3xl shadow-2xl z-30 translate-x-[110%] flex flex-col justify-between backdrop-blur-md">
+        <div>
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <span id="drawer-tag" class="text-[9px] font-bold tracking-widest uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-md">Muro Defensivo</span>
+                    <h3 id="drawer-title" class="text-base font-black text-white mt-1 leading-snug">Muro de Piedra</h3>
+                </div>
+                <button id="close-drawer" class="p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-1.5 text-xs text-slate-300 mt-3">
+                <div class="flex justify-between border-b border-slate-800 pb-1">
+                    <span class="text-slate-400">Coordenadas:</span>
+                    <span id="drawer-coords" class="font-mono font-bold text-amber-400">X: 16, Z: 16</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-800 pb-1">
+                    <span class="text-slate-400">Nivel / Estado:</span>
+                    <span id="drawer-layer" class="font-mono font-semibold text-emerald-400">Nivel 1</span>
+                </div>
+                <div class="pt-1">
+                    <span class="text-slate-400 block mb-1 font-semibold text-[10px] uppercase">Estrategia táctica:</span>
+                    <p id="drawer-desc" class="text-[11px] leading-relaxed text-slate-300 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+                        Resistente estructura diseñada para desviar tropas enemigas.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <button id="drawer-upgrade-btn" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-lg border border-amber-300/40">
+                <i data-lucide="arrow-up-circle" class="w-4 h-4"></i>
+                <span id="drawer-upgrade-text">MEJORAR A NIVEL 2</span>
+            </button>
+            <button id="drawer-action-btn" class="w-full py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Demoler esta pieza</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modo ataque: interfaz de batalla -->
+    <div class="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex gap-2 pointer-events-auto">
+      <button id="btn-mode-build" class="mode-pill game-btn bg-emerald-500 text-slate-950">🏗️ CONSTRUIR</button>
+      <button id="btn-mode-attack" class="mode-pill game-btn bg-slate-800 text-white">⚔️ PROBAR DEFENSA</button>
+    </div>
+    <div id="battle-hud" class="hidden absolute top-16 left-3 z-20 hud-card rounded-2xl px-4 py-3 min-w-44 battle-banner">
+      <div class="flex items-center justify-between gap-4"><span class="text-[10px] uppercase tracking-widest font-black text-orange-300">Incursión en curso</span><span id="battle-clock" class="font-mono font-black text-white">01:30</span></div>
+      <div class="mt-2 h-2 w-44 bg-slate-700 rounded-full overflow-hidden"><div id="townhall-health" class="h-full bg-emerald-400 transition-all" style="width:100%"></div></div>
+      <div class="flex justify-between mt-1 text-[10px] text-slate-300"><span>Ayuntamiento</span><span id="health-label">100%</span></div>
+      <div id="battle-status" class="text-[11px] text-slate-300 mt-2">Elige una tropa y toca el terreno azul para desplegarla.</div><div class="text-[9px] text-cyan-300 mt-1">▰ Zona azul: despliegue permitido</div>
+    </div>
+    <div id="battle-controls" class="hidden absolute top-16 right-3 z-20 flex flex-col gap-2">
+      <button id="btn-collapse-battle-panel" class="battle-panel-toggle" aria-expanded="true"><span>⚙️ Controles de incursión</span><span id="battle-panel-chevron">▾</span></button>
+      <div id="battle-controls-content" class="flex flex-col gap-2">
+      <button id="btn-start-attack" class="game-btn rounded-xl px-4 py-3 bg-orange-500 text-slate-950 text-xs font-black shadow-xl">▶ INICIAR OLEADA</button>
+      <div class="hud-card rounded-xl p-2 flex flex-col gap-1">
+        <div class="text-[9px] uppercase tracking-widest text-slate-400 font-black">Aldeas de prueba</div>
+        <button id="preset-village-balanced" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🏘️ Aldea equilibrada</button>
+        <button id="preset-village-maze" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🧱 Aldea laberinto</button>
+        <button id="preset-village-air" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🪽 Defensa antiaérea</button>
+        <button id="btn-open-army-config" class="game-btn rounded-lg px-3 py-2 bg-cyan-700 text-white text-[10px] font-black">🧩 CONFIGURAR MI EJÉRCITO</button><div class="text-[9px] uppercase tracking-widest text-slate-400 font-black mt-1">Ejércitos de prueba</div>
+        <button id="preset-army-balanced" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">⚔️ Ejército mixto</button>
+        <button id="preset-army-wall" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">🧨 Asalto a muros</button>
+        <button id="preset-army-air" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">🪽 Escuadrón aéreo</button>
+        <button id="preset-army-manual" class="game-btn rounded-lg px-3 py-2 bg-cyan-800 text-white text-[10px] font-bold">🎮 Sin ejército automático · Desplegar yo</button>
+        <div class="px-2 py-1 text-[9px] leading-snug text-cyan-200">Zona azul = zona de despliegue. Se amplía al destruir muros y defensas.</div>
+      </div>
+      <div class="hud-card rounded-xl p-2 flex flex-col gap-1">
+        <div class="text-[9px] uppercase tracking-widest text-slate-400 font-black">Depuración en partida</div>
+        <button id="btn-toggle-routes" aria-pressed="false" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🧭 Rutas: OFF</button>
+        <button id="btn-toggle-unit-labels" aria-pressed="false" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🏷️ Indicadores: OFF</button>
+        <div class="text-[9px] text-slate-400 leading-tight">Muestra el camino, el objetivo y el estado de cada tropa. Puedes activar cada capa por separado.</div>
+      </div>
+      <button id="btn-end-attack" class="game-btn rounded-xl px-4 py-2 bg-slate-800 text-white text-xs font-bold">↩ VOLVER AL EDITOR</button>
+      </div>
+    </div>
+    <div id="troop-inspector" class="hidden absolute left-3 bottom-24 z-30 hud-card rounded-2xl p-3">
+      <div class="flex items-start justify-between gap-3"><div><div id="troop-inspector-title" class="font-black text-sm">Tropa seleccionada</div><div id="troop-inspector-subtitle" class="text-[10px] text-slate-300 mt-1"></div></div><button id="btn-close-troop-inspector" class="rounded-lg bg-slate-700 px-2 py-1 text-xs">✕</button></div>
+      <div class="h-2 bg-slate-700 rounded-full overflow-hidden mt-3"><div id="troop-inspector-hp" class="h-full bg-emerald-400" style="width:100%"></div></div>
+      <div id="troop-inspector-details" class="text-[10px] text-slate-300 mt-2 leading-relaxed"></div>
+    </div>
+    <div id="army-config-modal" class="hidden fixed inset-0 z-[90] items-center justify-center p-3"><div class="hud-card rounded-3xl w-full max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-5 border border-cyan-500/40"><div class="flex items-start justify-between gap-3"><div><div class="text-[10px] uppercase tracking-widest text-cyan-300 font-black">Preparación de incursión</div><h2 class="text-xl font-black mt-1">Configura tu ejército</h2><p class="text-xs text-slate-400 mt-1">En modo limitado, cada despliegue consume una unidad.</p></div><button id="btn-army-config-close" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">✕</button></div><div class="grid grid-cols-2 gap-2 mt-4"><button id="army-config-limited" class="army-config-mode active"><div class="font-black text-sm">🎒 Ejército limitado</div><div class="text-[10px] text-slate-400 mt-1">Límites por unidad</div></button><button id="army-config-infinite" class="army-config-mode"><div class="font-black text-sm">♾️ Despliegue infinito</div><div class="text-[10px] text-slate-400 mt-1">Sin límite de unidades</div></button></div><div id="army-config-limited-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+<label class="army-config-row"><span>🪓 Bárbaros</span><input data-army-count="barbarian" type="number" min="0" max="40" value="8" /></label>
+<label class="army-config-row"><span>🏹 Arqueras</span><input data-army-count="archer" type="number" min="0" max="40" value="10" /></label>
+<label class="army-config-row"><span>🛡️ Gigantes</span><input data-army-count="giant" type="number" min="0" max="20" value="4" /></label>
+<label class="army-config-row"><span>💣 Bombarderos</span><input data-army-count="bomber" type="number" min="0" max="20" value="3" /></label>
+<label class="army-config-row"><span>🎯 Cazatorres</span><input data-army-count="hunter" type="number" min="0" max="20" value="3" /></label>
+<label class="army-config-row"><span>🧨 Rompemuros</span><input data-army-count="wallbreaker" type="number" min="0" max="20" value="4" /></label>
+<label class="army-config-row"><span>🦘 Saltamuros</span><input data-army-count="jumper" type="number" min="0" max="20" value="2" /></label>
+<label class="army-config-row"><span>🪽 Voladores</span><input data-army-count="flyer" type="number" min="0" max="20" value="2" /></label>
+</div><div class="flex items-center justify-between gap-3 mt-4"><div class="text-xs text-slate-300">Total: <b id="army-config-total" class="text-cyan-300">36</b></div><button id="btn-army-config-save" class="game-btn rounded-xl bg-cyan-500 text-slate-950 font-black px-5 py-3 text-xs">GUARDAR EJÉRCITO</button></div></div></div>
+    <div id="battle-result-modal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
+      <div class="hud-card rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 border border-slate-500/50">
+        <div id="result-icon" class="text-4xl text-center">🏆</div><h2 id="result-title" class="text-2xl font-black text-center mt-2">Resultado de la incursión</h2><p id="result-subtitle" class="text-sm text-slate-300 text-center mt-1"></p>
+        <div class="grid grid-cols-3 gap-2 mt-5"><div class="rounded-xl bg-slate-950/70 p-3 text-center"><div class="text-[9px] text-slate-400 uppercase font-black">Destrucción</div><div id="result-destruction" class="text-xl font-black">0%</div></div><div class="rounded-xl bg-slate-950/70 p-3 text-center"><div class="text-[9px] text-slate-400 uppercase font-black">Daño causado</div><div id="result-damage" class="text-xl font-black">0</div></div><div class="rounded-xl bg-slate-950/70 p-3 text-center"><div class="text-[9px] text-slate-400 uppercase font-black">Supervivientes</div><div id="result-survivors" class="text-xl font-black">0</div></div></div>
+        <div class="mt-5"><div class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2">Daño por tipo de unidad</div><div class="text-[9px] text-slate-400 mb-2">Cada barra se divide por tipo de estructura dañada; los porcentajes muestran cómo repartió su daño cada unidad.</div><div id="result-damage-legend" class="result-legend mb-3"><span class="result-legend-item"><i class="result-legend-dot" style="background:#f59e0b"></i>Muros</span><span class="result-legend-item"><i class="result-legend-dot" style="background:#ef4444"></i>Torretas</span><span class="result-legend-item"><i class="result-legend-dot" style="background:#a78bfa"></i>Ayuntamiento</span><span class="result-legend-item"><i class="result-legend-dot" style="background:#22c55e"></i>Otros edificios</span></div><div id="result-unit-stats" class="rounded-xl overflow-hidden bg-slate-950/60"></div></div>
+        <div class="flex gap-2 mt-5"><button id="btn-result-retry" class="game-btn flex-1 rounded-xl bg-orange-500 text-slate-950 font-black py-3 text-xs">↻ REPETIR INCURSIÓN</button><button id="btn-result-close" class="game-btn flex-1 rounded-xl bg-slate-700 text-white font-black py-3 text-xs">CERRAR</button></div>
+      </div>
+    </div>
+    <div id="troop-panel" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 hud-card rounded-2xl p-2 flex gap-1 items-stretch" style="max-width:calc(100vw - 12px);overflow-x:auto;touch-action:pan-x">
+      <button data-troop="barbarian" class="troop-btn deploy-selected game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🪓</div><div class="text-[10px] font-black">Bárbaro</div><div class="text-[9px] text-slate-400">Equilibrado</div></button>
+      <button data-troop="archer" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🏹</div><div class="text-[10px] font-black">Arquera</div><div class="text-[9px] text-slate-400">A distancia</div></button>
+      <button data-troop="giant" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🛡️</div><div class="text-[10px] font-black">Gigante</div><div class="text-[9px] text-slate-400">Caza defensas</div></button>
+      <button data-troop="bomber" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">💣</div><div class="text-[10px] font-black">Bombardero</div><div class="text-[9px] text-slate-400">Revienta muros</div></button>
+      <button data-troop="hunter" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🎯</div><div class="text-[10px] font-black">Cazatorres</div><div class="text-[9px] text-slate-400">Prioriza torretas</div></button>
+      <button data-troop="wallbreaker" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🧨</div><div class="text-[10px] font-black">Rompemuros</div><div class="text-[9px] text-slate-400">Daño a muros</div></button>
+      <button data-troop="jumper" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🦘</div><div class="text-[10px] font-black">Saltamuros</div><div class="text-[9px] text-slate-400">Salta barreras</div></button>
+      <button data-troop="flyer" class="troop-btn game-btn rounded-xl bg-slate-800 px-2 py-2 text-center"><div class="text-xl">🪽</div><div class="text-[10px] font-black">Volador</div><div class="text-[9px] text-slate-400">Ignora muros</div></button>
+      <button id="btn-gesture-mode" class="game-btn rounded-xl bg-indigo-600 px-2 py-2 text-center min-w-16"><div class="text-xl">☝️</div><div class="text-[10px] font-black">Desplegar</div><div class="text-[9px] text-indigo-100">Tocar y arrastrar</div></button>
+    </div>
+
+    <script>
+        // Inicializar iconos Lucide
+        lucide.createIcons();
+
+        // Constantes de Cuadrícula
+        const GRID_SIZE = 32;
+
+        // Capa 1: Muros y Cimientos
+        const BLOCK_TYPES = [
+            { id: 'stone_wall', name: 'Muro de Piedra', color: 0x64748b, hex: '#64748b', desc: 'Muro estándar reforzado para crear laberintos defensivos.' },
+            { id: 'wood_wall', name: 'Palizada de Madera', color: 0xb45309, hex: '#b45309', desc: 'Barrera económica para frenar invasiones ligeras.' },
+            { id: 'obsidian_wall', name: 'Muro Obsidiana', color: 0x1e293b, hex: '#1e293b', desc: 'Bloque súper denso de alta durabilidad contra explosivos.' },
+            { id: 'gold_vault', name: 'Cimiento Dorado', color: 0xeab308, hex: '#eab308', desc: 'Bloque reforzado de oro para proteger sectores clave.' },
+            { id: 'spikes', name: 'Foso / Trampa', color: 0xef4444, hex: '#ef4444', desc: 'Sector de emboscada para ralentizar la tropa rival.' },
+            { id: 'grass', name: 'Camino / Césped', color: 0x22c55e, hex: '#22c55e', desc: 'Aparcamiento o decoración dentro de los muros.' }
+        ];
+
+        // Capa 2: Torretas Defensivas
+        const TURRET_TYPES = [
+          { id:'purple_turret', name:'Torreta Arcana', color:0x9333ea, hex:'#9333ea', desc:'Orbes mágicos de daño equilibrado; puede atacar unidades terrestres y aéreas.', damage:15, range:7.2, rate:0.92, projectile:0xc084fc, targets:'all' },
+          { id:'cannon_turret', name:'Cañón de Asedio', color:0xf97316, hex:'#f97316', desc:'Disparo pesado con daño en área; excelente contra tropas robustas, no alcanza objetivos aéreos.', damage:31, range:6.2, rate:1.55, projectile:0xfb923c, targets:'ground', splash:1.55 },
+          { id:'frost_turret', name:'Torreta de Hielo', color:0x38bdf8, hex:'#38bdf8', desc:'Cristales que ralentizan brevemente a las unidades alcanzadas.', damage:9, range:8.2, rate:1.18, projectile:0x7dd3fc, targets:'all', slow:2.1 },
+          { id:'arrow_turret', name:'Torreta de Flechas', color:0x84cc16, hex:'#84cc16', desc:'Cadencia alta y proyectiles rápidos; daño moderado a un solo objetivo.', damage:8, range:8.0, rate:0.34, projectile:0xd9f99d, targets:'all', projectileSpeed:23 },
+          { id:'mortar_turret', name:'Mortero', color:0xef4444, hex:'#ef4444', desc:'Lanza proyectiles explosivos de largo alcance y daño en área; no ataca unidades voladoras.', damage:27, range:9.0, rate:2.35, projectile:0xfca5a5, targets:'ground', splash:2.0, projectileSpeed:8.2 }
+        ];
+        let selectedTurretType = TURRET_TYPES[0];
+        const TURRET_BLOCK_TYPE = TURRET_TYPES[0];
+
+        // Ayuntamiento Central (Town Hall)
+        const TOWN_HALL_TYPE = {
+            id: 'town_hall',
+            name: 'Núcleo / Ayuntamiento',
+            color: 0xf59e0b,
+            hex: '#f59e0b',
+            desc: 'El corazón de tu aldea. Protégelo construyendo murallas y torretas moradas a su alrededor.'
+        };
+
+        // Estado Global de la Aplicación
+        const state = {
+            isBuildModeActive: true, 
+            mode: 'build', // 'build', 'top', 'erase'
+            dragBuildEnabled: true,
+            snapStraightEnabled: false,
+            brushWidth: 1,
+            brushHeight: 1,
+            selectedBlockType: BLOCK_TYPES[0],
+            grid: Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null)),
+            topGrid: Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null)),
+            selectedCell: { x: 16, z: 16 },
+            gameMode: 'build'
+        };
+
+        // Variables Three.js
+        let scene, camera, renderer;
+        let planeGrid, cursorMesh, townHallMesh;
+        let raycaster, mouse;
+        const animatedMeshes = [];
+        let rangeRing=null, rangeRingOwner=null, rangeRingMode='hidden';
+        const troops = [], projectiles = [], particles = [];
+        let battleActive = false, battleStarted = false, battleTime = 90, townHallHP = 1000, selectedTroop = 'barbarian', lastBattleTick = 0;
+        const troopStats = {barbarian:{name:'Bárbaro',hp:115,speed:2.8,damage:18,range:1.0,radius:.29,color:0xef4444,role:'nearest'},archer:{name:'Arquera',hp:68,speed:2.35,damage:13,range:5.4,radius:.25,color:0x22c55e,role:'nearest',projectile:'arrow'},giant:{name:'Gigante',hp:390,speed:1.35,damage:34,range:1.1,radius:.48,color:0x3b82f6,role:'defense'},bomber:{name:'Bombardero',hp:85,speed:2.05,damage:40,range:4.0,radius:.29,color:0xf59e0b,role:'nearest',splash:1.2,projectile:'bomb'},hunter:{name:'Cazatorres',hp:95,speed:2.45,damage:27,range:1.15,radius:.29,color:0xc084fc,role:'defense'},wallbreaker:{name:'Rompemuros',hp:55,speed:3.0,damage:115,range:0.85,radius:.23,color:0xf97316,role:'wall'},jumper:{name:'Saltamuros',hp:130,speed:2.7,damage:19,range:1.0,radius:.30,color:0x06b6d4,role:'defense',jump:true},flyer:{name:'Volador',hp:90,speed:3.0,damage:16,range:1.1,radius:.31,color:0xe879f9,role:'defense',flying:true}};
+        let attackGestureMode='deploy',lastDeployCell='',lastDeployAt=0;
+        let nextUnitId=1;
+        let battleStats={damageByKind:{},damageByStructureByKind:{},killsByKind:{},deployedByKind:{},damageTotal:0,structuresDestroyed:0};
+        let deploymentGhost=null, deploymentGhostKind=null, selectedTroopInspect=null, troopInspectRing=null, deploymentGhostDirty=true, deploymentGhostLastAt=0;
+        let battleFinishShown=false, battleInitialStructureCount=1;
+        let selectedArmyPreset='balanced';
+        let autoDeployArmy=true;
+        let armyConfigEnabled=false;
+        let infiniteDeployMode=true;
+        let configuredArmyCounts={barbarian:8,archer:10,giant:4,bomber:3,hunter:3,wallbreaker:4,jumper:2,flyer:2};
+        let remainingArmyCounts={};
+        let structureRevision=0;
+        const deploymentBreaches=new Set();
+        const deploymentZoneMeshes=new Map();
+        let deploymentZoneRevision=-1, deploymentZoneBreachCount=-1;
+
+
+        // Control de Cámara
+        let cameraAngleX = Math.PI / 4;
+        let cameraAngleY = Math.PI / 4;
+        let cameraDistance = 18;
+        let cameraTarget = new THREE.Vector3(0, 0, 0);
+
+        // Control Táctil
+        let isPointerDown = false;
+        let pointerDownTime = 0;
+        let activeTouchCount = 0;
+        let touchStartPos = { x: 0, y: 0 };
+        let touchLastPos = { x: 0, y: 0 };
+        let secondTouchLastPos = { x: 0, y: 0 };
+        let initialPinchDistance = 0;
+        let initialCameraDistance = 18;
+        let strokeStartCell = null;
+        let strokeLockedAxis = null;
+        let lastTapTime = 0;
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Escena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020617);
+
+            // 2. Cámara Ortográfica
+            const aspect = window.innerWidth / window.innerHeight;
+            const d = cameraDistance;
+            camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 1000);
+            updateCameraPosition();
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // 4. Luces
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xfff5ea, 0.95);
+            dirLight.position.set(25, 45, 20);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 150;
+            const dSize = 30;
+            dirLight.shadow.camera.left = -dSize;
+            dirLight.shadow.camera.right = dSize;
+            dirLight.shadow.camera.top = dSize;
+            dirLight.shadow.camera.bottom = -dSize;
+            scene.add(dirLight);
+
+            const hemiLight = new THREE.HemisphereLight(0x38bdf8, 0x0f172a, 0.4);
+            scene.add(hemiLight);
+
+            // 5. Entorno y Grilla
+            createEnvironment();
+
+            // 6. Cursor 3D de Selección
+            createCursorMesh();
+
+            // 7. Ayuntamiento Central
+            createTownHall();
+
+            // 8. Eventos y Controles
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            setupEvents();
+            setupUI();
+
+            // Bucle Principal
+            animate();
+        }
+
+        function createEnvironment() {
+            const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, 0x3b82f6, 0x1e293b);
+            gridHelper.position.y = -0.01;
+            scene.add(gridHelper);
+
+            const geo = new THREE.PlaneGeometry(GRID_SIZE, GRID_SIZE);
+            geo.rotateX(-Math.PI / 2);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x0f2e1b, roughness: 0.9 });
+            const ground = new THREE.Mesh(geo, mat);
+            ground.position.y = -0.05;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            planeGrid = ground;
+        }
+
+        function createTownHall() {
+            const group = new THREE.Group();
+
+            const baseGeo = new THREE.BoxGeometry(2.4, 1.4, 2.4);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0.7;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            group.add(base);
+
+            const roofGeo = new THREE.BoxGeometry(2.7, 0.5, 2.7);
+            const roofMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.4 });
+            const roof = new THREE.Mesh(roofGeo, roofMat);
+            roof.position.y = 1.6;
+            roof.castShadow = true;
+            group.add(roof);
+
+            const coreGeo = new THREE.OctahedronGeometry(0.65);
+            const coreMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xb45309, roughness: 0.1 });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.position.y = 2.4;
+            group.add(core);
+
+            group.position.set(0, 0, 0);
+            scene.add(group);
+            townHallMesh = group;
+            attachHealthBar(group, 1000, 3.25, true);
+
+            const center = GRID_SIZE / 2;
+            const thData = { mesh: group, type: TOWN_HALL_TYPE, x: center, z: center, layer: 1, isTownHall: true, level: 1 };
+            
+            state.grid[center - 1][center - 1] = thData;
+            state.grid[center][center - 1] = thData;
+            state.grid[center - 1][center] = thData;
+            state.grid[center][center] = thData;
+        }
+
+        function createCursorMesh() {
+            const geo = new THREE.BoxGeometry(1.02, 1.15, 1.02);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0x22c55e,
+                transparent: true,
+                opacity: 0.55,
+                roughness: 0.2
+            });
+            cursorMesh = new THREE.Mesh(geo, mat);
+            scene.add(cursorMesh);
+            updateCursorGeometry();
+        }
+
+        function updateCursorGeometry() {
+            const w = state.brushWidth;
+            const h = state.brushHeight;
+            cursorMesh.scale.set(w, 1, h);
+            updateCursorPosition();
+        }
+
+        // VALIDACIÓN DINÁMICA DE CONSTRUCCIÓN: Verde si es válido, Rojo si es inválido
+        function checkPlacementValidity(x, z) {
+            const w = state.brushWidth;
+            const h = state.brushHeight;
+
+            for (let dx = 0; dx < w; dx++) {
+                for (let dz = 0; dz < h; dz++) {
+                    const cx = x + dx;
+                    const cz = z + dz;
+                    if (cx < 0 || cx >= GRID_SIZE || cz < 0 || cz >= GRID_SIZE) return false;
+
+                    // Prohibido sobre el Ayuntamiento
+                    if (isCellTownHall(cx, cz)) return false;
+
+                    if (state.mode === 'build') {
+                        // Válido siempre que no sea ayuntamiento
+                    } else if (state.mode === 'top') {
+                        // OBLIGATORIO: Debe haber un muro debajo en la capa 1
+                        if (!state.grid[cx][cz]) return false;
+                    } else if (state.mode === 'erase') {
+                        // Debe haber algo que borrar
+                        if (!state.grid[cx][cz] && !state.topGrid[cx][cz]) return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function updateCursorPosition() {
+            const { x, z } = state.selectedCell;
+            const w = state.brushWidth;
+            const h = state.brushHeight;
+
+            const posX = (x + w / 2) - GRID_SIZE / 2;
+            const posZ = (z + h / 2) - GRID_SIZE / 2;
+
+            let posY = 0.55;
+            if (state.mode === 'top') {
+                posY = 1.6;
+            } else if (state.mode === 'erase') {
+                if (state.topGrid[x] && state.topGrid[x][z]) {
+                    posY = 1.6;
+                }
+            }
+
+            cursorMesh.position.set(posX, posY, posZ);
+            updateRangePreview();
+
+            // COLOR VERDE vs ROJO según la validez táctica
+            const isValid = checkPlacementValidity(x, z);
+            if (!isValid) {
+                cursorMesh.material.color.setHex(0xef4444); // Rojo alerta
+            } else {
+                if (state.mode === 'top') {
+                    cursorMesh.material.color.setHex(0xa855f7); // Morado
+                } else if (state.mode === 'erase') {
+                    cursorMesh.material.color.setHex(0xf97316); // Naranja demolición
+                } else {
+                    cursorMesh.material.color.setHex(0x22c55e); // Verde construible
+                }
+            }
+        }
+
+        function updateCameraPosition() {
+            const x = cameraTarget.x + cameraDistance * Math.cos(cameraAngleY) * Math.sin(cameraAngleX);
+            const y = cameraTarget.y + cameraDistance * Math.sin(cameraAngleY);
+            const z = cameraTarget.z + cameraDistance * Math.cos(cameraAngleY) * Math.cos(cameraAngleX);
+
+            camera.position.set(x, y, z);
+            camera.lookAt(cameraTarget);
+
+            const aspect = window.innerWidth / window.innerHeight;
+            const d = cameraDistance;
+            camera.left = -d * aspect;
+            camera.right = d * aspect;
+            camera.top = d;
+            camera.bottom = -d;
+            camera.updateProjectionMatrix();
+        }
+
+        function setupEvents() {
+            const dom = renderer.domElement;
+
+            window.addEventListener('resize', onWindowResize);
+
+            dom.addEventListener('pointerdown', onPointerDown);
+            dom.addEventListener('pointermove', onPointerMove);
+            dom.addEventListener('pointerup', onPointerUp);
+            dom.addEventListener('wheel', onWheel, { passive: false });
+
+            dom.addEventListener('touchstart', onTouchStart, { passive: false });
+            dom.addEventListener('touchmove', onTouchMove, { passive: false });
+            dom.addEventListener('touchend', onTouchEnd);
+        }
+
+        function onWindowResize() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateCameraPosition();
+        }
+
+        function onPointerDown(e) {
+            if (e.pointerType === 'touch') return;
+            isPointerDown = true;
+            pointerDownTime = Date.now();
+            touchStartPos = { x: e.clientX, y: e.clientY };
+            touchLastPos = { x: e.clientX, y: e.clientY };
+            strokeLockedAxis = null;
+            
+            updateMousePos(e.clientX, e.clientY);
+            highlightCellUnderPointer(true); // Bloquear casilla inicial al presionar
+            strokeStartCell = { ...state.selectedCell };
+
+            if (state.isBuildModeActive) {
+                applyCurrentAction();
+            }
+        }
+
+        function onPointerMove(e) {
+            if (e.pointerType === 'touch') return;
+            updateMousePos(e.clientX, e.clientY);
+
+            if(state.gameMode==='attack'&&battleActive){
+                if(isPointerDown){const dx=e.clientX-touchLastPos.x,dy=e.clientY-touchLastPos.y;if(attackGestureMode==='deploy')deployAtScreen(e.clientX,e.clientY);else{cameraAngleX-=dx*.005;cameraAngleY+=dy*.005;cameraAngleY=Math.max(.12,Math.min(Math.PI/2-.05,cameraAngleY));updateCameraPosition();}touchLastPos={x:e.clientX,y:e.clientY};}
+                updateDeploymentGhost();return;
+            }
+            if (isPointerDown) {
+                const dx = e.clientX - touchLastPos.x;
+                const dy = e.clientY - touchLastPos.y;
+
+                if (state.isBuildModeActive) {
+                    highlightCellUnderPointer(false);
+                    if (state.dragBuildEnabled) {
+                        applyCurrentAction();
+                    }
+                } else {
+                    cameraAngleX -= dx * 0.005;
+                    cameraAngleY += dy * 0.005;
+                    cameraAngleY = Math.max(0.12, Math.min(Math.PI / 2 - 0.05, cameraAngleY));
+                    updateCameraPosition();
+                }
+                touchLastPos = { x: e.clientX, y: e.clientY };
+            } else {
+                highlightCellUnderPointer(false);
+            }
+        }
+
+        function onPointerUp(e) {
+            if (e.pointerType === 'touch') return;
+            const duration = Date.now() - pointerDownTime;
+            const distMoved = Math.hypot(e.clientX-touchStartPos.x,e.clientY-touchStartPos.y);
+            if(state.gameMode==='attack'){
+              if(attackGestureMode==='camera'&&battleActive&&distMoved<8&&duration<450){updateMousePos(e.clientX,e.clientY);selectTroopAtScreen(e.clientX,e.clientY);}
+              isPointerDown=false;strokeLockedAxis=null;return;
+            }
+            const now = Date.now();
+            if (distMoved < 6 && now - lastTapTime < 300) {
+                applyCurrentAction();
+            }
+            lastTapTime = now;
+
+            if (!state.isBuildModeActive && distMoved < 6 && duration < 300) {
+                handleTapSelectionOrAction();
+            }
+
+            isPointerDown = false;
+            strokeLockedAxis = null;
+        }
+
+        function onWheel(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 1.5 : -1.5;
+            cameraDistance = Math.max(4, Math.min(65, cameraDistance + delta));
+            updateCameraPosition();
+        }
+
+        function onTouchStart(e) {
+            activeTouchCount = e.touches.length;
+            if(state.gameMode==='attack' && battleActive && e.touches.length===1 && attackGestureMode==='deploy') { e.preventDefault(); isPointerDown=true; const t=e.touches[0]; touchLastPos={x:t.clientX,y:t.clientY}; updateMousePos(t.clientX,t.clientY); deployAtScreen(t.clientX,t.clientY); return; }
+            if (activeTouchCount === 1) {
+                isPointerDown = true;
+                pointerDownTime = Date.now();
+                touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                touchLastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                strokeLockedAxis = null;
+                
+                updateMousePos(e.touches[0].clientX, e.touches[0].clientY);
+                highlightCellUnderPointer(true);
+                strokeStartCell = { ...state.selectedCell };
+
+                if (state.isBuildModeActive) {
+                    applyCurrentAction();
+                }
+            } else if (activeTouchCount === 2) {
+                isPointerDown = false;
+                touchLastPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                secondTouchLastPos = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                initialPinchDistance = Math.hypot(dx, dy);
+                initialCameraDistance = cameraDistance;
+            }
+        }
+
+        function onTouchMove(e) {
+            activeTouchCount = e.touches.length;
+            if(state.gameMode==='attack' && battleActive && e.touches.length===1 && isPointerDown && attackGestureMode==='deploy') { e.preventDefault(); const t=e.touches[0]; updateMousePos(t.clientX,t.clientY); deployAtScreen(t.clientX,t.clientY); touchLastPos={x:t.clientX,y:t.clientY}; return; }
+            if (activeTouchCount === 1 && isPointerDown) {
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const dx = currentX - touchLastPos.x;
+                const dy = currentY - touchLastPos.y;
+
+                updateMousePos(currentX, currentY);
+
+                if (state.isBuildModeActive) {
+                    highlightCellUnderPointer(false);
+                    if (state.dragBuildEnabled) {
+                        applyCurrentAction();
+                    }
+                } else {
+                    cameraAngleX -= dx * 0.005;
+                    cameraAngleY += dy * 0.005;
+                    cameraAngleY = Math.max(0.12, Math.min(Math.PI / 2 - 0.05, cameraAngleY));
+                    updateCameraPosition();
+                }
+
+                touchLastPos = { x: currentX, y: currentY };
+            } else if (activeTouchCount === 2) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                const currentPinchDist = Math.hypot(dx, dy);
+
+                if (initialPinchDistance > 0 && currentPinchDist > 0) {
+                    const ratio = initialPinchDistance / currentPinchDist;
+                    cameraDistance = Math.max(4, Math.min(65, initialCameraDistance * ratio));
+                }
+
+                const centerCurrentX = (touch1.clientX + touch2.clientX) / 2;
+                const centerCurrentY = (touch1.clientY + touch2.clientY) / 2;
+                const centerLastX = (touchLastPos.x + secondTouchLastPos.x) / 2;
+                const centerLastY = (touchLastPos.y + secondTouchLastPos.y) / 2;
+
+                const panDX = (centerCurrentX - centerLastX) * 0.04;
+                const panDY = (centerCurrentY - centerLastY) * 0.04;
+
+                const forward = new THREE.Vector3(-Math.sin(cameraAngleX), 0, -Math.cos(cameraAngleX));
+                const right = new THREE.Vector3(Math.cos(cameraAngleX), 0, -Math.sin(cameraAngleX));
+
+                cameraTarget.addScaledVector(right, -panDX);
+                cameraTarget.addScaledVector(forward, panDY);
+
+                cameraTarget.x = Math.max(-20, Math.min(20, cameraTarget.x));
+                cameraTarget.z = Math.max(-20, Math.min(20, cameraTarget.z));
+
+                updateCameraPosition();
+
+                touchLastPos = { x: touch1.clientX, y: touch1.clientY };
+                secondTouchLastPos = { x: touch2.clientX, y: touch2.clientY };
+            }
+        }
+
+        function onTouchEnd(e) {
+            if(state.gameMode==='attack'){
+              const duration=Date.now()-pointerDownTime,distMoved=Math.hypot(touchLastPos.x-touchStartPos.x,touchLastPos.y-touchStartPos.y);
+              if(attackGestureMode==='camera'&&battleActive&&activeTouchCount===1&&duration<450&&distMoved<10){updateMousePos(touchLastPos.x,touchLastPos.y);selectTroopAtScreen(touchLastPos.x,touchLastPos.y);}
+              activeTouchCount=e.touches.length;isPointerDown=false;strokeLockedAxis=null;return;
+            }
+            const duration = Date.now() - pointerDownTime;
+            const now = Date.now();
+
+            if (activeTouchCount === 1) {
+                if (now - lastTapTime < 300) {
+                    applyCurrentAction();
+                }
+                lastTapTime = now;
+
+                if (!state.isBuildModeActive && duration < 250) {
+                    highlightCellUnderPointer(false);
+                    handleTapSelectionOrAction();
+                }
+            }
+
+            activeTouchCount = e.touches.length;
+            isPointerDown = false;
+            strokeLockedAxis = null;
+        }
+
+        function handleTapSelectionOrAction() {
+            const { x, z } = state.selectedCell;
+            const existingBlock = state.topGrid[x][z] || state.grid[x][z];
+
+            if (existingBlock) {
+                showBlockDrawer(existingBlock);
+            } else {
+                hideBlockDrawer();
+                applyCurrentAction();
+            }
+        }
+
+        function updateMousePos(clientX, clientY) {
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+            deploymentGhostDirty=true;
+        }
+
+        function getTargetGridCell() {
+            raycaster.setFromCamera(mouse, camera);
+
+            const objects = [planeGrid];
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let z = 0; z < GRID_SIZE; z++) {
+                    if (state.grid[x][z]) objects.push(state.grid[x][z].mesh);
+                    if (state.topGrid[x][z]) objects.push(state.topGrid[x][z].mesh);
+                }
+            }
+
+            const intersects = raycaster.intersectObjects(objects, true);
+            if (intersects.length > 0) {
+                const point = intersects[0].point;
+                let gridX = Math.floor(point.x + GRID_SIZE / 2);
+                let gridZ = Math.floor(point.z + GRID_SIZE / 2);
+
+                gridX = Math.max(0, Math.min(GRID_SIZE - state.brushWidth, gridX));
+                gridZ = Math.max(0, Math.min(GRID_SIZE - state.brushHeight, gridZ));
+
+                return { gridX, gridZ };
+            }
+            return null;
+        }
+
+        // CORRECCIÓN PRECISIÓN SNAP 1-EJE: Calculado exactamente desde el punto inicial
+        function highlightCellUnderPointer(isInitialPress = false) {
+            const cell = getTargetGridCell();
+            if (cell) {
+                let targetX = cell.gridX;
+                let targetZ = cell.gridZ;
+
+                if (state.isBuildModeActive && state.dragBuildEnabled && state.snapStraightEnabled && isPointerDown && strokeStartCell) {
+                    const diffX = Math.abs(targetX - strokeStartCell.x);
+                    const diffZ = Math.abs(targetZ - strokeStartCell.z);
+
+                    if (!strokeLockedAxis && (diffX > 0 || diffZ > 0)) {
+                        strokeLockedAxis = diffX >= diffZ ? 'x' : 'z';
+                    }
+
+                    if (strokeLockedAxis === 'x') {
+                        targetZ = strokeStartCell.z;
+                    } else if (strokeLockedAxis === 'z') {
+                        targetX = strokeStartCell.x;
+                    }
+                }
+
+                state.selectedCell = { x: targetX, z: targetZ };
+                updateCursorPosition();
+            }
+        }
+
+        function applyCurrentAction() {
+            const { x, z } = state.selectedCell;
+            const w = state.brushWidth;
+            const h = state.brushHeight;
+
+            if (state.mode === 'build') {
+                for (let dx = 0; dx < w; dx++) {
+                    for (let dz = 0; dz < h; dz++) {
+                        const cx = x + dx;
+                        const cz = z + dz;
+                        if (cx >= 0 && cx < GRID_SIZE && cz >= 0 && cz < GRID_SIZE) {
+                            if (isCellTownHall(cx, cz)) continue;
+
+                            removeBlock(cx, cz, 1);
+                            createBlock(cx, cz, 1, state.selectedBlockType);
+                        }
+                    }
+                }
+            } else if (state.mode === 'top') {
+                for (let dx = 0; dx < w; dx++) {
+                    for (let dz = 0; dz < h; dz++) {
+                        const cx = x + dx;
+                        const cz = z + dz;
+                        if (cx >= 0 && cx < GRID_SIZE && cz >= 0 && cz < GRID_SIZE) {
+                            if (isCellTownHall(cx, cz)) continue;
+
+                            if (state.grid[cx][cz]) {
+                                removeBlock(cx, cz, 2);
+                                createTurretBlock(cx, cz, 1, selectedTurretType);
+                            }
+                        }
+                    }
+                }
+            } else if (state.mode === 'erase') {
+                for (let dx = 0; dx < w; dx++) {
+                    for (let dz = 0; dz < h; dz++) {
+                        const cx = x + dx;
+                        const cz = z + dz;
+                        if (cx >= 0 && cx < GRID_SIZE && cz >= 0 && cz < GRID_SIZE) {
+                            if (isCellTownHall(cx, cz)) continue;
+
+                            if (state.topGrid[cx][cz]) {
+                                removeBlock(cx, cz, 2);
+                            } else if (state.grid[cx][cz]) {
+                                removeBlock(cx, cz, 1);
+                            }
+                        }
+                    }
+                }
+            }
+
+            updateCursorPosition();
+        }
+
+        function isCellTownHall(x, z) {
+            const block = state.grid[x] && state.grid[x][z];
+            return block && block.isTownHall;
+        }
+
+        // ANIMACIÓN POP-IN AL CONSTRUIR BLOQUE
+        function triggerPopAnimation(mesh) {
+            mesh.scale.set(0.01, 0.01, 0.01);
+            animatedMeshes.push({ mesh, progress: 0 });
+        }
+
+        function createBlock(x, z, layer, type, level = 1) {
+            const blockHeight = 1.1 * (1 + (level - 1) * 0.15);
+            const geometry = new THREE.BoxGeometry(0.98, blockHeight, 0.98);
+            
+            const baseColor = new THREE.Color(type.color);
+            if (level > 1) baseColor.offsetHSL(0, 0.1, 0.08 * (level - 1));
+
+            const material = new THREE.MeshStandardMaterial({
+                color: baseColor,
+                roughness: Math.max(0.1, 0.5 - level * 0.1),
+                metalness: 0.1 * level
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            const posX = x - GRID_SIZE / 2 + 0.5;
+            const posZ = z - GRID_SIZE / 2 + 0.5;
+            mesh.position.set(posX, blockHeight / 2, posZ);
+
+            scene.add(mesh);
+            triggerPopAnimation(mesh);
+
+            const maxHp = type.id === 'wood_wall' ? 95 : type.id === 'obsidian_wall' ? 300 : type.id === 'spikes' ? 70 : type.id === 'grass' ? 45 : type.id === 'gold_vault' ? 240 : 180;
+            attachHealthBar(mesh, maxHp, blockHeight / 2 + .55, false);
+            state.grid[x][z] = { mesh, type, x, z, layer: 1, level, hp:maxHp, maxHp }; structureRevision++;
+        }
+
+        function createTurretBlock(x, z, level = 1, turretType = selectedTurretType) {
+            const group = new THREE.Group();
+
+            const baseGeo = new THREE.CylinderGeometry(.48,.55,.34,8);
+            const baseMat = new THREE.MeshStandardMaterial({ color: turretType.color, roughness: .38, metalness:.22 });
+            const base = new THREE.Mesh(baseGeo, baseMat); base.position.y=.17; base.castShadow=true; group.add(base);
+            const metalMat=new THREE.MeshStandardMaterial({color:0x334155,metalness:.65,roughness:.28});
+            const glowMat=new THREE.MeshStandardMaterial({color:turretType.projectile||0xc084fc,emissive:turretType.color,emissiveIntensity:1.2,roughness:.18});
+            if(turretType.id==='cannon_turret'||turretType.id==='mortar_turret'){
+              const barrel=new THREE.Mesh(new THREE.CylinderGeometry(turretType.id==='mortar_turret'?.19:.14,turretType.id==='mortar_turret'?.24:.19,turretType.id==='mortar_turret'?.62:.92,10),metalMat);
+              barrel.rotation.x=turretType.id==='mortar_turret'?.18:Math.PI/2;barrel.position.set(0,.63,.08);group.add(barrel);
+              const breech=new THREE.Mesh(new THREE.BoxGeometry(.46,.38,.46),glowMat);breech.position.y=.48;group.add(breech);
+            } else if(turretType.id==='arrow_turret'){
+              const stem=new THREE.Mesh(new THREE.CylinderGeometry(.13,.2,.72,8),metalMat);stem.position.y=.52;group.add(stem);
+              for(let k=0;k<3;k++){const fin=new THREE.Mesh(new THREE.ConeGeometry(.12,.34,6),glowMat);fin.position.set(Math.cos(k*Math.PI*2/3)*.24,.83,Math.sin(k*Math.PI*2/3)*.24);group.add(fin);}
+            } else {
+              const crystalScale=.36+(level-1)*.07;const crystalGeo=new THREE.OctahedronGeometry(crystalScale);
+              const crystal=new THREE.Mesh(crystalGeo,glowMat);crystal.position.y=.78;group.add(crystal);
+              const ring=new THREE.Mesh(new THREE.TorusGeometry(.37,.035,6,18),metalMat);ring.rotation.x=Math.PI/2;ring.position.y=.72;group.add(ring);
+            }
+            group.userData.turretCore=group.children[group.children.length-1];
+
+            const posX = x - GRID_SIZE / 2 + 0.5;
+            const posZ = z - GRID_SIZE / 2 + 0.5;
+            group.position.set(posX, 1.1, posZ);
+
+            scene.add(group);
+            triggerPopAnimation(group);
+
+            const maxHp = (turretType.id === 'cannon_turret'||turretType.id==='mortar_turret') ? 260 : 180;
+            attachHealthBar(group, maxHp, 1.75, false);
+            state.topGrid[x][z] = { mesh: group, type: turretType, x, z, layer: 2, level, cooldown: Math.random() * .5, hp:maxHp, maxHp }; structureRevision++;
+        }
+
+        function removeBlock(x, z, layer) {
+            const target = layer === 1 ? state.grid : state.topGrid;
+            if (target[x] && target[x][z]) {
+                scene.remove(target[x][z].mesh);
+                target[x][z] = null; structureRevision++;
+            }
+        }
+
+        function ensureRangeRing(){
+          if(rangeRing)return rangeRing;
+          const geo=new THREE.RingGeometry(.97,1,96);const mat=new THREE.MeshBasicMaterial({color:0x34d399,transparent:true,opacity:.26,side:THREE.DoubleSide,depthWrite:false});
+          rangeRing=new THREE.Mesh(geo,mat);rangeRing.rotation.x=-Math.PI/2;rangeRing.position.y=.045;rangeRing.renderOrder=6;rangeRing.visible=false;scene.add(rangeRing);return rangeRing;
+        }
+        function setRangeRing(radius,color=0x34d399,x=0,z=0,mode='placement'){
+          const ring=ensureRangeRing();ring.scale.set(radius,radius,1);ring.position.set(x,.055,z);ring.material.color.setHex(color);ring.material.opacity=mode==='placement'?.22:.34;ring.visible=true;rangeRingMode=mode;
+        }
+        function showTowerRange(data){if(!data?.type?.range||!data.mesh)return;rangeRingOwner=data;setRangeRing(data.type.range,data.type.color,data.mesh.position.x,data.mesh.position.z,'selected');}
+        function hideRangeRing(){if(rangeRing)rangeRing.visible=false;rangeRingOwner=null;rangeRingMode='hidden';}
+        function updateRangePreview(){
+          if(!scene||!state)return;
+          if(state.gameMode==='build'&&state.mode==='top'&&selectedTurretType){const x=state.selectedCell.x+state.brushWidth/2-GRID_SIZE/2,z=state.selectedCell.z+state.brushHeight/2-GRID_SIZE/2;setRangeRing(selectedTurretType.range,selectedTurretType.color,x,z,'placement');}
+          else if(rangeRingMode==='placement'){hideRangeRing();}
+        }
+
+        function showBlockDrawer(data) {
+            const drawer = document.getElementById('block-drawer');
+            document.getElementById('drawer-title').innerText = data.type.name;
+            document.getElementById('drawer-coords').innerText = `X: ${data.x}, Z: ${data.z}`;
+            document.getElementById('drawer-layer').innerText = `Nivel ${data.level || 1}`;
+            document.getElementById('drawer-desc').innerText = data.type.desc;
+            if(data.layer===2 && data.type.range) { document.getElementById('drawer-desc').innerText += `\n\nALCANCE: ${data.type.range} casillas · DAÑO: ${data.type.damage} · CADENCIA: ${data.type.rate}s`; showTowerRange(data); } else if(rangeRingMode!=='placement') hideRangeRing();
+
+            const tag = document.getElementById('drawer-tag');
+            const delBtn = document.getElementById('drawer-action-btn');
+            const upgradeBtn = document.getElementById('drawer-upgrade-btn');
+            const upgradeText = document.getElementById('drawer-upgrade-text');
+
+            if (data.isTownHall) {
+                tag.innerText = 'Núcleo Central';
+                tag.className = 'text-[9px] font-bold tracking-widest uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded-md';
+                delBtn.classList.add('hidden');
+                upgradeBtn.classList.add('hidden');
+            } else {
+                delBtn.classList.remove('hidden');
+                upgradeBtn.classList.remove('hidden');
+
+                const currentLvl = data.level || 1;
+                if (currentLvl >= 3) {
+                    upgradeText.innerText = 'NIVEL MÁXIMO (NV. 3)';
+                    upgradeBtn.disabled = true;
+                    upgradeBtn.className = 'w-full py-2.5 bg-slate-800 text-slate-500 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-not-allowed';
+                } else {
+                    upgradeText.innerText = `MEJORAR A NIVEL ${currentLvl + 1}`;
+                    upgradeBtn.disabled = false;
+                    upgradeBtn.className = 'w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-lg border border-amber-300/40';
+                }
+
+                if (data.layer === 2) {
+                    tag.innerText = 'Defensa Morada';
+                    tag.className = 'text-[9px] font-bold tracking-widest uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-md';
+                } else {
+                    tag.innerText = 'Muro Defensivo';
+                    tag.className = 'text-[9px] font-bold tracking-widest uppercase bg-blue-500/20 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded-md';
+                }
+            }
+
+            upgradeBtn.onclick = () => {
+                if (data.isTownHall || (data.level || 1) >= 3) return;
+                const newLvl = (data.level || 1) + 1;
+                
+                if (data.layer === 2) {
+                    removeBlock(data.x, data.z, 2);
+                    createTurretBlock(data.x, data.z, newLvl, data.type);
+                    showBlockDrawer(state.topGrid[data.x][data.z]);
+                } else {
+                    removeBlock(data.x, data.z, 1);
+                    createBlock(data.x, data.z, 1, data.type, newLvl);
+                    showBlockDrawer(state.grid[data.x][data.z]);
+                }
+            };
+
+            if(data.layer!==2 && rangeRingMode!=='placement')hideRangeRing();
+            drawer.classList.remove('translate-x-[110%]');
+        }
+
+        function hideBlockDrawer() {
+            document.getElementById('block-drawer').classList.add('translate-x-[110%]');
+            if(state.mode!=='top') hideRangeRing(); else updateRangePreview();
+        }
+
+        // CONTROL DE VISIBILIDAD DINÁMICA DE LA UI AL CAMBIAR DE MODO
+        function updateUIElementsVisibility() {
+            const buildTools = document.getElementById('build-tools-panel');
+            const bottomControls = document.getElementById('bottom-controls');
+            const actionBar = document.getElementById('action-bar');
+            const hintTag = document.getElementById('hint-status-tag');
+            const hintText = document.getElementById('hint-status-text');
+
+            if (state.isBuildModeActive) {
+                // Modo Pintar Activo: Mostrar herramientas con animación
+                buildTools.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-6');
+                bottomControls.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-8');
+                actionBar.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-8');
+
+                hintTag.className = 'font-bold text-emerald-400 flex items-center gap-1';
+                hintTag.innerHTML = '<i data-lucide="hammer" class="w-3.5 h-3.5"></i> Modo Pintar:';
+                hintText.innerText = 'Tap / Arrastra para construir inmediatamente.';
+            } else {
+                // Modo Cámara Activo: OCULTAR HERRAMIENTAS DE CONSTRUCCIÓN
+                buildTools.classList.add('opacity-0', 'pointer-events-none', '-translate-x-6');
+                bottomControls.classList.add('opacity-0', 'pointer-events-none', 'translate-y-8');
+                actionBar.classList.add('opacity-0', 'pointer-events-none', 'translate-y-8');
+
+                hintTag.className = 'font-bold text-blue-400 flex items-center gap-1';
+                hintTag.innerHTML = '<i data-lucide="move" class="w-3.5 h-3.5"></i> Modo Cámara:';
+                hintText.innerText = 'Arrastra con 1 dedo para orbitar libremente.';
+            }
+            lucide.createIcons();
+        }
+
+        function setupUI() {
+            const palette = document.getElementById('color-palette');
+            palette.innerHTML = '';
+
+            BLOCK_TYPES.forEach((b, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-8 h-8 rounded-xl flex-shrink-0 transition-all border-2 flex items-center justify-center ${
+                    idx === 0 ? 'border-amber-400 scale-105 shadow-lg' : 'border-transparent opacity-80 hover:opacity-100'
+                }`;
+                btn.style.backgroundColor = b.hex;
+
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#color-palette button').forEach(b => {
+                        b.classList.remove('border-amber-400', 'scale-105', 'shadow-lg');
+                        b.classList.add('border-transparent', 'opacity-80');
+                    });
+                    btn.classList.add('border-amber-400', 'scale-105', 'shadow-lg');
+                    btn.classList.remove('border-transparent', 'opacity-80');
+
+                    state.selectedBlockType = b;
+                    if (state.mode !== 'build') switchMode('build');
+                    updateCursorGeometry();
+                });
+
+                palette.appendChild(btn);
+            });
+
+            // Toggle Principal Modo Pintar vs Modo Cámara
+            const toggleBuildModeBtn = document.getElementById('btn-toggle-build-mode');
+
+            toggleBuildModeBtn.addEventListener('click', () => {
+                state.isBuildModeActive = !state.isBuildModeActive;
+                if (state.isBuildModeActive) {
+                    toggleBuildModeBtn.className = 'p-2 rounded-xl flex flex-col items-center gap-0.5 bg-emerald-500 text-slate-950 font-extrabold shadow-lg transition-all w-16';
+                    document.getElementById('build-mode-label').innerText = 'PINTAR ON';
+                    document.getElementById('build-mode-icon').setAttribute('data-lucide', 'hammer');
+                } else {
+                    toggleBuildModeBtn.className = 'p-2 rounded-xl flex flex-col items-center gap-0.5 bg-blue-600 text-white font-extrabold shadow-lg transition-all w-16';
+                    document.getElementById('build-mode-label').innerText = 'CAMARA ON';
+                    document.getElementById('build-mode-icon').setAttribute('data-lucide', 'move');
+                    hideBlockDrawer();
+                }
+                updateUIElementsVisibility();
+            });
+
+            // Cambios de Perspectiva
+            const btnIso = document.getElementById('btn-view-iso');
+            const btnTop = document.getElementById('btn-view-top');
+
+            btnIso.addEventListener('click', () => {
+                cameraAngleX = Math.PI / 4;
+                cameraAngleY = Math.PI / 4;
+                cameraDistance = 18;
+                updateCameraPosition();
+
+                btnIso.className = 'view-btn px-2 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[10px] flex items-center gap-1 transition';
+                btnTop.className = 'view-btn px-2 py-1 rounded-xl hover:bg-slate-800 text-slate-300 font-bold text-[10px] flex items-center gap-1 transition';
+            });
+
+            btnTop.addEventListener('click', () => {
+                cameraAngleX = 0;
+                cameraAngleY = Math.PI / 2 - 0.02;
+                cameraDistance = 22;
+                updateCameraPosition();
+
+                btnTop.className = 'view-btn px-2 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[10px] flex items-center gap-1 transition';
+                btnIso.className = 'view-btn px-2 py-1 rounded-xl hover:bg-slate-800 text-slate-300 font-bold text-[10px] flex items-center gap-1 transition';
+            });
+
+            document.getElementById('btn-apply-action').addEventListener('click', applyCurrentAction);
+
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    switchMode(e.currentTarget.dataset.mode);
+                });
+            });
+
+            const toggleDragBtn = document.getElementById('btn-toggle-drag');
+            toggleDragBtn.addEventListener('click', () => {
+                state.dragBuildEnabled = !state.dragBuildEnabled;
+                if (state.dragBuildEnabled) {
+                    toggleDragBtn.className = 'p-2 rounded-xl flex flex-col items-center gap-0.5 bg-cyan-500 text-slate-950 font-bold shadow-lg transition-all w-16';
+                } else {
+                    toggleDragBtn.className = 'p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16';
+                }
+            });
+
+            const toggleSnapBtn = document.getElementById('btn-toggle-snap');
+            toggleSnapBtn.addEventListener('click', () => {
+                state.snapStraightEnabled = !state.snapStraightEnabled;
+                if (state.snapStraightEnabled) {
+                    toggleSnapBtn.className = 'p-2 rounded-xl flex flex-col items-center gap-0.5 bg-emerald-500 text-slate-950 font-bold shadow-lg transition-all w-16';
+                } else {
+                    toggleSnapBtn.className = 'p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16';
+                }
+            });
+
+            document.querySelectorAll('.brush-preset').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const w = parseInt(e.currentTarget.dataset.w);
+                    const h = parseInt(e.currentTarget.dataset.h);
+                    setBrushSize(w, h);
+                    
+                    document.querySelectorAll('.brush-preset').forEach(b => {
+                        b.className = 'brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700';
+                    });
+                    e.currentTarget.className = 'brush-preset px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-500 text-slate-950';
+                });
+            });
+
+            const customBtn = document.getElementById('btn-custom-brush');
+            const customPanel = document.getElementById('custom-brush-panel');
+            customBtn.addEventListener('click', () => {
+                customPanel.classList.toggle('hidden');
+                customPanel.classList.toggle('flex');
+            });
+
+            const wSlider = document.getElementById('brush-width-slider');
+            const hSlider = document.getElementById('brush-height-slider');
+
+            wSlider.addEventListener('input', (e) => {
+                const w = parseInt(e.target.value);
+                document.getElementById('brush-width-val').innerText = w;
+                setBrushSize(w, state.brushHeight);
+            });
+
+            hSlider.addEventListener('input', (e) => {
+                const h = parseInt(e.target.value);
+                document.getElementById('brush-height-val').innerText = h;
+                setBrushSize(state.brushWidth, h);
+            });
+
+            document.getElementById('drawer-action-btn').addEventListener('click', () => {
+                const { x, z } = state.selectedCell;
+                if (!isCellTownHall(x, z)) {
+                    if (state.topGrid[x][z]) removeBlock(x, z, 2);
+                    else if (state.grid[x][z]) removeBlock(x, z, 1);
+                    hideBlockDrawer();
+                }
+            });
+
+            document.getElementById('close-drawer').addEventListener('click', hideBlockDrawer);
+
+            document.getElementById('btn-focus-th').addEventListener('click', () => {
+                cameraTarget.set(0, 0, 0);
+                cameraDistance = 18;
+                updateCameraPosition();
+            });
+
+            document.getElementById('btn-clear-all').addEventListener('click', () => {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    for (let z = 0; z < GRID_SIZE; z++) {
+                        if (!isCellTownHall(x, z)) {
+                            removeBlock(x, z, 1);
+                            removeBlock(x, z, 2);
+                        }
+                    }
+                }
+                hideBlockDrawer();
+            });
+            document.getElementById('btn-mode-build').addEventListener('click',()=>setGameMode('build'));
+            document.getElementById('btn-mode-attack').addEventListener('click',()=>setGameMode('attack'));
+            document.getElementById('btn-start-attack').addEventListener('click',()=>{if(!battleStarted)startBattle();else startBattle();});
+            document.getElementById('btn-end-attack').addEventListener('click',endBattle);
+            document.getElementById('btn-collapse-battle-panel').addEventListener('click',()=>{const panel=document.getElementById('battle-controls'),collapsed=panel.classList.toggle('collapsed');document.getElementById('btn-collapse-battle-panel').setAttribute('aria-expanded',String(!collapsed));document.getElementById('battle-panel-chevron').textContent=collapsed?'◂':'▾';document.querySelector('#btn-collapse-battle-panel span:first-child').textContent=collapsed?'⚙️ Controles':'⚙️ Controles de incursión';});
+            document.getElementById('btn-close-troop-inspector').addEventListener('click',hideTroopInspector);
+            document.getElementById('btn-result-close').addEventListener('click',()=>{const m=document.getElementById('battle-result-modal');m.classList.add('hidden');m.classList.remove('flex');});
+            document.getElementById('btn-result-retry').addEventListener('click',()=>{const m=document.getElementById('battle-result-modal');m.classList.add('hidden');m.classList.remove('flex');clearBattleEntities();startBattle();});
+            document.getElementById('preset-village-balanced').addEventListener('click',()=>loadVillagePreset('balanced'));
+            document.getElementById('preset-village-maze').addEventListener('click',()=>loadVillagePreset('maze'));
+            document.getElementById('preset-village-air').addEventListener('click',()=>loadVillagePreset('air'));
+            document.getElementById('preset-army-balanced').addEventListener('click',()=>setArmyPreset('balanced'));
+            document.getElementById('preset-army-wall').addEventListener('click',()=>setArmyPreset('wall'));
+            document.getElementById('preset-army-air').addEventListener('click',()=>setArmyPreset('air'));
+            document.getElementById('preset-army-manual').addEventListener('click',setManualArmy);document.getElementById('btn-open-army-config').addEventListener('click',openArmyConfigurator);document.getElementById('btn-army-config-close').addEventListener('click',closeArmyConfigurator);document.getElementById('army-config-limited').addEventListener('click',()=>chooseArmyConfigMode(false));document.getElementById('army-config-infinite').addEventListener('click',()=>chooseArmyConfigMode(true));document.getElementById('btn-army-config-save').addEventListener('click',saveArmyConfig);document.querySelectorAll('[data-army-count]').forEach(i=>i.addEventListener('input',updateArmyConfigTotal));chooseArmyConfigMode(false);updateArmyConfigTotal();updateTroopCards();
+            document.querySelectorAll('.troop-btn').forEach(btn=>btn.addEventListener('click',()=>{if(btn.disabled)return;selectedTroop=btn.dataset.troop;if(attackGestureMode==='camera')setAttackGestureMode('deploy');if(deploymentGhost)createDeploymentGhost(selectedTroop);document.querySelectorAll('.troop-btn').forEach(b=>b.classList.remove('deploy-selected'));btn.classList.add('deploy-selected');document.getElementById('battle-status').textContent=`${troopStats[selectedTroop].name} seleccionado: toca o arrastra sobre el terreno azul para desplegar.`;updateDeploymentGhost();}));
+            document.getElementById('btn-toggle-routes')?.addEventListener('click',()=>setPathDebug(!pathDebugEnabled));
+            document.getElementById('btn-toggle-unit-labels')?.addEventListener('click',()=>setTroopLabels(!troopLabelsEnabled));
+            renderer.domElement.addEventListener('pointerdown',e=>{if(state.gameMode!=='attack'||!battleActive||e.pointerType==='touch')return;if(attackGestureMode==='deploy')deployAtScreen(e.clientX,e.clientY);});
+            document.getElementById('btn-gesture-mode').addEventListener('click',()=>setAttackGestureMode(attackGestureMode==='deploy'?'camera':'deploy'));
+            // Selector de tipos de torreta integrado en la paleta existente.
+            const turretPicker=document.createElement('div');turretPicker.className='flex items-center gap-1 ml-2 pl-2 border-l border-slate-700';turretPicker.innerHTML='<span class="text-[9px] text-slate-300 font-black mr-1">TORRETAS</span>';
+            TURRET_TYPES.forEach((t,i)=>{const b=document.createElement('button');b.className='turret-type-btn rounded-xl text-[11px] font-black text-white';b.style.background=t.hex;b.title=`${t.name} · Daño ${t.damage} · Alcance ${t.range}`;b.setAttribute('aria-label',b.title);b.innerHTML=['✦','💥','❄','➶','◉'][i]||'✦';b.addEventListener('click',()=>{selectedTurretType=t;document.querySelectorAll('.turret-type-btn').forEach(x=>x.classList.remove('selected-turret'));b.classList.add('selected-turret');switchMode('top');document.getElementById('hint-status-text').textContent=`${t.name} seleccionada · Daño ${t.damage} · Alcance ${t.range}. Toca una base para colocarla.`;});b.classList.add('turret-type-btn');if(t.id===selectedTurretType.id)b.classList.add('selected-turret');turretPicker.appendChild(b);});palette.appendChild(turretPicker);
+        }
+
+        function setBrushSize(w, h) {
+            state.brushWidth = w;
+            state.brushHeight = h;
+            document.getElementById('brush-size-label').innerText = `${w}x${h}`;
+            updateCursorGeometry();
+        }
+
+        function switchMode(newMode) {
+            state.mode = newMode;
+            hideBlockDrawer();
+
+            document.querySelectorAll('.mode-btn').forEach(b => {
+                if (b.dataset.mode === newMode) {
+                    b.className = 'mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 bg-amber-500 text-slate-950 font-bold shadow-lg transition-all w-16';
+                } else {
+                    b.className = 'mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16';
+                }
+            });
+
+            const actionBtn = document.getElementById('btn-apply-action');
+            const actionText = document.getElementById('action-btn-text');
+
+            if (newMode === 'build') {
+                actionText.innerText = 'COLOCAR MURO';
+                actionBtn.className = 'btn-shadow bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-3 rounded-2xl flex items-center gap-2 active:scale-95 transition text-xs tracking-wider uppercase border border-emerald-300/40';
+            } else if (newMode === 'top') {
+                actionText.innerText = 'MONTAR TORRETA';
+                actionBtn.className = 'btn-shadow bg-purple-600 hover:bg-purple-500 text-white font-black px-4 py-3 rounded-2xl flex items-center gap-2 active:scale-95 transition text-xs tracking-wider uppercase border border-purple-300/40';
+            } else if (newMode === 'erase') {
+                actionText.innerText = 'DEMOLER PIEZA';
+                actionBtn.className = 'btn-shadow bg-red-600 hover:bg-red-500 text-white font-black px-4 py-3 rounded-2xl flex items-center gap-2 active:scale-95 transition text-xs tracking-wider uppercase border border-red-300/40';
+            }
+
+            updateCursorGeometry();
+            updateRangePreview();
+        }
+
+        function setAttackGestureMode(mode){attackGestureMode=mode;const b=document.getElementById('btn-gesture-mode');b.classList.toggle('bg-indigo-600',mode==='deploy');b.classList.toggle('bg-slate-700',mode==='camera');b.innerHTML=mode==='deploy'?'<div class="text-xl">☝️</div><div class="text-[10px] font-black">Desplegar</div><div class="text-[9px]">Tocar y arrastrar</div>':'<div class="text-xl">🎥</div><div class="text-[10px] font-black">Cámara</div><div class="text-[9px]">Arrastrar vista</div>';document.getElementById('troop-panel').classList.toggle('camera-mode',mode==='camera');if(mode==='camera'){if(deploymentGhost)deploymentGhost.mesh.visible=false;}else updateDeploymentGhost();}
+        function setGameMode(mode) {
+          state.gameMode = mode; state.isBuildModeActive = mode === 'build';
+          const build = mode === 'build';
+          document.getElementById('btn-mode-build').className = `mode-pill game-btn ${build?'bg-emerald-500 text-slate-950':'bg-slate-800 text-white'}`;
+          document.getElementById('btn-mode-attack').className = `mode-pill game-btn ${!build?'bg-orange-500 text-slate-950':'bg-slate-800 text-white'}`;
+          document.getElementById('battle-hud').classList.toggle('hidden', build);
+          document.getElementById('battle-controls').classList.toggle('hidden', build);
+          document.getElementById('troop-panel').classList.toggle('hidden', build);document.getElementById('troop-panel').classList.toggle('camera-mode',!build&&attackGestureMode==='camera');
+          document.getElementById('build-tools-panel').classList.toggle('hidden', !build);
+          document.getElementById('bottom-controls').classList.toggle('hidden', !build);
+          document.getElementById('action-bar').classList.toggle('hidden', !build);
+          document.getElementById('btn-toggle-build-mode').classList.toggle('hidden', !build);
+          document.getElementById('gesture-hint').classList.toggle('hidden', !build);
+          hideBlockDrawer();
+          if(!build){hideRangeRing();hideTroopInspector();document.getElementById('battle-controls').classList.remove('collapsed');document.getElementById('btn-collapse-battle-panel').setAttribute('aria-expanded','true');document.getElementById('battle-panel-chevron').textContent='▾';document.querySelector('#btn-collapse-battle-panel span:first-child').textContent='⚙️ Controles de incursión';}
+          if (!build) { cameraTarget.set(0,0,0); cameraDistance=25; cameraAngleX=Math.PI/4; cameraAngleY=Math.PI/3.4; updateCameraPosition(); }
+        }
+        function attachHealthBar(parent, maxHp, yOffset, visibleInitially=false) {
+          const canvas=document.createElement('canvas');canvas.width=256;canvas.height=64;
+          const ctx=canvas.getContext('2d');
+          const texture=new THREE.CanvasTexture(canvas);texture.minFilter=THREE.LinearFilter;
+          const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));
+          sprite.scale.set(1.55,.38,1);sprite.position.set(0,yOffset,0);sprite.visible=visibleInitially;parent.add(sprite);
+          const bar={canvas,ctx,texture,sprite,hp:maxHp,maxHp,visibleInitially};
+          parent.userData.healthBar=bar; drawHealthBar(bar); return bar;
+        }
+        function drawHealthBar(bar) {
+          const c=bar.canvas,ctx=bar.ctx,p=Math.max(0,Math.min(1,bar.hp/bar.maxHp));
+          ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='rgba(2,6,23,.88)';ctx.beginPath();ctx.roundRect(8,13,240,38,12);ctx.fill();
+          ctx.fillStyle=p>.55?'#22c55e':p>.25?'#f59e0b':'#ef4444';ctx.beginPath();ctx.roundRect(14,19,228*p,26,8);ctx.fill();
+          ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(8,13,240,38,12);ctx.stroke();
+          ctx.fillStyle='#fff';ctx.font='bold 20px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${Math.ceil(bar.hp)} / ${bar.maxHp}`,128,32);
+          bar.texture.needsUpdate=true;
+        }
+        function showHealthBar(mesh){const b=mesh?.userData?.healthBar;if(b){b.sprite.visible=true;b.hideAt=performance.now()+2400;}}
+        function structureDamageCategory(data){if(data?.isTownHall)return 'townhall';if(isWall(data))return 'walls';if(isDefense(data))return 'turrets';return 'buildings';}
+        const structureDamageColors={walls:'#f59e0b',turrets:'#ef4444',townhall:'#a78bfa',buildings:'#22c55e'};
+        const structureDamageLabels={walls:'Muros',turrets:'Torretas',townhall:'Ayuntamiento',buildings:'Otros edificios'};
+        function recordBattleDamage(attacker,amount,target=null){if(!attacker||!attacker.kind||!Number.isFinite(amount)||amount<=0)return;const kind=attacker.kind,category=typeof target==='string'?target:structureDamageCategory(target);battleStats.damageByKind[kind]=(battleStats.damageByKind[kind]||0)+amount;battleStats.damageByStructureByKind[kind] ||= {};battleStats.damageByStructureByKind[kind][category]=(battleStats.damageByStructureByKind[kind][category]||0)+amount;battleStats.damageTotal=(battleStats.damageTotal||0)+amount;}
+        function recordBattleKill(attacker){if(!attacker||!attacker.kind)return;const kind=attacker.kind;battleStats.killsByKind[kind]=(battleStats.killsByKind[kind]||0)+1;}
+        function damageStructure(data, amount, color=0xfbbf24, attacker=null) {
+          if(!data||!data.mesh)return false;
+          if(data.isTownHall){const dealt=Math.min(townHallHP,amount);townHallHP=Math.max(0,townHallHP-amount);recordBattleDamage(attacker,dealt,'townhall');const b=data.mesh.userData.healthBar;if(b){b.hp=townHallHP;showHealthBar(data.mesh);drawHealthBar(b);}spawnBurst(new THREE.Vector3(0,1.6,0),color,14,'impact');return townHallHP<=0;}
+          const oldHp=data.hp??data.maxHp??100;data.hp=Math.max(0,oldHp-amount);recordBattleDamage(attacker,Math.min(oldHp,amount),data);const b=data.mesh.userData.healthBar;if(b){b.hp=data.hp;showHealthBar(data.mesh);drawHealthBar(b);}
+          spawnBurst(data.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),color,8,'impact');
+          data.mesh.scale.setScalar(1.06);data.mesh.userData.hitScaleUntil=performance.now()+110;
+          if(data.hp<=0){battleStats.structuresDestroyed=(battleStats.structuresDestroyed||0)+1;deploymentBreaches.add(`${data.x}:${data.z}`);spawnBurst(data.mesh.position.clone().add(new THREE.Vector3(0,.5,0)),0xf97316,24,'debris');scene.remove(data.mesh);const grid=data.layer===2?state.topGrid:state.grid;grid[data.x][data.z]=null;structureRevision++;updateDeploymentZone(true);return true;}
+          return false;
+        }
+        function makeTroopMesh(kind, x, z) {
+          const st=troopStats[kind], g=new THREE.Group();
+          const body=new THREE.Mesh(new THREE.BoxGeometry(kind==='giant'?.75:.42,kind==='giant'?1.0:.65,kind==='giant'?.55:.4),new THREE.MeshStandardMaterial({color:st.color,roughness:.75,emissive:st.color,emissiveIntensity:.04}));body.position.y=kind==='giant'?.65:.43;body.castShadow=true;g.add(body);
+          const head=new THREE.Mesh(new THREE.BoxGeometry(.34,.34,.34),new THREE.MeshStandardMaterial({color:0xf5cba7}));head.position.y=kind==='giant'?1.28:.88;g.add(head);
+          if(kind==='archer'){const bow=new THREE.Mesh(new THREE.TorusGeometry(.18,.035,5,10,Math.PI),new THREE.MeshStandardMaterial({color:0x92400e}));bow.position.set(.25,.55,.1);g.add(bow)}
+          if(kind==='bomber'||kind==='wallbreaker'){const bomb=new THREE.Mesh(new THREE.SphereGeometry(kind==='wallbreaker'?.22:.17,10,10),new THREE.MeshStandardMaterial({color:0x111827,emissive:kind==='wallbreaker'?0xf97316:0xfbbf24,emissiveIntensity:.8}));bomb.position.set(.28,.5,0);g.add(bomb)}
+          if(kind==='hunter'){const blade=new THREE.Mesh(new THREE.BoxGeometry(.12,.58,.12),new THREE.MeshStandardMaterial({color:0xe9d5ff,metalness:.65,roughness:.25}));blade.position.set(.28,.55,0);blade.rotation.z=-.45;g.add(blade)}
+          if(kind==='jumper'){const ring=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,6,12),new THREE.MeshStandardMaterial({color:0x67e8f9,emissive:0x0891b2,emissiveIntensity:.8}));ring.position.y=.2;g.add(ring)}
+          if(kind==='flyer'){const wingMat=new THREE.MeshStandardMaterial({color:0xf5d0fe,emissive:0xc026d3,emissiveIntensity:.25,side:THREE.DoubleSide});for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.48,.08,.22),wingMat);wing.position.set(side*.32,.72,0);wing.rotation.z=side*.35;g.add(wing)}}
+          g.position.set(x,0,z);scene.add(g);attachHealthBar(g,st.hp,1.55,false);
+          return {kind,mesh:g,hp:st.hp,maxHp:st.hp,attackCooldown:.12,dead:false,walkPhase:Math.random()*6,slowUntil:0,thinkClock:Math.random()*.08,pathCache:null,currentTarget:null,stuckTime:0,lastX:x,lastZ:z,unitId:nextUnitId++};
+        }
+        function spawnTroop(kind,x,z){if(state.gameMode!=='attack'||!battleActive)return false;if(!infiniteDeployMode&&(remainingArmyCounts[kind]||0)<=0){document.getElementById('battle-status').textContent=`No quedan ${troopStats[kind].name} en tu ejército.`;updateTroopCards();return false;}const gx=Math.floor(x+GRID_SIZE/2),gz=Math.floor(z+GRID_SIZE/2);if(gx<0||gz<0||gx>=GRID_SIZE||gz>=GRID_SIZE)return false;if(!isDeploymentCellAllowed(gx,gz)){document.getElementById('battle-status').textContent='No puedes desplegar ahí todavía. Destruye muros o defensas para ampliar la zona azul.';return false;}const occupied=isDeployCellOccupied(gx,gz);if(occupied){document.getElementById('battle-status').textContent='Despliega sobre terreno libre de la zona azul, fuera de edificios y muros.';return false;}const st=troopStats[kind],radius=st.radius||.28;for(const other of troops){if(!other.dead&&Math.hypot(other.mesh.position.x-x,other.mesh.position.z-z)<radius+(troopStats[other.kind].radius||.28)+.08){document.getElementById('battle-status').textContent='Hay otra unidad ocupando ese espacio.';return false;}}const troop=makeTroopMesh(kind,x,z);troop.flying=!!st.flying;troops.push(troop);if(!infiniteDeployMode)remainingArmyCounts[kind]=Math.max(0,(remainingArmyCounts[kind]||0)-1);battleStats.deployedByKind[kind]=(battleStats.deployedByKind[kind]||0)+1;updateTroopCards();spawnBurst(troop.mesh.position.clone().add(new THREE.Vector3(0,.3,0)),st.color,18,'spawn');document.getElementById('battle-status').textContent=`${st.name} desplegado. Toca otro punto para enviar más tropas.`;return true;}
+        function spawnBurst(pos,color,count=10,style='spark'){
+          // Particle budget: keeps mobile browsers responsive during large battles.
+          const cap=style==='trail'?150:300; count=Math.min(count,Math.max(0,cap-particles.length));
+          for(let i=0;i<count;i++){let mesh;if(style==='impact'||style==='debris'){mesh=new THREE.Mesh(new THREE.BoxGeometry(.07+Math.random()*.12,.07+Math.random()*.12,.07+Math.random()*.12),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.45,transparent:true,opacity:1}));}else{mesh=new THREE.Mesh(new THREE.SphereGeometry(.045+Math.random()*.065,6,6),new THREE.MeshBasicMaterial({color,transparent:true,opacity:1}));}mesh.position.copy(pos);scene.add(mesh);particles.push({mesh,life:(style==='debris'? .65: .3)+Math.random()*.6,maxLife:1,v:new THREE.Vector3((Math.random()-.5)*(style==='impact'?5:3),Math.random()*(style==='impact'?4:3),(Math.random()-.5)*(style==='impact'?5:3)),style});}}
+        function fireProjectile(from,target,color,damage,kind='defense',source=null){
+          const geo=kind==='cannon'||kind==='bomb'?new THREE.SphereGeometry(kind==='bomb'?.18:.2,10,10):kind==='ice'?new THREE.OctahedronGeometry(.16):kind==='arrow'?new THREE.ConeGeometry(.075,.42,6):new THREE.SphereGeometry(kind==='defense'?.13:.09,10,10);
+          const mat=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2,roughness:.2});const m=new THREE.Mesh(geo,mat);m.position.copy(from);scene.add(m);
+          const trail=new THREE.Mesh(new THREE.SphereGeometry(kind==='cannon'?.25:.13,6,6),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.28}));m.add(trail);trail.position.set(0,0,-.08);
+          projectiles.push({mesh:m,target,source,color,damage,kind,speed:source?.type?.projectileSpeed||(kind==='cannon'?10.5:kind==='bomb'?12:kind==='arrow'?22:kind==='defense'?13.5:16),trailClock:.07,splash:source?.type?.splash||(kind==='bomb'?1.2:0)});
+          if(kind==='arrow'){m.rotation.x=-Math.PI/2;}
+          if(source?.mesh){source.mesh.userData.recoilUntil=performance.now()+120;source.mesh.userData.recoil=source.mesh.position.clone().sub(from).normalize().multiplyScalar(.09);}
+        }
+        function clearVillagePreset(){
+          for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){
+            const a=state.grid[x][z],b=state.topGrid[x][z];
+            if(a&&!a.isTownHall){scene.remove(a.mesh);state.grid[x][z]=null;}
+            if(b){scene.remove(b.mesh);state.topGrid[x][z]=null;}
+          }
+          structureRevision++;
+        }
+        function putWall(x,z,type=BLOCK_TYPES[0]){if(x<1||z<1||x>30||z>30||isCellTownHall(x,z)||state.grid[x][z]||state.topGrid[x][z])return;createBlock(x,z,1,type,1);}
+        function putTurret(x,z,type){if(x<1||z<1||x>30||z>30||isCellTownHall(x,z)||state.topGrid[x][z])return;if(!state.grid[x][z])createBlock(x,z,1,BLOCK_TYPES[5],1);createTurretBlock(x,z,1,type);}
+        function loadVillagePreset(kind){
+          if(battleActive){battleActive=false;clearBattleEntities();}
+          clearVillagePreset();
+          const wall=kind==='maze'?BLOCK_TYPES[2]:BLOCK_TYPES[0];
+          // Núcleo defensivo de 7x7 con una entrada deliberada para que las rutas sean legibles.
+          for(let x=11;x<=21;x++){putWall(x,11,wall);putWall(x,21,wall);}
+          for(let z=11;z<=21;z++){if(z!==16){putWall(11,z,wall);putWall(21,z,wall);}}
+          if(kind==='maze'){
+            for(let x=13;x<=19;x++){putWall(x,13,wall);putWall(x,19,wall);} for(let z=13;z<=19;z++){if(z!==16){putWall(13,z,wall);putWall(19,z,wall);}}
+            for(let x=14;x<=18;x++){if(x!==16)putWall(x,16,BLOCK_TYPES[1]);}
+            putTurret(10,14,TURRET_TYPES[1]);putTurret(22,18,TURRET_TYPES[0]);putTurret(16,10,TURRET_TYPES[2]);putTurret(22,14,TURRET_TYPES[1]);
+          } else if(kind==='air'){
+            putTurret(10,14,TURRET_TYPES[0]);putTurret(22,14,TURRET_TYPES[0]);putTurret(16,10,TURRET_TYPES[2]);putTurret(16,22,TURRET_TYPES[2]);putTurret(12,12,TURRET_TYPES[1]);putTurret(20,20,TURRET_TYPES[1]);
+          } else {
+            putTurret(10,14,TURRET_TYPES[1]);putTurret(22,14,TURRET_TYPES[1]);putTurret(14,10,TURRET_TYPES[0]);putTurret(18,22,TURRET_TYPES[2]);putTurret(20,12,TURRET_TYPES[0]);
+          }
+          // Defensa exterior adicional, deja el lado sur despejado para despliegue.
+          putTurret(9,18,TURRET_TYPES[0]);putTurret(23,18,kind==='air'?TURRET_TYPES[2]:TURRET_TYPES[1]);
+          putTurret(8,13,TURRET_TYPES[3]);putTurret(24,20,TURRET_TYPES[4]);
+          document.getElementById('battle-status').textContent=`Aldea ${kind==='maze'?'Laberinto':kind==='air'?'Antiaérea':'Equilibrada'} cargada. Pulsa iniciar para simular el asalto.`;
+          document.getElementById('btn-start-attack').disabled=false;document.getElementById('btn-start-attack').textContent='▶ INICIAR SIMULACIÓN';
+        }
+        const armyPresets={
+          balanced:[['barbarian',8],['archer',6],['giant',3],['hunter',2],['bomber',2]],
+          wall:[['giant',3],['wallbreaker',6],['barbarian',5],['archer',3]],
+          air:[['flyer',10],['archer',4],['jumper',2]]
+        };
+        function setArmyPreset(kind){autoDeployArmy=true;armyConfigEnabled=false;infiniteDeployMode=false;selectedArmyPreset=kind;document.querySelectorAll('[id^="preset-army-"]').forEach(b=>b.classList.remove('preset-active'));const id=kind==='balanced'?'preset-army-balanced':kind==='wall'?'preset-army-wall':'preset-army-air';document.getElementById(id)?.classList.add('preset-active');document.getElementById('preset-army-manual')?.classList.remove('preset-active');document.getElementById('battle-status').textContent=`Ejército automático seleccionado: ${kind==='wall'?'Asalto a muros':kind==='air'?'Escuadrón aéreo':'Mixto'}. Se desplegará al iniciar.`;}
+        function setManualArmy(){autoDeployArmy=false;armyConfigEnabled=false;infiniteDeployMode=true;selectedArmyPreset=null;document.querySelectorAll('[id^="preset-army-"]').forEach(b=>b.classList.remove('preset-active'));document.getElementById('preset-army-manual')?.classList.add('preset-active');document.getElementById('battle-status').textContent='Modo infinito: despliegue manual sin límite.';}
+        function updateTroopCards(){document.querySelectorAll('.troop-btn[data-troop]').forEach(btn=>{const k=btn.dataset.troop;let badge=btn.querySelector('.troop-count-badge');if(!badge){badge=document.createElement('span');badge.className='troop-count-badge';btn.appendChild(badge);}if(!battleActive){badge.textContent=armyConfigEnabled&&!infiniteDeployMode?String(configuredArmyCounts[k]||0):(infiniteDeployMode?'∞':'—');btn.classList.remove('troop-exhausted');btn.disabled=false;}else if(infiniteDeployMode){badge.textContent='∞';btn.classList.remove('troop-exhausted');btn.disabled=false;}else{const n=remainingArmyCounts[k]||0;badge.textContent=String(n);btn.classList.toggle('troop-exhausted',n<=0);btn.disabled=n<=0;}});}
+        function updateArmyConfigTotal(){let total=0;document.querySelectorAll('[data-army-count]').forEach(i=>{const n=Math.max(0,Math.min(Number(i.max)||40,parseInt(i.value||'0',10)||0));i.value=String(n);total+=n;});document.getElementById('army-config-total').textContent=String(total);}
+        function openArmyConfigurator(){document.getElementById('army-config-modal').classList.remove('hidden');document.getElementById('army-config-modal').classList.add('flex');updateArmyConfigTotal();}
+        function closeArmyConfigurator(){document.getElementById('army-config-modal').classList.add('hidden');document.getElementById('army-config-modal').classList.remove('flex');}
+        function chooseArmyConfigMode(infinite){infiniteDeployMode=infinite;document.getElementById('army-config-infinite').classList.toggle('active',infinite);document.getElementById('army-config-limited').classList.toggle('active',!infinite);document.getElementById('army-config-limited-fields').style.opacity=infinite?'.35':'1';document.getElementById('army-config-limited-fields').style.pointerEvents=infinite?'none':'auto';}
+        function saveArmyConfig(){updateArmyConfigTotal();configuredArmyCounts={};document.querySelectorAll('[data-army-count]').forEach(i=>configuredArmyCounts[i.dataset.armyCount]=Math.max(0,parseInt(i.value||'0',10)||0));if(!infiniteDeployMode&&!Object.values(configuredArmyCounts).some(n=>n>0)){document.getElementById('army-config-total').textContent='Elige al menos una tropa';return;}armyConfigEnabled=true;autoDeployArmy=false;selectedArmyPreset=null;document.querySelectorAll('[id^="preset-army-"]').forEach(b=>b.classList.remove('preset-active'));document.getElementById('btn-open-army-config').classList.add('preset-active');remainingArmyCounts={...configuredArmyCounts};document.getElementById('battle-status').textContent=infiniteDeployMode?'Ejército preparado: despliegue manual infinito.':'Ejército preparado: despliegue manual limitado.';updateTroopCards();closeArmyConfigurator();}
+        function startBattle(){
+          if(battleActive)return; if(troops.length||projectiles.length||particles.length)clearBattleEntities();
+          document.getElementById('battle-result-modal').classList.add('hidden');document.getElementById('battle-result-modal').classList.remove('flex');battleFinishShown=false;selectedTroopInspect=null;hideTroopInspector();
+          battleInitialStructureCount=Math.max(1,allStructures().length+1);battleStats={damageByKind:{},damageByStructureByKind:{},killsByKind:{},deployedByKind:{},damageTotal:0,structuresDestroyed:0};deploymentBreaches.clear();
+          battleActive=true;battleStarted=true;battleTime=90;townHallHP=1000;remainingArmyCounts=infiniteDeployMode?{}:{...configuredArmyCounts};updateTroopCards();
+          const th=townHallMesh?.userData?.healthBar;if(th){th.hp=1000;drawHealthBar(th);th.sprite.visible=false;}
+          document.getElementById('btn-start-attack').textContent='OLEADA EN CURSO';document.getElementById('btn-start-attack').disabled=true;
+          document.getElementById('battle-status').textContent=autoDeployArmy?'Simulación en curso: ejército automático desplegado.':'Incursión manual: selecciona unidades y despliega solo en las zonas azules.';
+          if(autoDeployArmy){let i=0;const preset=armyPresets[selectedArmyPreset||'balanced']||armyPresets.balanced;remainingArmyCounts={};for(const [kind,count] of preset)remainingArmyCounts[kind]=count;updateTroopCards();for(const [kind,count] of preset)for(let n=0;n<count;n++){const x=-13+(i%7)*1.05,z=-13+Math.floor(i/7)*1.12;const gx=Math.floor(x+GRID_SIZE/2),gz=Math.floor(z+GRID_SIZE/2);if(isDeploymentCellAllowed(gx,gz)&&!isDeployCellOccupied(gx,gz))spawnTroop(kind,x,z);else{const safe=findInitialDeployCell(i);if(safe)spawnTroop(kind,safe.x,safe.z);}i++;}for(const [kind] of preset)remainingArmyCounts[kind]=0;updateTroopCards();}
+          updateDeploymentZone(true);updateDeploymentGhost();
+        }
+        function findInitialDeployCell(seed=0){for(let r=0;r<4;r++)for(let i=0;i<GRID_SIZE*4;i++){const n=(i+seed*7)%(GRID_SIZE*4),side=Math.floor(n/GRID_SIZE),off=n%GRID_SIZE;let x=side===0?off:side===1?GRID_SIZE-1:side===2?off:0,z=side===0?0:side===1?off:side===2?GRID_SIZE-1:off;if(r>0){if(side===0)z+=r;else if(side===1)x-=r;else if(side===2)z-=r;else x+=r;}if(isDeploymentCellAllowed(x,z)&&!isDeployCellOccupied(x,z)){const w=cellWorld(x,z);if(!troops.some(t=>!t.dead&&Math.hypot(t.mesh.position.x-w.x,t.mesh.position.z-w.z)<.72))return w;}}return null;}
+        function isDeploymentCellAllowed(x,z){if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return false;const edgeDepth=Math.min(x,z,GRID_SIZE-1-x,GRID_SIZE-1-z);if(edgeDepth<3)return true;for(const key of deploymentBreaches){const [bx,bz]=key.split(':').map(Number),d=Math.abs(x-bx)+Math.abs(z-bz);/* Keep a buffer around the destroyed piece: deployments unlock as a ring, never directly in the breach or deep inside the base. */if(d>=3&&d<=5)return true;}return false;}
+        function isDeployCellOccupied(x,z){if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return true;if(state.topGrid[x][z])return true;const base=state.grid[x][z];if(!base)return false;return base.type?.id!=='grass';}
+        function updateDeploymentZone(force=false){if(!scene)return;const breachCount=deploymentBreaches.size;if(!force&&deploymentZoneRevision===structureRevision&&deploymentZoneBreachCount===breachCount)return;deploymentZoneRevision=structureRevision;deploymentZoneBreachCount=breachCount;const wanted=new Set();if(battleActive){for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){if(!isDeploymentCellAllowed(x,z)||isDeployCellOccupied(x,z))continue;const key=`${x}:${z}`;wanted.add(key);if(!deploymentZoneMeshes.has(key)){const geo=new THREE.PlaneGeometry(.94,.94);const mat=new THREE.MeshBasicMaterial({color:0x06b6d4,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide});const tile=new THREE.Mesh(geo,mat);tile.rotation.x=-Math.PI/2;tile.position.set(x-GRID_SIZE/2+.5,.035,z-GRID_SIZE/2+.5);tile.renderOrder=4;tile.userData.deployZone=true;scene.add(tile);deploymentZoneMeshes.set(key,tile);}}}
+          for(const [key,tile] of deploymentZoneMeshes){if(!wanted.has(key)){scene.remove(tile);tile.geometry.dispose();tile.material.dispose();deploymentZoneMeshes.delete(key);}}
+        }
+        function clearDeploymentZone(){for(const tile of deploymentZoneMeshes.values()){scene.remove(tile);tile.geometry.dispose();tile.material.dispose();}deploymentZoneMeshes.clear();deploymentZoneRevision=-1;deploymentZoneBreachCount=-1;}
+        function clearBattleEntities(){clearDebugLines();for(const t of troops){if(t.debugLabel){t.mesh.remove(t.debugLabel.sprite);t.debugLabel.texture.dispose();t.debugLabel.sprite.material.dispose();}scene.remove(t.mesh);}troops.length=0;troopDebugSprites.clear();for(const p of projectiles)scene.remove(p.mesh);projectiles.length=0;for(const p of particles)scene.remove(p.mesh);particles.length=0;}
+        function endBattle(){battleActive=false;battleStarted=false;clearDeploymentZone();deploymentBreaches.clear();document.getElementById('battle-result-modal').classList.add('hidden');document.getElementById('battle-result-modal').classList.remove('flex');clearBattleEntities();destroyDeploymentGhost();hideTroopInspector();document.getElementById('btn-start-attack').textContent='▶ INICIAR OLEADA';document.getElementById('btn-start-attack').disabled=false;setGameMode('build');}
+        function finishBattle(reason){if(battleFinishShown)return;battleFinishShown=true;battleActive=false;battleStarted=false;clearDeploymentZone();destroyDeploymentGhost();hideTroopInspector();const live=troops.filter(t=>!t.dead).length;const maxStructures=battleInitialStructureCount,destroyed=battleStats.structuresDestroyed+(townHallHP<=0?1:0),pct=Math.min(100,Math.round(destroyed/maxStructures*100));const won=townHallHP<=0||pct>=50;document.getElementById('result-icon').textContent=won?'🏆':'🛡️';document.getElementById('result-title').textContent=won?'¡Incursión ganada!':'Incursión perdida';document.getElementById('result-subtitle').textContent=reason;document.getElementById('result-destruction').textContent=`${pct}%`;document.getElementById('result-damage').textContent=Math.round(battleStats.damageTotal||0).toLocaleString('es-ES');document.getElementById('result-survivors').textContent=String(live);const stats=document.getElementById('result-unit-stats');stats.innerHTML='';const kinds=Object.keys(troopStats).filter(k=>(battleStats.deployedByKind[k]||0)>0);if(!kinds.length)stats.innerHTML='<div class="p-3 text-xs text-slate-400">No se desplegaron tropas.</div>';for(const kind of kinds){const st=troopStats[kind],deployed=battleStats.deployedByKind[kind]||0,damage=Math.round(battleStats.damageByKind[kind]||0),kills=battleStats.killsByKind[kind]||0,share=battleStats.damageTotal>0?Math.round((battleStats.damageByKind[kind]||0)/battleStats.damageTotal*100):0,parts=battleStats.damageByStructureByKind[kind]||{},unitDamage=Object.values(parts).reduce((a,b)=>a+b,0);const row=document.createElement('div');row.className='result-row';const segments=['walls','turrets','townhall','buildings'].map(cat=>{const value=parts[cat]||0,pct=unitDamage>0?(value/unitDamage*100):0;return value>0?`<div class="result-damage-segment" title="${structureDamageLabels[cat]}: ${Math.round(value).toLocaleString('es-ES')} (${Math.round(pct)}%)" style="width:${pct}%;background:${structureDamageColors[cat]}"></div>`:''}).join('');const detail=['walls','turrets','townhall','buildings'].filter(cat=>(parts[cat]||0)>0).map(cat=>`<span class="result-legend-item"><i class="result-legend-dot" style="background:${structureDamageColors[cat]}"></i>${structureDamageLabels[cat]} ${Math.round((parts[cat]||0)).toLocaleString('es-ES')} (${unitDamage?Math.round((parts[cat]||0)/unitDamage*100):0}%)</span>`).join('');row.innerHTML=`<div class="min-w-0"><div class="flex items-center justify-between gap-2"><div class="font-black" style="color:#${st.color.toString(16).padStart(6,'0')}">${st.name}</div><div class="text-[10px] text-slate-400">${share}% del daño total</div></div><div class="result-damage-stack">${segments||'<div class="result-damage-segment" style="width:100%;background:#475569"></div>'}</div><div class="result-legend mt-2">${detail||'<span>Sin daño a estructuras</span>'}</div><div class="text-[10px] text-slate-400 mt-1">${deployed} desplegadas · ${troops.filter(t=>t.kind===kind&&!t.dead).length} vivas · ${kills} bajas</div></div><div class="text-right"><div class="result-stat">${damage.toLocaleString('es-ES')}</div><div class="text-[9px] text-slate-400">daño total</div></div>`;stats.appendChild(row);}document.getElementById('btn-start-attack').disabled=false;document.getElementById('btn-start-attack').textContent='↻ REPETIR INCURSIÓN';document.getElementById('battle-status').textContent=reason;document.getElementById('battle-result-modal').classList.remove('hidden');document.getElementById('battle-result-modal').classList.add('flex');}
+        function hideTroopInspector(){selectedTroopInspect=null;document.getElementById('troop-inspector').classList.add('hidden');if(rangeRingMode==='unit-selected')hideRangeRing();}
+        function selectTroopAtScreen(clientX,clientY){updateMousePos(clientX,clientY);raycaster.setFromCamera(mouse,camera);const live=troops.filter(t=>!t.dead&&t.mesh.parent);const hits=raycaster.intersectObjects(live.map(t=>t.mesh),true);if(!hits.length){hideTroopInspector();return;}let obj=hits[0].object,group=null;while(obj&&!group){group=live.find(t=>t.mesh===obj)?.mesh;obj=obj.parent;}const hitObject=hits[0].object;const troop=live.find(t=>{let o=hitObject;while(o){if(o===t.mesh)return true;o=o.parent;}return false;});if(!troop){hideTroopInspector();return;}selectedTroopInspect=troop;const st=troopStats[troop.kind];document.getElementById('troop-inspector-title').textContent=st.name;document.getElementById('troop-inspector-subtitle').textContent=`Unidad #${troop.unitId} · ${troop.dead?'Eliminada':'Activa'}`;document.getElementById('troop-inspector-hp').style.width=`${Math.max(0,troop.hp/st.hp*100)}%`;document.getElementById('troop-inspector-details').textContent=`Vida: ${Math.ceil(troop.hp)}/${st.hp} · Daño: ${st.damage} · Velocidad: ${st.speed}
+Alcance: ${st.range>1.3?st.range.toFixed(1):'cuerpo a cuerpo'} · Objetivo: ${troop.currentTarget?.isTownHall?'Ayuntamiento':troop.currentTarget?.type?.name||troop.currentTarget?.name||'Buscando objetivo'}`;document.getElementById('troop-inspector').classList.remove('hidden');const r=st.range>1.3?st.range:1.15;setRangeRing(r,st.color,troop.mesh.position.x,troop.mesh.position.z,'unit-selected');}
+        function createDeploymentGhost(kind){destroyDeploymentGhost();deploymentGhostDirty=true;deploymentGhostLastAt=0;const ghost=makeTroopMesh(kind,0,0);deploymentGhost=ghost;deploymentGhostKind=kind;ghost.hp=0;const bar=ghost.mesh.userData.healthBar;if(bar)bar.sprite.visible=false;ghost.mesh.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();o.material.transparent=true;o.material.opacity=.42;o.material.depthWrite=false;o.userData.ghostBaseColor=o.material.color?.clone();}});ghost.mesh.visible=false;return ghost;}
+        function destroyDeploymentGhost(){if(!deploymentGhost)return;scene.remove(deploymentGhost.mesh);deploymentGhost.mesh.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});deploymentGhost=null;deploymentGhostKind=null;}
+        function updateDeploymentGhost(){if(state.gameMode!=='attack'||!battleActive||attackGestureMode!=='deploy'){if(deploymentGhost)deploymentGhost.mesh.visible=false;return;}if(!deploymentGhost||deploymentGhostKind!==selectedTroop)createDeploymentGhost(selectedTroop);if(!deploymentGhost)return;const now=performance.now();if(!deploymentGhostDirty&&now-deploymentGhostLastAt<180)return;deploymentGhostDirty=false;deploymentGhostLastAt=now;const hit=getTargetGridCell();if(!hit){deploymentGhost.mesh.visible=false;return;}const x=hit.gridX-GRID_SIZE/2+.5,z=hit.gridZ-GRID_SIZE/2+.5,gx=hit.gridX,gz=hit.gridZ,occupied=isDeployCellOccupied(gx,gz),near=troops.some(t=>!t.dead&&Math.hypot(t.mesh.position.x-x,t.mesh.position.z-z)<(troopStats[selectedTroop].radius||.28)+(troopStats[t.kind].radius||.28)+.08);const allowed=isDeploymentCellAllowed(gx,gz),valid=allowed&&!occupied&&!near;deploymentGhost.mesh.position.set(x,0,z);deploymentGhost.mesh.visible=true;deploymentGhost.mesh.traverse(o=>{if(o.isMesh&&o.material&&o.userData.ghostBaseColor){o.material.color.copy(o.userData.ghostBaseColor).lerp(new THREE.Color(valid?0x06b6d4:0xef4444),.52);}});}
+
+        function gridCellAt(pos){return {x:Math.floor(pos.x+GRID_SIZE/2),z:Math.floor(pos.z+GRID_SIZE/2)}}
+        function deployAtScreen(clientX,clientY){
+          updateMousePos(clientX,clientY);const hit=getTargetGridCell();if(!hit)return;
+          const x=hit.gridX-GRID_SIZE/2+.5,z=hit.gridZ-GRID_SIZE/2+.5;const key=`${hit.gridX}:${hit.gridZ}`;const now=performance.now();
+          if(key===lastDeployCell&&now-lastDeployAt<170)return;lastDeployCell=key;lastDeployAt=now;spawnTroop(selectedTroop,x,z);
+        }
+        function getStructureAtCell(x,z){if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return null;return state.topGrid[x][z]||state.grid[x][z]||null;}
+        function isWall(d){return !!d && (String(d.type?.id||'').includes('wall')||String(d.type?.name||'').toLowerCase().includes('muro')||String(d.type?.id||'').includes('spikes'));}
+        function isDefense(d){return !!d && d.layer===2 && !!d.type?.range;}
+        function troopCanCross(t,d){
+          if(!d)return true;
+          if(t.flying)return true;
+          if(isWall(d))return !!t.jump;
+          // A troop can never path through a turret/building, including its own target.
+          return false;
+        }
+        function cellWorld(x,z){return {x:x-GRID_SIZE/2+.5,z:z-GRID_SIZE/2+.5};}
+        function troopMoveCellFree(t,x,z,target){
+          if(x<0||z<0||x>=GRID_SIZE||z>=GRID_SIZE)return false;
+          const d=getStructureAtCell(x,z);
+          if(!d)return true;
+          if(d===target)return false;
+          return troopCanCross(t,d);
+        }
+        function attackRangeFor(t,target){
+          const st=troopStats[t.kind];
+          if(st.range>1.3)return st.range;
+          return structureRadius(target)+.58;
+        }
+        // Flood-fill from the troop and choose the closest reachable attack cell, rather than
+        // aiming at an arbitrary cell behind a wall (the old failure made units stand idle).
+        function findAttackPath(t,target){
+          const start=gridCellAt(t.mesh.position), now=performance.now();
+          if(start.x<0||start.z<0||start.x>=GRID_SIZE||start.z>=GRID_SIZE)return null;
+          const targetId=target.isTownHall?'townhall':`${target.x},${target.z},${target.layer||1}`;
+          const cached=t.pathCache;
+          if(cached&&cached.revision===structureRevision&&cached.targetId===targetId&&cached.unreachable&&now-cached.at<650)return null;
+          if(cached&&cached.revision===structureRevision&&cached.targetId===targetId&&now-cached.at<260){
+            const first=cached.path[0];
+            if(first){const cur=gridCellAt(t.mesh.position);if(Math.abs(first.x-cur.x)+Math.abs(first.z-cur.z)<=2)return cached;}
+            else if(cached.goal&&Math.abs(cached.goal.x-start.x)+Math.abs(cached.goal.z-start.z)<=1)return cached;
+          }
+          const st=troopStats[t.kind], range=attackRangeFor(t,target), center=target.mesh.position;
+          const key=(c)=>`${c.x},${c.z}`, q=[start], prev=new Map([[key(start),null]]); let head=0,best=null,bestScore=Infinity;
+          const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+          while(head<q.length){
+            const c=q[head++], world=cellWorld(c.x,c.z), dist=Math.hypot(world.x-center.x,world.z-center.z);
+            // Melee units stand just outside the footprint; ranged units use their real range.
+            const minDist=st.range>1.3?Math.max(.9,structureRadius(target)-.15):Math.max(.72,structureRadius(target)-.08);
+            if(dist>=minDist&&dist<=range+.08){
+              const pathLen=(()=>{let n=0,k=key(c);while(prev.get(k)){n++;k=key(prev.get(k));}return n;})();
+              const score=pathLen+Math.max(0,dist-(range-.25))*.25;
+              if(score<bestScore){bestScore=score;best=c;}
+              // BFS guarantees path length order; first valid goal is the shortest.
+              break;
+            }
+            for(const [dx,dz] of dirs){const n={x:c.x+dx,z:c.z+dz},nk=key(n);if(prev.has(nk)||!troopMoveCellFree(t,n.x,n.z,target))continue;prev.set(nk,key(c));q.push(n);}
+          }
+          if(!best){t.pathCache={revision:structureRevision,targetId,at:now,path:[],unreachable:true};return null;}
+          const path=[];let k=key(best);while(k!==key(start)){const [x,z]=k.split(',').map(Number);path.push({x,z});k=prev.get(k);if(!k)break;}path.reverse();
+          // Smooth the BFS route: greedily skip intermediate cells when a straight segment
+          // is clear. This reduces the grid-like zig-zag and makes troops feel much faster.
+          const clearSegment=(a,b)=>{
+            let x0=a.x,z0=a.z,x1=b.x,z1=b.z,dx=Math.abs(x1-x0),dz=Math.abs(z1-z0),sx=x0<x1?1:-1,sz=z0<z1?1:-1,err=dx-dz;
+            while(true){if(!(x0===start.x&&z0===start.z)&&!troopMoveCellFree(t,x0,z0,target))return false;if(x0===x1&&z0===z1)break;const e2=2*err;let nx=x0,nz=z0;if(e2>-dz){err-=dz;nx+=sx;}if(e2<dx){err+=dx;nz+=sz;}if(nx!==x0&&nz!==z0){if(!troopMoveCellFree(t,nx,z0,target)||!troopMoveCellFree(t,x0,nz,target))return false;}x0=nx;z0=nz;}
+            return true;
+          };
+          if(path.length>2){const smooth=[];let anchor={x:start.x,z:start.z},i=0;while(i<path.length){let far=i;for(let j=path.length-1;j>=i;j--){if(clearSegment(anchor,path[j])){far=j;break;}}smooth.push(path[far]);anchor=path[far];i=far+1;}path.splice(0,path.length,...smooth);}
+          const result={revision:structureRevision,targetId,at:now,path,goal:best,unreachable:false};t.pathCache=result;return result;
+        }
+        function findPath(t,targetCell){
+          // Compatibility helper used by older callers: standard BFS with cached route.
+          const start=gridCellAt(t.mesh.position), key=c=>`${c.x},${c.z}`, now=performance.now();
+          const cache=t.pathCache;if(cache&&cache.revision===structureRevision&&cache.goal?.x===targetCell.x&&cache.goal?.z===targetCell.z&&now-cache.at<250)return cache.path||[];
+          const q=[start],prev=new Map([[key(start),null]]);let head=0,found=null;const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+          while(head<q.length){const c=q[head++];if(c.x===targetCell.x&&c.z===targetCell.z){found=c;break;}for(const [dx,dz] of dirs){const n={x:c.x+dx,z:c.z+dz},nk=key(n);if(prev.has(nk)||!troopMoveCellFree(t,n.x,n.z,null))continue;prev.set(nk,key(c));q.push(n);}}
+          if(!found)return [];const path=[];let k=key(found);while(k!==key(start)){const [x,z]=k.split(',').map(Number);path.push({x,z});k=prev.get(k);if(!k)break;}path.reverse();t.pathCache={revision:structureRevision,goal:{...targetCell},at:now,path};return path;
+        }
+        function attackCellForTarget(t,target){
+          const st=troopStats[t.kind], center=target.mesh.position, range=attackRangeFor(t,target), start=gridCellAt(t.mesh.position), candidates=[];
+          for(let x=Math.max(0,start.x-12);x<=Math.min(GRID_SIZE-1,start.x+12);x++)for(let z=Math.max(0,start.z-12);z<=Math.min(GRID_SIZE-1,start.z+12);z++){
+            const world=cellWorld(x,z),dist=Math.hypot(world.x-center.x,world.z-center.z),occ=getStructureAtCell(x,z);
+            if(dist>=Math.max(.72,structureRadius(target)-.1)&&dist<=range+.1&&(!occ||troopCanCross(t,occ)))candidates.push({x,z,score:Math.abs(x-start.x)+Math.abs(z-start.z)});
+          }
+          candidates.sort((a,b)=>a.score-b.score);return candidates[0]||{x:start.x,z:start.z};
+        }
+        function allStructures(){const out=[],seen=new Set();for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){const top=state.topGrid[x][z],base=state.grid[x][z];for(const d of [top,base]){if(!d||!d.mesh||d.isTownHall||seen.has(d))continue;seen.add(d);if(d.type?.id==='grass'&&top)continue;out.push(d);}}return out;}
+        function targetForTroop(t){
+          const st=troopStats[t.kind],structures=allStructures(),pos=t.mesh.position;
+          const walls=structures.filter(isWall), defenses=structures.filter(isDefense);
+          const hall={mesh:townHallMesh,isTownHall:true,x:Math.floor(GRID_SIZE/2),z:Math.floor(GRID_SIZE/2),layer:1};
+          // Specialist roles retain their job; ordinary troops never attack a wall merely
+          // because it happens to lie on the straight-line projection to the Hall.
+          if(st.role==='wall'&&walls.length){
+            // Wall breakers choose a wall on the direct approach only when that wall really
+            // obstructs the route; otherwise they advance toward the Hall through open gaps.
+            const hx=hall.mesh.position.x,hz=hall.mesh.position.z,vx=hx-pos.x,vz=hz-pos.z,len2=vx*vx+vz*vz;
+            const blockers=walls.map(w=>{const wx=w.mesh.position.x-pos.x,wz=w.mesh.position.z-pos.z;const u=Math.max(0,Math.min(1,(wx*vx+wz*vz)/(len2||1)));const perp=Math.hypot(wx-u*vx,wz-u*vz);return {w,u,perp,d:pos.distanceTo(w.mesh.position)};})
+              .filter(o=>o.u>.05&&o.u<.98&&o.perp<.68&&o.d<13).sort((a,b)=>a.d-b.d);
+            const meaningful=blockers.filter(o=>{
+              let adjacent=0;for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]])if(isWall(getStructureAtCell(o.w.x+dx,o.w.z+dz)))adjacent++;
+              return adjacent>=1;
+            });
+            if(meaningful.length)return meaningful[0].w;
+            return hall;
+          }
+          if(st.role==='defense'&&defenses.length){
+            return defenses.sort((a,b)=>{
+              const da=pos.distanceTo(a.mesh.position),db=pos.distanceTo(b.mesh.position);
+              const pa=(t.kind==='giant'||t.kind==='hunter')?-Math.min(2.5,da*.08):0;
+              const pb=(t.kind==='giant'||t.kind==='hunter')?-Math.min(2.5,db*.08):0;
+              return (da+pa)-(db+pb);
+            })[0];
+          }
+          // Baseline AI: ordinary troops prefer the nearest useful building, not blindly
+          // the Town Hall. This prevents a troop deployed on the far edge from marching
+          // across the whole map when a closer building is available. Pathfinding then
+          // chooses the shortest reachable attack position; walls are fallback obstacles.
+          const candidates=structures.filter(d=>!isWall(d)); candidates.push(hall);
+          const scored=candidates.map(d=>{
+            const dx=d.mesh.position.x-pos.x,dz=d.mesh.position.z-pos.z,dist=Math.hypot(dx,dz);
+            // Estimate obstruction along the direct segment. Walls add a modest detour cost,
+            // while open gaps remain cheaper than a far-away target. Buildings themselves
+            // are not treated as wall barriers for this estimate.
+            let wallCrossings=0;const steps=Math.max(1,Math.ceil(dist*2));
+            for(let i=1;i<steps;i++){const u=i/steps,gx=Math.floor(pos.x+dx*u+GRID_SIZE/2),gz=Math.floor(pos.z+dz*u+GRID_SIZE/2),o=getStructureAtCell(gx,gz);if(o&&isWall(o))wallCrossings++;}
+            const preferred=(t.kind==='archer'&&isDefense(d))?-.45:0;
+            const score=dist+Math.min(5,wallCrossings*1.25)+preferred;
+            return {d,score};
+          }).sort((a,b)=>a.score-b.score);
+          return scored[0]?.d||hall;
+        }
+        function structureRadius(d){return d?.isTownHall?1.58:(isWall(d)?.55:.62);}
+        function damageTroop(t,amount,color,attacker=null){if(!t||t.dead)return;const oldHp=t.hp;t.hp=Math.max(0,t.hp-amount);recordBattleDamage(attacker,Math.min(oldHp,amount));const b=t.mesh.userData.healthBar;if(b){b.hp=t.hp;drawHealthBar(b);showHealthBar(t.mesh);}spawnBurst(t.mesh.position.clone().add(new THREE.Vector3(0,.6,0)),color,8,'impact');if(t.hp<=0){t.dead=true;recordBattleKill(attacker);spawnBurst(t.mesh.position.clone().add(new THREE.Vector3(0,.5,0)),color,30,'debris');scene.remove(t.mesh);}}
+        function damageArea(pos,radius,amount,color,source,attacker=null){
+          if(!attacker?.kind)for(const t of troops){if(t.dead||t===source)continue;if(t.mesh.position.distanceTo(pos)<=radius)damageTroop(t,amount,color,attacker);}
+          for(const d of allStructures()){if(d===source||!d.mesh)continue;if(d.mesh.position.distanceTo(pos)<=radius)damageStructure(d,amount,color,attacker);}
+        }
+        function resolveUnitSeparation(dt){
+          // Spatial hash keeps collision resolution cheap on mobile. Units have a personal
+          // radius; pairwise repulsion is deterministic by unitId and never teleports through walls.
+          const live=troops.filter(t=>!t.dead&&t.mesh.parent);if(live.length<2)return;
+          const cellSize=1.25,buckets=new Map(),key=(x,z)=>`${Math.floor(x/cellSize)},${Math.floor(z/cellSize)}`;
+          for(const t of live){const k=key(t.mesh.position.x,t.mesh.position.z);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(t);}
+          for(const t of live){const p=t.mesh.position,st=troopStats[t.kind],r=st.radius||.28;let sx=0,sz=0;
+            const cx=Math.floor(p.x/cellSize),cz=Math.floor(p.z/cellSize);
+            for(let ox=-1;ox<=1;ox++)for(let oz=-1;oz<=1;oz++)for(const other of buckets.get(`${cx+ox},${cz+oz}`)||[]){if(other===t)continue;const op=other.mesh.position,dx=p.x-op.x,dz=p.z-op.z,d=Math.hypot(dx,dz),need=r+(troopStats[other.kind].radius||.28);if(d>0.0001&&d<need){const force=(need-d)/need;sx+=(dx/d)*force;sz+=(dz/d)*force;}}
+            const mag=Math.hypot(sx,sz);if(mag<.001)continue;const push=Math.min(.07,mag*.045)*Math.min(1,dt*60);const nx=p.x+(sx/mag)*push,nz=p.z+(sz/mag)*push;
+            const gx=Math.floor(nx+GRID_SIZE/2),gz=Math.floor(nz+GRID_SIZE/2),occ=getStructureAtCell(gx,gz);
+            if(t.flying||!occ||troopCanCross(t,occ)){p.x=nx;p.z=nz;}
+          }
+        }
+
+        function battleUpdate(dt){
+          const dtSafe=Math.min(dt,.05),now=performance.now();
+          if(battleActive){battleTime=Math.max(0,battleTime-dt);const sec=Math.ceil(battleTime);document.getElementById('battle-clock').textContent=`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;if(townHallHP<=0){finishBattle('Ayuntamiento destruido: objetivo principal completado.');return;}if(sec===0){finishBattle('Tiempo agotado: se ha terminado el tiempo de incursión.');return;}}
+          else {updateSelectedTroopInspector();return;}
+          const thData={mesh:townHallMesh,isTownHall:true};
+          for(const t of troops){
+            if(t.dead)continue;
+            const st=troopStats[t.kind];t.attackCooldown-=dtSafe;t.thinkClock=(t.thinkClock||0)-dtSafe;t.walkPhase+=dtSafe*8;
+            const flying=!!st.flying,jumping=!!st.jump;t.flying=flying;t.jump=jumping;
+            const bob=flying?.38+Math.sin(t.walkPhase*1.6)*.11:(jumping&&t.jumping?Math.abs(Math.sin(t.walkPhase*1.8))*.48:Math.abs(Math.sin(t.walkPhase))*.045);t.mesh.position.y=bob;
+            const body=t.mesh.children[0];if(body){body.rotation.z=Math.sin(t.walkPhase)*.045;body.rotation.x=Math.sin(t.walkPhase*1.4)*.045;}
+            for(let i=1;i<t.mesh.children.length;i++){const part=t.mesh.children[i];if(t.kind==='flyer'&&i>=3)part.rotation.z=Math.sin(t.walkPhase*2.5)*.5;}
+            // Think at 8-10 Hz instead of doing expensive target/path searches every rendered frame.
+            if(t.thinkClock>0&&t.currentTarget&&t.currentTarget.mesh) {
+              const target=t.currentTarget, dist=t.mesh.position.distanceTo(target.mesh.position), attackRange=attackRangeFor(t,target);
+              if(dist<=attackRange+.12){if(t.attackCooldown<=0){t.attackCooldown=t.kind==='wallbreaker'?.78:t.kind==='giant'? .92:t.kind==='hunter'?.66:st.range>1.3?.72:.58;const from=t.mesh.position.clone().add(new THREE.Vector3(0,flying?.9:.65,0));
+                  if(st.range>1.3||t.kind==='bomber'||t.kind==='wallbreaker')fireProjectile(from,target,st.color,st.damage,t.kind==='bomber'||t.kind==='wallbreaker'?'bomb':(t.kind==='archer'?'arrow':'troop'),t);else {damageStructure(target,st.damage,st.color,t);spawnBurst(target.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),st.color,t.kind==='giant'?16:7,t.kind==='giant'?'impact':'spark');}
+                  t.mesh.rotation.y=Math.atan2(target.mesh.position.x-t.mesh.position.x,target.mesh.position.z-t.mesh.position.z);if(t.kind==='wallbreaker')spawnBurst(t.mesh.position.clone(),0xf97316,8,'debris');}
+                continue;
+              }
+              const path=t.pathCache?.path||[];if(path.length){const wp=cellWorld(path[0].x,path[0].z),dx=wp.x-t.mesh.position.x,dz=wp.z-t.mesh.position.z,ml=Math.hypot(dx,dz);if(ml<.22){path.shift();}else{const step=st.speed*(t.slowUntil>now?.48:1)*dtSafe;t.mesh.position.x+=dx/ml*step;t.mesh.position.z+=dz/ml*step;t.mesh.rotation.y=Math.atan2(dx,dz);if(jumping)t.jumping=true;}}
+              else t.thinkClock=0;
+              continue;
+            }
+            if(t.thinkClock>0&&!t.currentTarget)continue;
+            t.thinkClock=.10+Math.random()*.045;
+            let target=t.currentTarget;
+            if(!target||!target.mesh||(!target.isTownHall&&(target.hp??1)<=0)||(!target.isTownHall&&(!target.mesh.parent||!target.mesh.visible))){target=targetForTroop(t);t.currentTarget=target;t.pathCache=null;}
+            if(!target||!target.mesh)continue;
+            const dist=t.mesh.position.distanceTo(target.mesh.position),effectiveRange=attackRangeFor(t,target);
+            if(dist<=effectiveRange+.12){if(t.attackCooldown<=0){t.attackCooldown=t.kind==='wallbreaker'?.78:t.kind==='giant'?.92:t.kind==='hunter'?.66:st.range>1.3?.72:.58;const from=t.mesh.position.clone().add(new THREE.Vector3(0,flying?.9:.65,0));
+                if(st.range>1.3||t.kind==='bomber'||t.kind==='wallbreaker')fireProjectile(from,target,st.color,st.damage,t.kind==='bomber'||t.kind==='wallbreaker'?'bomb':(t.kind==='archer'?'arrow':'troop'),t);else {damageStructure(target,st.damage,st.color,t);spawnBurst(target.mesh.position.clone().add(new THREE.Vector3(0,.7,0)),st.color,t.kind==='giant'?16:7,t.kind==='giant'?'impact':'spark');}
+                t.mesh.rotation.y=Math.atan2(target.mesh.position.x-t.mesh.position.x,target.mesh.position.z-t.mesh.position.z);if(t.kind==='wallbreaker')spawnBurst(t.mesh.position.clone(),0xf97316,8,'debris');}continue;}
+            const route=findAttackPath(t,target);
+            if(route&&route.path.length){t.pathCache=route;const wp=cellWorld(route.path[0].x,route.path[0].z),dx=wp.x-t.mesh.position.x,dz=wp.z-t.mesh.position.z,ml=Math.hypot(dx,dz);
+              if(ml<.24){route.path.shift();}else{const step=st.speed*(t.slowUntil>now?.48:1)*dtSafe;t.mesh.position.x+=dx/ml*step;t.mesh.position.z+=dz/ml*step;t.mesh.rotation.y=Math.atan2(dx,dz);if(jumping)t.jumping=true;}
+              const moved=Math.hypot(t.mesh.position.x-(t.lastX??t.mesh.position.x),t.mesh.position.z-(t.lastZ??t.mesh.position.z));
+              if(moved<.012)t.stuckTime=(t.stuckTime||0)+dtSafe;else t.stuckTime=0;
+              t.lastX=t.mesh.position.x;t.lastZ=t.mesh.position.z;
+              if(t.stuckTime>1.0){t.pathCache=null;t.currentTarget=null;t.thinkClock=0;t.stuckTime=0;}
+            }
+            else if(route&&route.path.length===0){/* already at an attack cell; next tick fires */}
+            else {
+              // Recovery loop: don't leave a unit indefinitely in CALCULANDO. Try every live
+              // structure in distance order, then the Hall. Keep the successful route cached.
+              const hall={mesh:townHallMesh,isTownHall:true,x:16,z:16,layer:1};
+              const liveStructures=allStructures().filter(d=>d!==target&&d.mesh?.parent&&d.hp>0);
+              liveStructures.sort((a,b)=>t.mesh.position.distanceTo(a.mesh.position)-t.mesh.position.distanceTo(b.mesh.position));
+              const candidates=liveStructures.slice(0,8);const special=[liveStructures.find(isWall),liveStructures.find(isDefense)].filter(Boolean);for(const d of special)if(!candidates.includes(d))candidates.push(d);
+              let recovered=null,recoveredRoute=null;
+              for(const candidate of candidates){const r=findAttackPath(t,candidate);if(r&&r.path&&!r.unreachable){recovered=candidate;recoveredRoute=r;break;}}
+              if(!recovered&&target!==hall){const r=findAttackPath(t,hall);if(r&&!r.unreachable){recovered=hall;recoveredRoute=r;}}
+              if(recovered){t.currentTarget=recovered;t.pathCache=recoveredRoute;t.thinkClock=0;t.stuckTime=0;}
+              else {t.currentTarget=null;t.pathCache=null;t.thinkClock=.22;t.stuckTime=(t.stuckTime||0)+dtSafe;if(t.stuckTime>2.2){t.stuckTime=0;const walls=allStructures().filter(isWall).sort((a,b)=>t.mesh.position.distanceTo(a.mesh.position)-t.mesh.position.distanceTo(b.mesh.position));if(walls.length){t.currentTarget=walls[0];t.pathCache=null;}}}
+            }
+          }
+          resolveUnitSeparation(dtSafe);
+          const thbar=townHallMesh?.userData?.healthBar;if(thbar&&thbar.sprite.visible&&thbar.hideAt<now)thbar.sprite.visible=false;
+          for(const t of troops){if(t.dead)continue;const b=t.mesh.userData.healthBar;if(b&&b.sprite.visible&&b.hideAt<now)b.sprite.visible=false;}
+          for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++)for(const d of [state.grid[x][z],state.topGrid[x][z]]){if(!d?.mesh)continue;const b=d.mesh.userData.healthBar;if(b&&b.sprite.visible&&b.hideAt<now)b.sprite.visible=false;if(d.mesh.userData.hitScaleUntil){if(now<d.mesh.userData.hitScaleUntil)d.mesh.scale.setScalar(1+Math.sin((d.mesh.userData.hitScaleUntil-now)/110*Math.PI)*.07);else{d.mesh.scale.setScalar(1);d.mesh.userData.hitScaleUntil=0;}}}
+          const hb=townHallMesh?.userData?.healthBar;if(hb){document.getElementById('townhall-health').style.width=(townHallHP/10)+'%';document.getElementById('health-label').textContent=Math.round(townHallHP/10)+'%';}
+          // Projectiles track moving targets and apply their damage exactly once on impact.
+          for(let i=projectiles.length-1;i>=0;i--){const p=projectiles[i];let targetPos=null;if(p.target?.mesh)targetPos=p.target.mesh.position.clone().add(new THREE.Vector3(0,p.target.isTownHall?1.3:.65,0));else if(p.target?.isVector3)targetPos=p.target.clone();if(!targetPos||(!p.target.isTownHall&&((p.target.hp??1)<=0||!p.target.mesh.visible))){scene.remove(p.mesh);projectiles.splice(i,1);continue;}
+            const dir=targetPos.clone().sub(p.mesh.position),dist=dir.length();p.trailClock-=dtSafe;if(p.trailClock<=0){p.trailClock=.075;spawnBurst(p.mesh.position,p.color,p.kind==='cannon'||p.kind==='bomb'?3:p.kind==='arrow'?1:2,'trail');}
+            if(dist<p.speed*dtSafe+.18){if(p.target?.isTownHall||p.target?.layer){damageStructure(p.target,p.damage,p.color,p.source?.kind?p.source:null);if(p.splash||p.kind==='cannon'||p.kind==='bomb')damageArea(targetPos,p.splash||1.65,p.damage*.45,p.color,p.target,p.source?.kind?p.source:null);if(p.kind==='ice'){for(const t of troops)if(!t.dead&&t.mesh.position.distanceTo(targetPos)<1.5)t.slowUntil=now+2100;}}
+              else if(p.target?.kind){damageTroop(p.target,p.damage,p.color,p.source?.kind?p.source:null);if(p.splash||p.kind==='cannon'||p.kind==='bomb')damageArea(targetPos,p.splash||1.65,p.damage*.45,p.color,p.target,p.source?.kind?p.source:null);if(p.kind==='ice')p.target.slowUntil=now+2100;}
+              spawnBurst(targetPos,p.color,p.kind==='cannon'?36:p.kind==='ice'?22:18,'impact');scene.remove(p.mesh);projectiles.splice(i,1);
+            }else{p.mesh.position.add(dir.normalize().multiplyScalar(p.speed*dtSafe));p.mesh.rotation.x+=dtSafe*8;p.mesh.rotation.y+=dtSafe*10;}}
+          for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dtSafe;p.mesh.position.addScaledVector(p.v,dtSafe);p.v.y-=p.style==='trail'?-.25:5*dtSafe;if(p.style==='trail'){p.mesh.scale.multiplyScalar(.91);p.mesh.material.opacity=Math.max(0,p.life*2.2);}else{p.mesh.scale.multiplyScalar(p.style==='debris'?.975:.93);if(p.mesh.material.opacity!==undefined)p.mesh.material.opacity=Math.max(0,p.life/(p.maxLife||1));}if(p.life<=0){scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();particles.splice(i,1);}}
+          // Defensa con perfiles distintos: selección de objetivo, tipo de daño y proyectil.
+          if(battleActive&&now-lastBattleTick>65){lastBattleTick=now;for(let x=0;x<GRID_SIZE;x++)for(let z=0;z<GRID_SIZE;z++){const d=state.topGrid[x][z];if(!d||!d.type?.range)continue;d.cooldown=(d.cooldown||0)-.065;if(d.cooldown>0)continue;const type=d.type,range=type.range;
+              let candidates=troops.filter(t=>!t.dead&&d.mesh.position.distanceTo(t.mesh.position)<=range&&((!t.flying&&type.targets!=='air')||(t.flying&&type.targets!=='ground')));
+              if(!candidates.length)continue;
+              candidates.sort((a,b)=>{const score=t=>{let s=d.mesh.position.distanceTo(t.mesh.position);if(type.id==='cannon_turret'||type.id==='mortar_turret')s+=(t.kind==='giant'?-3:0)+(t.flying?999:0);if(type.id==='frost_turret')s+=(t.kind==='jumper'||t.kind==='flyer'?-1.2:0);if(type.id==='purple_turret')s+=(t.flying?-1.4:0);if(type.id==='arrow_turret')s+=(t.hp<type.damage?-.7:0);return s;};return score(a)-score(b);});
+              const target=candidates[0];d.cooldown=type.rate||1;const muzzle=d.mesh.position.clone().add(new THREE.Vector3(0,1.05,0));const kind=type.id==='cannon_turret'?'cannon':type.id==='mortar_turret'?'bomb':type.id==='frost_turret'?'ice':type.id==='arrow_turret'?'arrow':'defense';fireProjectile(muzzle,target,type.projectile||0xc084fc,type.damage||13,kind,d);d.mesh.rotation.y=Math.atan2(target.mesh.position.x-d.mesh.position.x,target.mesh.position.z-d.mesh.position.z);d.mesh.userData.firingUntil=now+150;
+              const core=d.mesh.userData.turretCore;if(core){core.rotation.y+=.22;core.scale.setScalar(1.12);setTimeout(()=>{if(core.parent)core.scale.setScalar(1);},90);}
+          }}
+          if(battleActive&&townHallHP<=0){finishBattle('Ayuntamiento destruido: objetivo principal completado.');return;}
+          if(battleActive&&troops.length>0&&troops.every(t=>t.dead)&&projectiles.length===0){finishBattle('Todas las tropas han sido eliminadas. La aldea ha resistido.');return;}
+          updateDeploymentZone();updateSelectedTroopInspector();
+        }
+
+        function updateSelectedTroopInspector(){
+          if(!selectedTroopInspect)return;
+          const t=selectedTroopInspect;if(t.dead||!t.mesh.parent){hideTroopInspector();return;}
+          const st=troopStats[t.kind],target=t.currentTarget;
+          document.getElementById('troop-inspector-hp').style.width=`${Math.max(0,t.hp/st.hp*100)}%`;
+          document.getElementById('troop-inspector-subtitle').textContent=`Unidad #${t.unitId} · ${Math.ceil(t.hp)} / ${st.hp} PV`;
+          const targetName=target?.isTownHall?'Ayuntamiento':target?.type?.name||target?.name||'Buscando objetivo';
+          const status=target&&t.pathCache?.unreachable?'SIN RUTA · REINTENTANDO':target&&t.pathCache?.path?.length?'EN RUTA':target?'ATACANDO / REVISANDO':'BUSCANDO OBJETIVO';
+          document.getElementById('troop-inspector-details').textContent=`Daño: ${st.damage} · Velocidad: ${st.speed}\nObjetivo: ${targetName} · ${status}`;
+          if(rangeRingMode==='unit-selected')rangeRing.position.set(t.mesh.position.x,.055,t.mesh.position.z);
+        }
+
+        // Herramientas de depuración de batalla: se pueden activar/desactivar durante la partida.
+        let pathDebugEnabled=false, troopLabelsEnabled=false, debugRefreshAt=0;
+        const pathDebugLines=[], troopDebugSprites=new Map();
+        function clearDebugLines(){for(const line of pathDebugLines){scene.remove(line);line.geometry?.dispose();if(line.material?.dispose)line.material.dispose();}pathDebugLines.length=0;}
+        function setPathDebug(enabled){pathDebugEnabled=!!enabled;clearDebugLines();const b=document.getElementById('btn-toggle-routes');if(b){b.textContent=pathDebugEnabled?'🧭 Rutas: ON':'🧭 Rutas: OFF';b.setAttribute('aria-pressed',String(pathDebugEnabled));b.classList.toggle('bg-emerald-600',pathDebugEnabled);b.classList.toggle('bg-slate-700',!pathDebugEnabled);}if(!pathDebugEnabled)updatePathDebug(true);}
+        function togglePathDebug(enabled=!pathDebugEnabled){setPathDebug(enabled);}
+        function makeTroopDebugSprite(t){
+          const canvas=document.createElement('canvas');canvas.width=512;canvas.height=160;const ctx=canvas.getContext('2d');
+          const texture=new THREE.CanvasTexture(canvas);texture.minFilter=THREE.LinearFilter;
+          const material=new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false});
+          const sprite=new THREE.Sprite(material);sprite.scale.set(3.15,.98,1);sprite.position.set(0,1.55,0);sprite.renderOrder=1000;
+          t.mesh.add(sprite);t.debugLabel={canvas,ctx,texture,sprite,lastText:'',lastDraw:0};return t.debugLabel;
+        }
+        function updateTroopDebugLabel(t,now){
+          if(!troopLabelsEnabled||t.dead)return;const st=troopStats[t.kind];let status='BUSCANDO OBJETIVO',targetName='';
+          const target=t.currentTarget;
+          if(target&&target.mesh){targetName=target.isTownHall?'Ayuntamiento':(target.type?.name||target.name||(isWall(target)?'Muro':isDefense(target)?'Torreta':'Estructura'));
+            const dist=t.mesh.position.distanceTo(target.mesh.position),range=attackRangeFor(t,target);
+            if(dist<=range+.15)status='ATACANDO';else if(t.pathCache?.unreachable)status='SIN RUTA · REINTENTANDO';else if(t.pathCache?.path?.length)status=t.kind==='jumper'&&t.jumping?'SALTANDO':'EN RUTA';else if(t.thinkClock>0)status='REVISANDO OBJETIVO';else status='BUSCANDO RUTA';
+          }
+          const textKey=`${status}|${targetName}|${Math.ceil(t.hp)}`;if(t.debugLabel?.lastText===textKey&&now-t.debugLabel.lastDraw<350)return;
+          const label=t.debugLabel||makeTroopDebugSprite(t),ctx=label.ctx;label.lastText=textKey;label.lastDraw=now;
+          ctx.clearRect(0,0,512,160);ctx.fillStyle='rgba(2,6,23,.9)';ctx.beginPath();ctx.roundRect(5,5,502,150,24);ctx.fill();ctx.strokeStyle='#'+st.color.toString(16).padStart(6,'0');ctx.lineWidth=7;ctx.stroke();
+          ctx.fillStyle='#ffffff';ctx.font='bold 36px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${st.name} · ${status}`,256,48);
+          ctx.fillStyle='#cbd5e1';ctx.font='bold 28px system-ui';ctx.fillText(targetName?`Objetivo: ${targetName}`:'Objetivo: —',256,88);
+          const hpPct=Math.max(0,t.hp/st.hp);ctx.fillStyle='#334155';ctx.fillRect(42,118,428,18);ctx.fillStyle=hpPct>.55?'#22c55e':hpPct>.25?'#f59e0b':'#ef4444';ctx.fillRect(42,118,428*hpPct,18);label.texture.needsUpdate=true;
+        }
+        function setTroopLabels(enabled){troopLabelsEnabled=!!enabled;const b=document.getElementById('btn-toggle-unit-labels');if(b){b.textContent=troopLabelsEnabled?'🏷️ Indicadores: ON':'🏷️ Indicadores: OFF';b.setAttribute('aria-pressed',String(troopLabelsEnabled));b.classList.toggle('bg-emerald-600',troopLabelsEnabled);b.classList.toggle('bg-slate-700',!troopLabelsEnabled);}for(const t of troops){if(t.debugLabel)t.debugLabel.sprite.visible=troopLabelsEnabled;else if(troopLabelsEnabled)makeTroopDebugSprite(t);}if(!troopLabelsEnabled){for(const t of troops)if(t.debugLabel)t.debugLabel.sprite.visible=false;}}
+        function updatePathDebug(force=false){
+          const now=performance.now();if(!force&&now-debugRefreshAt<140){if(troopLabelsEnabled)for(const t of troops)updateTroopDebugLabel(t,now);return;}debugRefreshAt=now;
+          if(pathDebugEnabled){clearDebugLines();for(const t of troops){if(t.dead)continue;const st=troopStats[t.kind],points=[t.mesh.position.clone().add(new THREE.Vector3(0,.22,0))],path=t.pathCache?.path||[];
+              for(const c of path){const w=cellWorld(c.x,c.z);points.push(new THREE.Vector3(w.x,.22,w.z));}
+              if(points.length>1){const geo=new THREE.BufferGeometry().setFromPoints(points),mat=new THREE.LineBasicMaterial({color:st.color,transparent:true,opacity:.92,depthTest:false});const line=new THREE.Line(geo,mat);line.renderOrder=999;scene.add(line);pathDebugLines.push(line);}
+              const target=t.currentTarget;if(target?.mesh){const a=t.mesh.position.clone().add(new THREE.Vector3(0,.28,0)),b=target.mesh.position.clone().add(new THREE.Vector3(0,.35,0));const geo=new THREE.BufferGeometry().setFromPoints([a,b]),mat=new THREE.LineDashedMaterial({color:st.color,dashSize:.24,gapSize:.16,transparent:true,opacity:.48,depthTest:false});const line=new THREE.Line(geo,mat);line.computeLineDistances();line.renderOrder=998;scene.add(line);pathDebugLines.push(line);}
+            }}else clearDebugLines();
+          if(troopLabelsEnabled){for(const t of troops){if(t.dead){if(t.debugLabel)t.debugLabel.sprite.visible=false;continue;}if(!t.debugLabel)makeTroopDebugSprite(t);t.debugLabel.sprite.visible=true;updateTroopDebugLabel(t,now);}}
+          else for(const t of troops)if(t.debugLabel)t.debugLabel.sprite.visible=false;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const nowFrame=performance.now(); const dt=Math.min((nowFrame-(animate._last||nowFrame))/1000,.05); animate._last=nowFrame; if(state.gameMode==='attack') battleUpdate(dt); updateDeploymentGhost(); updatePathDebug();
+
+            // Animación de rotación del núcleo del Ayuntamiento
+            if (townHallMesh && townHallMesh.children[2]) {
+                const time = Date.now() * 0.002;
+                townHallMesh.children[2].rotation.y = time;
+            }
+
+            // Animación de respiración de pulso para el Cursor 3D
+            if (cursorMesh) {
+                const time = Date.now() * 0.004;
+                cursorMesh.material.opacity = 0.45 + Math.sin(time) * 0.15;
+            }
+
+            // Actualización de animaciones Pop-in de escalado suave al construir
+            for (let i = animatedMeshes.length - 1; i >= 0; i--) {
+                const item = animatedMeshes[i];
+                item.progress += 0.12;
+                const scale = Math.min(1.0, item.progress);
+                item.mesh.scale.set(scale, scale, scale);
+                if (item.progress >= 1.0) {
+                    animatedMeshes.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
