@@ -99,7 +99,7 @@
         #army-config-modal{background:rgba(2,6,23,.82);backdrop-filter:blur(8px)}
         .army-config-mode{border:1px solid #475569;border-radius:12px;padding:10px;background:#0f172a;color:#e2e8f0;text-align:left}
         .army-config-mode.active{border-color:#22d3ee;background:rgba(8,145,178,.2)}
-        @media(max-width:800px){#troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} #troop-panel .troop-btn{flex-basis:78px;min-width:78px;min-height:108px;padding:6px 4px 5px!important}.troop-avatar{transform:scale(.94)}.turret-type-btn{min-width:38px;min-height:38px}}
+        @media(max-width:800px){#build-tools-panel{display:none!important} #troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} #troop-panel .troop-btn{flex-basis:62px;min-width:62px;min-height:86px;padding:4px 3px 4px!important}.troop-avatar{transform:scale(.94)}.turret-type-btn{min-width:38px;min-height:38px}}
         @media(max-width:800px){#battle-hud{top:56px!important;left:8px!important}#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{right:8px!important;top:56px!important}#gesture-hint{display:none}}
 
         @media (orientation: portrait) {
@@ -352,7 +352,7 @@
         <div class="flex gap-2 mt-5"><button id="btn-result-retry" class="game-btn flex-1 rounded-xl bg-orange-500 text-slate-950 font-black py-3 text-xs">↻ REPETIR INCURSIÓN</button><button id="btn-result-close" class="game-btn flex-1 rounded-xl bg-slate-700 text-white font-black py-3 text-xs">CERRAR</button></div>
       </div>
     </div>
-    <div id="troop-panel" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 hud-card rounded-2xl p-2 flex gap-1 items-stretch" style="max-width:calc(100vw - 12px);overflow-x:auto;touch-action:pan-x">
+    <div id="troop-panel" class="hidden absolute bottom-3 left-3 z-20 hud-card rounded-2xl p-2 flex gap-1 items-stretch" style="max-width:calc(100vw - 12px);overflow-x:auto;touch-action:pan-x">
       <button data-troop="barbarian" style="--troop-color:#b45309" class="troop-btn deploy-selected game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-helmet"></span><span class="avatar-body"></span><span class="avatar-gear">🪓</span></div><div class="troop-name">Bárbaro</div><div class="troop-role">Equilibrado</div></div></button>
       <button data-troop="archer" style="--troop-color:#047857" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-gear">🏹</span></div><div class="troop-name">Arquera</div><div class="troop-role">A distancia</div></div></button>
       <button data-troop="giant" style="--troop-color:#7c3aed" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar" style="transform:scale(1.08)"><span class="avatar-head" style="width:20px;height:20px"></span><span class="avatar-body" style="width:31px;height:27px"></span><span class="avatar-gear">🛡️</span></div><div class="troop-name">Gigante</div><div class="troop-role">Caza defensas</div></div></button>
@@ -1436,7 +1436,7 @@
           document.getElementById('battle-hud').classList.toggle('hidden', build);
           document.getElementById('battle-controls').classList.toggle('hidden', build);
           document.getElementById('troop-panel').classList.toggle('hidden', build);document.getElementById('troop-panel').classList.toggle('camera-mode',!build&&attackGestureMode==='camera');
-          document.getElementById('build-tools-panel').classList.toggle('hidden', !build);
+          const btp=document.getElementById('build-tools-panel'); if(btp) btp.classList.toggle('hidden', !build);
           document.getElementById('bottom-controls').classList.toggle('hidden', !build);
           document.getElementById('action-bar').classList.toggle('hidden', !build);
           document.getElementById('btn-toggle-build-mode').classList.toggle('hidden', !build);
