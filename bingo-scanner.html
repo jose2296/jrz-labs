@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo Scanner 90</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tesseract.js: OCR 100% local en el navegador (sin API key ni servicios de pago) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 9999px;
+        }
+        .stamped {
+            position: relative;
+        }
+        /* Marca del número cantado: anillo azul translúcido, para que el
+           número siga siendo legible debajo. */
+        .stamped::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(14, 165, 233, 0.32) 100%);
+            border: 2px solid rgba(56, 189, 248, 0.8);
+            border-radius: inherit;
+            box-shadow: inset 0 0 6px rgba(56,189,248,0.35), 0 0 8px rgba(56,189,248,0.35);
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden select-none">
+
+    <!-- Header Principal -->
+    <header class="bg-slate-900/90 border-b border-slate-800 px-3 py-2 flex items-center justify-between shrink-0 z-20 backdrop-blur-md">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center font-black text-slate-950 text-lg shadow-md shadow-amber-500/20">
+                90
+            </div>
+            <div>
+                <h1 class="font-bold text-sm leading-none text-slate-100">Bingo Scanner</h1>
+                <p class="text-[10px] text-amber-400 font-medium mt-0.5">Escáner & Marcador Digital</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+            <button id="btn-library" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1 font-medium text-amber-300 transition">
+                <i data-lucide="bookmark" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Biblioteca</span>
+            </button>
+            <button id="btn-manual-add" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1 font-medium transition">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Nuevo</span>
+            </button>
+            <button id="btn-open-camera" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 active:scale-95 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg shadow-lg shadow-amber-500/20 flex items-center gap-1 transition">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+                <span>Escanear</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Área Principal de Cartones -->
+    <main class="flex-1 overflow-y-auto p-3 space-y-4 bg-slate-950 relative" id="cards-container">
+        <!-- Estado Vacío -->
+        <div id="empty-state" class="h-full min-h-[60vh] flex flex-col items-center justify-center text-center p-6 text-slate-400 space-y-4">
+            <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
+                <i data-lucide="camera" class="w-12 h-12 text-amber-400/80 mx-auto"></i>
+            </div>
+            <div>
+                <p class="font-bold text-slate-200 text-lg">No hay cartones en la partida</p>
+                <p class="text-xs text-slate-400 max-w-xs mt-1">Añade cartones desde la cámara, edítalos manualmente o cárgalos desde tu biblioteca guardada.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 justify-center pt-2">
+                <button id="btn-empty-scan" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 text-xs transition">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    Escanear Cartón
+                </button>
+                <button id="btn-empty-library" class="bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-4 py-2.5 rounded-xl border border-slate-800 shadow-lg flex items-center gap-2 text-xs transition">
+                    <i data-lucide="bookmark" class="w-4 h-4"></i>
+                    Cargar Guardados
+                </button>
+            </div>
+        </div>
+
+        <!-- Lista donde se renderizan los cartones activos -->
+        <div id="cards-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div>
+    </main>
+
+    <!-- Barra Inferior (Teclado Marcador + Reiniciar) -->
+    <footer class="bg-slate-900 border-t border-slate-800 p-2 shrink-0 z-20 flex flex-col gap-2">
+        <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2 overflow-x-auto py-0.5 max-w-[65%]" id="recent-balls">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Cantados:</span>
+                <span class="text-xs text-slate-500 italic shrink-0" id="recent-balls-text">Ninguno</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btn-toggle-keypad" class="text-xs text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1.5 bg-slate-800 active:scale-95 px-3 py-2 rounded-xl border border-slate-700 transition">
+                    <i data-lucide="grid" class="w-4 h-4"></i>
+                    <span id="keypad-toggle-text">Teclado</span>
+                </button>
+                <button id="btn-reset-game" type="button" class="text-xs text-red-400 hover:text-red-300 active:scale-95 font-medium flex items-center gap-1 bg-red-950/60 hover:bg-red-900/80 px-2.5 py-1 rounded-md border border-red-800/60 transition cursor-pointer">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span>Reiniciar Partida</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vista Teclado Tira Horizontal Rápida (1 al 90) -->
+        <div id="quick-input-view" class="overflow-x-auto py-1 flex items-center gap-1.5 scrollbar-thin">
+            <!-- Inyectado mediante JS -->
+        </div>
+
+    </footer>
+
+    <!-- Bottom Sheet: Teclado Completo 1 al 90 -->
+    <div id="keypad-sheet" class="fixed inset-0 z-40 hidden">
+        <div id="keypad-sheet-backdrop" class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200"></div>
+        <section id="keypad-sheet-panel" role="dialog" aria-modal="true" aria-label="Teclado de números"
+                 class="absolute inset-x-0 bottom-0 max-h-[85vh] flex flex-col bg-slate-900 border-t border-slate-700 rounded-t-3xl shadow-2xl shadow-black/70 translate-y-full transition-transform duration-200 ease-out">
+            <button id="keypad-sheet-handle" class="w-full pt-2 pb-1 flex flex-col items-center cursor-grab active:cursor-grabbing touch-none" aria-label="Cerrar teclado">
+                <span class="w-14 h-1.5 rounded-full bg-slate-600"></span>
+            </button>
+            <div class="px-3 pb-2 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-amber-400 text-sm">Marcar números</h3>
+                    <p class="text-[11px] text-slate-400 truncate">Toca un número para marcarlo o desmarcarlo</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span id="sheet-marked-count" class="text-[11px] font-bold text-slate-300 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1">0</span>
+                    <button id="btn-close-keypad-sheet" class="text-slate-300 active:scale-95 p-2 rounded-xl bg-slate-800 border border-slate-700" aria-label="Cerrar teclado">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain px-1.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                <div id="grid-keypad-container" class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-10 gap-2 max-w-2xl mx-auto text-center">
+                    <!-- Inyectado mediante JS -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de Cámara / Escáner -->
+    <div id="camera-modal" class="fixed inset-0 bg-black/90 z-50 flex flex-col hidden backdrop-blur-md">
+        <div class="p-3 bg-slate-900 border-b border-slate-800 flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="font-bold text-amber-400 text-sm flex items-center gap-2">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Escanear Boleto de Bingo
+                </h3>
+                <p class="text-[11px] text-slate-400">Encuadra el cartón de 3×9 · OCR local, sin API</p>
+            </div>
+            <button id="btn-close-camera" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+            <video id="camera-feed" autoplay playsinline class="w-full h-full object-cover"></video>
+            <canvas id="snapshot-canvas" class="hidden"></canvas>
+
+            <!-- Guía Visual para Boleto -->
+            <div class="absolute inset-4 sm:inset-12 border-2 border-dashed border-amber-400/70 rounded-2xl pointer-events-none flex flex-col justify-between p-2 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+                <div class="bg-amber-500/20 text-amber-300 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded self-center backdrop-blur-md border border-amber-500/30">
+                    Alinea el cartón en este recuadro
+                </div>
+                <div class="grid grid-cols-9 grid-rows-3 h-full my-2 border border-amber-400/30 rounded-lg overflow-hidden">
+                    <!-- 27 celdas de guía: 3 filas × 9 columnas -->
+                    <div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-b border-amber-400/20"></div>
+                    <div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-r border-b border-amber-400/20"></div><div class="border-b border-amber-400/20"></div>
+                    <div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div class="border-r border-amber-400/20"></div><div></div>
+                </div>
+            </div>
+
+            <div id="ocr-loading" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 hidden z-20">
+                <div class="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                <p class="text-amber-400 font-bold text-sm" id="ocr-status-text">Procesando imagen con OCR...</p>
+                <p class="text-slate-400 text-xs mt-1 text-center max-w-xs" id="ocr-subtext">Detectando números y organizando la cuadrícula 3x9</p>
+            </div>
+        </div>
+
+        <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-around shrink-0 gap-2">
+            <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+                <i data-lucide="image" class="w-4 h-4 text-amber-400"></i>
+                <span>Galería</span>
+                <input type="file" id="file-input" accept="image/*" class="hidden">
+            </label>
+
+            <button id="btn-switch-camera" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700 text-slate-300">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
+
+            <button id="btn-capture" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-1.5 text-xs transition">
+                <i data-lucide="scan" class="w-4 h-4"></i>
+                <span>Escanear OCR</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Biblioteca de Cartones Guardados -->
+    <div id="library-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 hidden backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/90">
+                <div>
+                    <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+                        <i data-lucide="bookmark" class="w-5 h-5"></i> Mis Cartones Guardados
+                    </h3>
+                    <p class="text-xs text-slate-400">Guarda tus cartones fijos para jugarlos cuando quieras.</p>
+                </div>
+                <button id="btn-close-library" class="text-slate-400 hover:text-white p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto flex-1 space-y-3" id="library-cards-container">
+                <!-- Inyectado por JS -->
+            </div>
+
+            <div class="p-3 border-t border-slate-800 flex justify-between items-center bg-slate-900/90">
+                <button id="btn-add-current-to-library" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-amber-300 flex items-center gap-1.5 border border-slate-700 transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Guardar partida en biblioteca</span>
+                </button>
+                <button id="btn-load-all-library" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition">
+                    <i data-lucide="play" class="w-4 h-4"></i>
+                    <span>Cargar todos a la partida</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición / Confirmación de Cartón -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 hidden backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-amber-400 text-base" id="edit-modal-title">Editar / Validar Cartón</h3>
+                    <p class="text-xs text-slate-400">3 filas × 9 columnas (Bingo 90 bolas)</p>
+                </div>
+                <button id="btn-close-edit" class="text-slate-400 hover:text-white p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto flex-1 space-y-4">
+                <p class="text-xs text-slate-300">Cada número debe estar en su columna (1-9, 10-19, … 80-90). Deja la casilla en blanco si no hay número. Las casillas en rojo indican un error.</p>
+
+                <div id="edit-status" class="hidden text-xs rounded-xl px-3 py-2 border"></div>
+                
+                <div id="edit-grid" class="grid grid-cols-9 gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                    <!-- Inyectado por JS -->
+                </div>
+
+                <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                    <input type="checkbox" id="chk-save-library" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 bg-slate-950 border-slate-700">
+                    <label for="chk-save-library" class="text-xs text-slate-300 font-medium cursor-pointer">
+                        Guardar también en mi Biblioteca permanente
+                    </label>
+                </div>
+            </div>
+
+            <div class="p-3 border-t border-slate-800 flex justify-end gap-2 bg-slate-900/90">
+                <button id="btn-cancel-edit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition">
+                    Cancelar
+                </button>
+                <button id="btn-save-edit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Guardar Cartón</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Reinicio de Partida -->
+    <div id="reset-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-800">
+                <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Reiniciar Partida
+                </h3>
+                <p class="text-xs text-slate-400 mt-1" id="reset-summary">Elige qué quieres reiniciar.</p>
+            </div>
+            <div class="p-4 space-y-2">
+                <button id="btn-reset-balls" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-3 py-2.5 transition active:scale-[0.99]">
+                    <span class="block text-xs font-bold text-slate-100 flex items-center gap-1.5"><i data-lucide="eraser" class="w-4 h-4 text-amber-400"></i> Solo bolas cantadas</span>
+                    <span class="block text-[11px] text-slate-400 mt-0.5">Desmarca los números y mantiene los cartones.</span>
+                </button>
+                <button id="btn-reset-all" class="w-full text-left bg-red-950/50 hover:bg-red-900/60 border border-red-800/60 rounded-xl px-3 py-2.5 transition active:scale-[0.99]">
+                    <span class="block text-xs font-bold text-red-300 flex items-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> Bolas y cartones de la partida</span>
+                    <span class="block text-[11px] text-slate-400 mt-0.5">Deja la partida vacía. Tu biblioteca guardada no se borra.</span>
+                </button>
+                <p class="text-[11px] text-slate-500 pt-1">La biblioteca de cartones guardados se conserva siempre.</p>
+            </div>
+            <div class="p-3 border-t border-slate-800 flex justify-end bg-slate-900/90">
+                <button id="btn-cancel-reset" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica Principal -->
+    <script>
+        // Estado global de la aplicación
+        const state = {
+            cards: [],
+            savedLibrary: [],
+            markedNumbers: new Set(),
+            editingMatrix: Array(3).fill(null).map(() => Array(9).fill('')),
+            currentEditCardId: null,
+            mediaStream: null,
+            facingMode: 'environment'
+        };
+
+        const STORAGE_KEYS = {
+            cards: 'bingo_cards',
+            library: 'bingo_saved_library',
+            marked: 'bingo_marked'
+        };
+
+        window.onload = () => {
+            lucide.createIcons();
+            loadStateFromStorage();
+            setupEventListeners();
+            renderKeypad();
+            renderCards();
+        };
+
+        // Devuelve una matriz 3x9 limpia: cada celda es '' o un número entre 1 y 90.
+        function normalizeMatrix(raw) {
+            const matrix = Array.from({ length: 3 }, () => Array(9).fill(''));
+            if (!Array.isArray(raw)) return matrix;
+
+            for (let r = 0; r < 3; r++) {
+                const row = Array.isArray(raw[r]) ? raw[r] : [];
+                for (let c = 0; c < 9; c++) {
+                    const value = row[c];
+                    if (value === null || value === undefined) continue;
+                    const text = String(value).trim();
+                    if (!/^\d{1,2}$/.test(text)) continue;
+                    const num = parseInt(text, 10);
+                    if (num >= 1 && num <= 90) matrix[r][c] = String(num);
+                }
+            }
+            return matrix;
+        }
+
+        function normalizeCard(raw, index, prefix = 'card') {
+            const source = raw && typeof raw === 'object' ? raw : {};
+            return {
+                id: source.id ? String(source.id) : `${prefix}-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+                name: source.name ? String(source.name) : `Cartón #${index + 1}`,
+                matrix: normalizeMatrix(source.matrix)
+            };
+        }
+
+        function createCardId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+            return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        // Guardado / Carga en LocalStorage
+        function saveStateToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.cards, JSON.stringify(state.cards));
+                localStorage.setItem(STORAGE_KEYS.library, JSON.stringify(state.savedLibrary));
+                localStorage.setItem(STORAGE_KEYS.marked, JSON.stringify(Array.from(state.markedNumbers)));
+            } catch (e) {
+                console.error("Error guardando en localStorage:", e);
+                alert("No se pudo guardar en el almacenamiento del navegador. Comprueba que no esté lleno o bloqueado.");
+            }
+        }
+
+        function loadStateFromStorage() {
+            try {
+                const savedCards = JSON.parse(localStorage.getItem(STORAGE_KEYS.cards) || '[]');
+                const savedLibrary = JSON.parse(localStorage.getItem(STORAGE_KEYS.library) || '[]');
+                const savedMarked = JSON.parse(localStorage.getItem(STORAGE_KEYS.marked) || '[]');
+
+                state.cards = Array.isArray(savedCards)
+                    ? savedCards.map((card, index) => normalizeCard(card, index, 'card'))
+                    : [];
+                state.savedLibrary = Array.isArray(savedLibrary)
+                    ? savedLibrary.map((card, index) => normalizeCard(card, index, 'lib'))
+                    : [];
+                state.markedNumbers = new Set(
+                    (Array.isArray(savedMarked) ? savedMarked : [])
+                        .map(Number)
+                        .filter(num => Number.isInteger(num) && num >= 1 && num <= 90)
+                );
+            } catch (e) {
+                console.error("Error cargando de localStorage:", e);
+            }
+        }
+
+        // Reiniciar Partida: conserva siempre la biblioteca guardada.
+        function openResetModal() {
+            document.getElementById('reset-summary').innerText =
+                `${state.cards.length} cartón(es) en la partida y ${state.markedNumbers.size} bola(s) cantada(s). Elige qué reiniciar:`;
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function resetGame(clearCards) {
+            state.markedNumbers.clear();
+            if (clearCards) state.cards = [];
+            saveStateToStorage();
+            renderKeypad();
+            renderCards();
+            closeResetModal();
+        }
+
+        // Gestión de Marcado de Números Cantados
+        function toggleNumber(num) {
+            num = parseInt(num, 10);
+            if (!Number.isInteger(num) || num < 1 || num > 90) return;
+            if (state.markedNumbers.has(num)) {
+                state.markedNumbers.delete(num);
+            } else {
+                state.markedNumbers.add(num);
+            }
+            saveStateToStorage();
+            renderKeypad();
+            renderCards();
+        }
+
+        // Render del Teclado Inferior (1 al 90)
+        function renderKeypad() {
+            const quickContainer = document.getElementById('quick-input-view');
+            const gridContainer = document.getElementById('grid-keypad-container');
+            const recentText = document.getElementById('recent-balls-text');
+
+            quickContainer.innerHTML = '';
+            gridContainer.innerHTML = '';
+
+            const markedArray = Array.from(state.markedNumbers).sort((a, b) => b - a);
+            if (markedArray.length > 0) {
+                recentText.innerText = markedArray.slice(0, 8).join(', ');
+                recentText.classList.remove('italic', 'text-slate-500');
+                recentText.classList.add('font-bold', 'text-sky-300');
+            } else {
+                recentText.innerText = 'Ninguno';
+                recentText.classList.add('italic', 'text-slate-500');
+                recentText.classList.remove('font-bold', 'text-sky-300');
+            }
+
+            for (let i = 1; i <= 90; i++) {
+                const isMarked = state.markedNumbers.has(i);
+
+                // Botón Vista Tira Rápida
+                const btnQuick = document.createElement('button');
+                btnQuick.type = 'button';                    btnQuick.className = `shrink-0 w-11 h-11 rounded-xl font-bold text-[15px] flex items-center justify-center transition border active:scale-95 ${
+                    isMarked 
+                        ? 'bg-sky-400 text-slate-950 border-sky-300 shadow-md shadow-sky-400/30' 
+                        : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                }`;
+                btnQuick.innerText = i;
+                btnQuick.onclick = () => toggleNumber(i);
+                quickContainer.appendChild(btnQuick);
+
+                // Botón Vista Rejilla (bottom sheet)
+                const btnGrid = document.createElement('button');
+                btnGrid.type = 'button';
+                btnGrid.className = `aspect-square min-h-[52px] rounded-2xl font-bold text-lg flex items-center justify-center transition border active:scale-95 ${
+                    isMarked 
+                        ? 'bg-sky-400 text-slate-950 border-sky-300 shadow-md shadow-sky-400/30' 
+                        : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                }`;
+                btnGrid.innerText = i;
+                btnGrid.onclick = () => toggleNumber(i);
+                gridContainer.appendChild(btnGrid);
+            }
+
+            const markedCount = document.getElementById('sheet-marked-count');
+            if (markedCount) markedCount.innerText = `${state.markedNumbers.size}/90`;
+        }
+
+        // Bottom sheet del teclado completo: se abre desde abajo y se cierra
+        // tocando el fondo, la X, el asa (o deslizándola hacia abajo).
+        let keypadSheetCloseTimer = null;
+
+        function openKeypadSheet() {
+            const sheet = document.getElementById('keypad-sheet');
+            if (!sheet) return;
+            clearTimeout(keypadSheetCloseTimer);
+            sheet.classList.remove('hidden');
+            const panel = document.getElementById('keypad-sheet-panel');
+            const backdrop = document.getElementById('keypad-sheet-backdrop');
+            // Fuerza un reflow para que la transición de entrada se reproduzca.
+            void panel.offsetHeight;
+            panel.classList.remove('translate-y-full');
+            backdrop.classList.remove('opacity-0');
+            backdrop.classList.add('opacity-100');
+        }
+
+        function closeKeypadSheet() {
+            const sheet = document.getElementById('keypad-sheet');
+            if (!sheet || sheet.classList.contains('hidden')) return;
+            const panel = document.getElementById('keypad-sheet-panel');
+            const backdrop = document.getElementById('keypad-sheet-backdrop');
+            panel.classList.add('translate-y-full');
+            backdrop.classList.remove('opacity-100');
+            backdrop.classList.add('opacity-0');
+            clearTimeout(keypadSheetCloseTimer);
+            keypadSheetCloseTimer = setTimeout(() => sheet.classList.add('hidden'), 200);
+        }
+
+        function isKeypadSheetOpen() {
+            const sheet = document.getElementById('keypad-sheet');
+            return !!sheet && !sheet.classList.contains('hidden');
+        }
+
+        function setupKeypadSheet() {
+            const sheet = document.getElementById('keypad-sheet');
+            if (!sheet) return;
+
+            document.getElementById('btn-toggle-keypad').onclick = () => {
+                if (isKeypadSheetOpen()) closeKeypadSheet();
+                else openKeypadSheet();
+            };
+            document.getElementById('btn-close-keypad-sheet').onclick = closeKeypadSheet;
+            document.getElementById('keypad-sheet-backdrop').onclick = closeKeypadSheet;
+
+            // Deslizar el asa hacia abajo cierra el teclado. Se captura el puntero
+            // para no perder los movimientos cuando el dedo sale del asa.
+            const handle = document.getElementById('keypad-sheet-handle');
+            let startY = null;
+            let activePointer = null;
+            handle.addEventListener('pointerdown', (event) => {
+                startY = event.clientY;
+                activePointer = event.pointerId;
+                try { handle.setPointerCapture(event.pointerId); } catch (error) { /* sin captura disponible */ }
+            });
+            handle.addEventListener('pointermove', (event) => {
+                if (startY === null || event.pointerId !== activePointer) return;
+                if (event.clientY - startY > 50) {
+                    startY = null;
+                    activePointer = null;
+                    closeKeypadSheet();
+                }
+            });
+            const endDrag = (event) => {
+                if (activePointer !== null && event && event.pointerId !== activePointer) return;
+                startY = null;
+                activePointer = null;
+            };
+            handle.addEventListener('pointerup', endDrag);
+            handle.addEventListener('pointercancel', endDrag);
+            handle.addEventListener('lostpointercapture', endDrag);
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && isKeypadSheetOpen()) closeKeypadSheet();
+            });
+        }
+
+        // Renderizar Cartones Activos
+        function renderCards() {
+            const container = document.getElementById('cards-list');
+            const emptyState = document.getElementById('empty-state');
+
+            container.innerHTML = '';
+
+            if (state.cards.length === 0) {
+                emptyState.classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            state.cards.forEach((card, cardIndex) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2.5 shadow-xl relative overflow-hidden';
+
+                // Verificación de Línea y Bingo
+                let totalNumbers = 0;
+                let markedNumbersCount = 0;
+                let completedLines = 0;
+
+                for (let r = 0; r < 3; r++) {
+                    let rowTotal = 0;
+                    let rowMarked = 0;
+                    for (let c = 0; c < 9; c++) {
+                        const val = parseInt(card.matrix[r][c]);
+                        if (!isNaN(val)) {
+                            rowTotal++;
+                            totalNumbers++;
+                            if (state.markedNumbers.has(val)) {
+                                rowMarked++;
+                                markedNumbersCount++;
+                            }
+                        }
+                    }
+                    if (rowTotal > 0 && rowTotal === rowMarked) {
+                        completedLines++;
+                    }
+                }
+
+                const isBingo = totalNumbers > 0 && totalNumbers === markedNumbersCount;
+                const isLine = completedLines > 0 && !isBingo;
+
+                // Cabecera Cartón
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center border-b border-slate-800 pb-2';
+                
+                let badgeHTML = '';
+                if (isBingo) {
+                    badgeHTML = `<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full animate-bounce shadow-md">¡BINGO!</span>`;
+                } else if (isLine) {
+                    badgeHTML = `<span class="bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md">¡LÍNEA! (${completedLines})</span>`;
+                }
+
+                header.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-amber-400 text-xs flex items-center gap-1">
+                            <i data-lucide="ticket" class="w-3.5 h-3.5"></i> ${card.name || `Cartón #${cardIndex + 1}`}
+                        </span>
+                        ${badgeHTML}
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="editCard('${card.id}')" class="text-slate-400 hover:text-amber-300 p-1">
+                            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="deleteCard('${card.id}')" class="text-slate-400 hover:text-red-400 p-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                cardEl.appendChild(header);
+
+                // Grid 3x9 del Cartón
+                const gridEl = document.createElement('div');
+                gridEl.className = 'grid grid-cols-9 gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800/80';
+
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        const val = card.matrix[r][c];
+                        const num = parseInt(val);
+                        const cell = document.createElement('div');
+
+                        if (val !== '' && !isNaN(num)) {
+                            const isMarked = state.markedNumbers.has(num);
+                            cell.className = `h-11 sm:h-12 rounded-lg flex items-center justify-center font-bold text-sm sm:text-base border transition relative ${
+                                isMarked 
+                                    ? 'bg-slate-800 text-sky-200 border-sky-400/60 stamped' 
+                                    : 'bg-slate-900 text-slate-100 border-slate-700/80 shadow-inner'
+                            }`;
+                            cell.innerText = num;
+                            cell.onclick = () => toggleNumber(num);
+                        } else {
+                            cell.className = 'h-11 sm:h-12 bg-slate-950/60 rounded-lg border border-slate-900/60 flex items-center justify-center';
+                            cell.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-800/50"></span>`;
+                        }
+                        gridEl.appendChild(cell);
+                    }
+                }
+
+                cardEl.appendChild(gridEl);
+                container.appendChild(cardEl);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Gestión de Cartones
+        function deleteCard(id) {
+            if (confirm('¿Eliminar este cartón de la partida activa?')) {
+                state.cards = state.cards.filter(c => c.id !== id);
+                saveStateToStorage();
+                renderCards();
+            }
+        }
+
+        function openManualAdd() {
+            state.currentEditCardId = null;
+            state.editingMatrix = Array(3).fill(null).map(() => Array(9).fill(''));
+            document.getElementById('edit-modal-title').innerText = 'Nuevo Cartón Manual';
+            document.getElementById('chk-save-library').checked = false;
+            showEditStatus('', null);
+            renderEditGrid();
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function editCard(id) {
+            const card = state.cards.find(c => c.id === id);
+            if (!card) return;
+
+            state.currentEditCardId = id;
+            state.editingMatrix = JSON.parse(JSON.stringify(card.matrix));
+            document.getElementById('edit-modal-title').innerText = 'Editar Cartón';
+            document.getElementById('chk-save-library').checked = false;
+            showEditStatus('', null);
+            renderEditGrid();
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function columnRange(c) {
+            if (c === 0) return [1, 9];
+            if (c === 8) return [80, 90];
+            return [c * 10, c * 10 + 9];
+        }
+
+        function validateMatrix(matrix) {
+            const errors = [];
+            const seen = new Map();
+            let count = 0;
+
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const raw = matrix[r] && matrix[r][c] !== undefined && matrix[r][c] !== null
+                        ? String(matrix[r][c]).trim()
+                        : '';
+                    if (raw === '') continue;
+
+                    const num = parseInt(raw, 10);
+                    if (!/^\d{1,2}$/.test(raw) || !Number.isInteger(num) || num < 1 || num > 90) {
+                        errors.push({ r, c, msg: 'Número fuera de 1-90' });
+                        continue;
+                    }
+                    count++;
+
+                    const [min, max] = columnRange(c);
+                    if (num < min || num > max) {
+                        errors.push({ r, c, msg: `El ${num} va en la columna ${min}-${max}` });
+                    }
+                    if (seen.has(num)) {
+                        const prev = seen.get(num);
+                        errors.push({ r, c, msg: `Número ${num} repetido` });
+                        if (!errors.some(e => e.r === prev.r && e.c === prev.c)) {
+                            errors.push({ r: prev.r, c: prev.c, msg: `Número ${num} repetido` });
+                        }
+                    } else {
+                        seen.set(num, { r, c });
+                    }
+                }
+            }
+            return { errors, count };
+        }
+
+        function getEditInput(r, c) {
+            const inputs = document.querySelectorAll('#edit-grid input');
+            return inputs[r * 9 + c] || null;
+        }
+
+        function clearEditErrors() {
+            document.querySelectorAll('#edit-grid input').forEach(input => {
+                input.classList.remove('border-red-500', 'ring-2', 'ring-red-500/50', 'text-red-300');
+            });
+        }
+
+        function markEditError(r, c) {
+            const input = getEditInput(r, c);
+            if (!input) return;
+            input.classList.add('border-red-500', 'ring-2', 'ring-red-500/50', 'text-red-300');
+        }
+
+        function showEditStatus(message, type) {
+            const el = document.getElementById('edit-status');
+            el.className = 'text-xs rounded-xl px-3 py-2 border';
+            if (!message) {
+                el.classList.add('hidden');
+                el.innerText = '';
+                return;
+            }
+            el.classList.remove('hidden');
+            if (type === 'error') {
+                el.classList.add('bg-red-950/60', 'border-red-800/70', 'text-red-300');
+            } else if (type === 'warn') {
+                el.classList.add('bg-amber-950/50', 'border-amber-800/70', 'text-amber-300');
+            } else if (type === 'ok') {
+                el.classList.add('bg-emerald-950/50', 'border-emerald-800/70', 'text-emerald-300');
+            } else {
+                el.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
+            }
+            el.innerText = message;
+        }
+
+        function renderEditGrid() {
+            const gridContainer = document.getElementById('edit-grid');
+            gridContainer.innerHTML = '';
+
+            // Cabecera con el rango de cada columna
+            for (let c = 0; c < 9; c++) {
+                const [min, max] = columnRange(c);
+                const label = document.createElement('div');
+                label.className = 'text-[9px] text-slate-500 font-semibold text-center pb-0.5';
+                label.innerText = `${min}-${max}`;
+                gridContainer.appendChild(label);
+            }
+
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.inputMode = 'numeric';
+                    input.autocomplete = 'off';
+                    input.maxLength = 2;
+                    input.value = state.editingMatrix[r][c] || '';
+                    input.placeholder = '-';
+                    input.className = 'h-11 w-full bg-slate-900 border border-slate-700 rounded-lg text-center font-bold text-amber-300 text-sm focus:outline-none focus:border-amber-400 p-0';
+
+                    input.oninput = (e) => {
+                        const cleaned = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        e.target.value = cleaned;
+                        state.editingMatrix[r][c] = cleaned;
+                        clearEditErrors();
+                    };
+
+                    gridContainer.appendChild(input);
+                }
+            }
+        }
+
+        function addToLibrary(matrix, preferredName) {
+            const serialized = JSON.stringify(matrix);
+            if (state.savedLibrary.some(card => JSON.stringify(card.matrix) === serialized)) {
+                return false;
+            }
+            state.savedLibrary.push({
+                id: createCardId(),
+                name: preferredName || `Cartón Guardado #${state.savedLibrary.length + 1}`,
+                matrix: normalizeMatrix(matrix)
+            });
+            return true;
+        }
+
+        function saveEditModal() {
+            const saveToLib = document.getElementById('chk-save-library').checked;
+            const validation = validateMatrix(state.editingMatrix);
+
+            clearEditErrors();
+            if (validation.errors.length > 0) {
+                validation.errors.forEach(error => markEditError(error.r, error.c));
+                const uniqueMessages = [...new Set(validation.errors.map(error => error.msg))];
+                showEditStatus(`No se puede guardar: ${uniqueMessages.join(' · ')}. Las casillas en rojo necesitan corrección.`, 'error');
+                return;
+            }
+
+            const matrix = normalizeMatrix(state.editingMatrix);
+
+            if (state.currentEditCardId) {
+                const card = state.cards.find(c => c.id === state.currentEditCardId);
+                if (card) {
+                    card.matrix = matrix;
+                    if (saveToLib) addToLibrary(matrix, card.name);
+                }
+            } else {
+                const newCard = {
+                    id: createCardId(),
+                    name: `Cartón #${state.cards.length + 1}`,
+                    matrix: matrix
+                };
+                state.cards.push(newCard);
+
+                if (saveToLib) addToLibrary(matrix, newCard.name);
+            }
+
+            saveStateToStorage();
+            renderCards();
+            showEditStatus('', null);
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        // Biblioteca de Cartones
+        function openLibraryModal() {
+            renderLibraryList();
+            document.getElementById('library-modal').classList.remove('hidden');
+        }
+
+        function closeLibraryModal() {
+            document.getElementById('library-modal').classList.add('hidden');
+        }
+
+        function renderLibraryList() {
+            const container = document.getElementById('library-cards-container');
+            container.innerHTML = '';
+
+            if (state.savedLibrary.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <i data-lucide="bookmark-x" class="w-10 h-10 mx-auto text-slate-600 mb-2"></i>
+                        <p class="text-sm font-semibold">No tienes cartones guardados</p>
+                        <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Guarda aquí tus cartones habituales para reutilizarlos en cualquier momento.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            state.savedLibrary.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col gap-2';
+
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center text-xs font-semibold text-slate-300';
+                header.innerHTML = `
+                    <span class="text-amber-400 font-bold flex items-center gap-1">
+                        <i data-lucide="ticket" class="w-3.5 h-3.5"></i> ${card.name || `Cartón Guardado #${index + 1}`}
+                    </span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="loadSingleFromLibrary('${card.id}')" class="bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 border border-amber-500/30 transition">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Usar
+                        </button>
+                        <button onclick="deleteFromLibrary('${card.id}')" class="text-slate-500 hover:text-red-400 p-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                cardEl.appendChild(header);
+
+                const gridEl = document.createElement('div');
+                gridEl.className = 'grid grid-cols-9 gap-1 bg-slate-900 p-1.5 rounded-lg border border-slate-800';
+
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        const val = card.matrix[r][c];
+                        const cell = document.createElement('div');
+                        if (val !== '' && val !== null) {
+                            cell.className = 'h-6 rounded flex items-center justify-center text-xs font-bold bg-slate-800 text-amber-300 border border-slate-700';
+                            cell.innerText = val;
+                        } else {
+                            cell.className = 'h-6 bg-slate-950/40 rounded border border-slate-900/50';
+                        }
+                        gridEl.appendChild(cell);
+                    }
+                }
+
+                cardEl.appendChild(gridEl);
+                container.appendChild(cardEl);
+            });
+
+            lucide.createIcons();
+        }
+
+        function saveCurrentToLibrary() {
+            if (state.cards.length === 0) {
+                alert("No hay cartones activos en la partida para guardar.");
+                return;
+            }
+
+            let addedCount = 0;
+            state.cards.forEach(card => {
+                if (addToLibrary(card.matrix, card.name)) addedCount++;
+            });
+
+            saveStateToStorage();
+            renderLibraryList();
+            alert(`Se han guardado ${addedCount} cartón(es) nuevos en tu biblioteca.`);
+        }
+
+        function loadSingleFromLibrary(id) {
+            const card = state.savedLibrary.find(c => c.id === id);
+            if (!card) return;
+
+            state.cards.push({
+                id: createCardId(),
+                name: `Cartón #${state.cards.length + 1}`,
+                matrix: normalizeMatrix(card.matrix)
+            });
+
+            saveStateToStorage();
+            renderCards();
+            closeLibraryModal();
+        }
+
+        function loadAllFromLibrary() {
+            if (state.savedLibrary.length === 0) {
+                alert("No tienes cartones en la biblioteca.");
+                return;
+            }
+
+            state.savedLibrary.forEach(card => {
+                state.cards.push({
+                    id: createCardId(),
+                    name: `Cartón #${state.cards.length + 1}`,
+                    matrix: normalizeMatrix(card.matrix)
+                });
+            });
+
+            saveStateToStorage();
+            renderCards();
+            closeLibraryModal();
+        }
+
+        function deleteFromLibrary(id) {
+            if (confirm('¿Eliminar este cartón de la biblioteca?')) {
+                state.savedLibrary = state.savedLibrary.filter(c => c.id !== id);
+                saveStateToStorage();
+                renderLibraryList();
+            }
+        }
+
+        // Control de Cámara y OCR
+        async function openCameraModal() {
+            document.getElementById('camera-modal').classList.remove('hidden');
+            try {
+                state.mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: state.facingMode },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+                document.getElementById('camera-feed').srcObject = state.mediaStream;
+            } catch (err) {
+                console.warn("No se pudo acceder a la cámara trasera:", err);
+                try {
+                    state.mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById('camera-feed').srcObject = state.mediaStream;
+                } catch (e) {
+                    alert("No se pudo iniciar la cámara. Revisa los permisos de tu navegador.");
+                }
+            }
+        }
+
+        function closeCameraModal() {
+            if (state.mediaStream) {
+                state.mediaStream.getTracks().forEach(track => track.stop());
+                state.mediaStream = null;
+            }
+            document.getElementById('camera-modal').classList.add('hidden');
+        }
+
+        async function switchCamera() {
+            state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
+            closeCameraModal();
+            openCameraModal();
+        }
+
+        // ---------- OCR 100% local con Tesseract.js (sin API key ni servicios externos) ----------
+        let ocrWorkerPromise = null;
+        let ocrProgressHandler = null;
+
+        function loadImageElement(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('No se pudo cargar la imagen.'));
+                img.src = src;
+            });
+        }
+
+        async function getOcrWorker() {
+            if (!ocrWorkerPromise) {
+                ocrWorkerPromise = (async () => {
+                    if (typeof Tesseract === 'undefined') {
+                        throw new Error('Tesseract.js no está disponible. La primera carga necesita conexión a internet.');
+                    }
+                    const worker = await Tesseract.createWorker({
+                        logger: (message) => {
+                            if (ocrProgressHandler) ocrProgressHandler(message);
+                        }
+                    });
+                    await worker.loadLanguage('eng');
+                    await worker.initialize('eng');
+                    await worker.setParameters({
+                        tessedit_char_whitelist: '0123456789',
+                        // Bloque uniforme: el cartón completo con sus 3 filas y 9 columnas.
+                        tessedit_pageseg_mode: (Tesseract.PSM && Tesseract.PSM.SINGLE_BLOCK) ? Tesseract.PSM.SINGLE_BLOCK : '6'
+                    });
+                    return worker;
+                })().catch(error => {
+                    ocrWorkerPromise = null;
+                    throw error;
+                });
+            }
+            return ocrWorkerPromise;
+        }
+
+        // Gira un canvas (grados positivos = sentido horario).
+        function rotateCanvas(sourceCanvas, degrees) {
+            const radians = degrees * Math.PI / 180;
+            const swap = Math.abs(degrees % 180) === 90;
+            const canvas = document.createElement('canvas');
+            canvas.width = swap ? sourceCanvas.height : sourceCanvas.width;
+            canvas.height = swap ? sourceCanvas.width : sourceCanvas.height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(radians);
+            ctx.drawImage(sourceCanvas, -sourceCanvas.width / 2, -sourceCanvas.height / 2);
+            return canvas;
+        }
+
+        // Umbral de Otsu: separa tinta de papel aunque la foto esté oscura.
+        function computeOtsuThreshold(canvas) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            const total = canvas.width * canvas.height;
+            const histogram = new Uint32Array(256);
+            for (let i = 0; i < data.length; i += 4) {
+                const value = Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+                histogram[value]++;
+            }
+
+            let sumAll = 0;
+            for (let i = 0; i < 256; i++) sumAll += i * histogram[i];
+
+            let sumBack = 0;
+            let weightBack = 0;
+            let bestVariance = -1;
+            let threshold = 128;
+            for (let t = 0; t < 256; t++) {
+                weightBack += histogram[t];
+                if (!weightBack) continue;
+                const weightFore = total - weightBack;
+                if (!weightFore) break;
+                sumBack += t * histogram[t];
+                const meanBack = sumBack / weightBack;
+                const meanFore = (sumAll - sumBack) / weightFore;
+                const variance = weightBack * weightFore * Math.pow(meanBack - meanFore, 2);
+                if (variance > bestVariance) {
+                    bestVariance = variance;
+                    threshold = t;
+                }
+            }
+            return threshold;
+        }
+
+        // Binariza con un umbral concreto (blanco y negro puros).
+        function binarizeWithThreshold(sourceCanvas, threshold) {
+            const canvas = document.createElement('canvas');
+            canvas.width = sourceCanvas.width;
+            canvas.height = sourceCanvas.height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(sourceCanvas, 0, 0);
+            const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = image.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                const value = gray < threshold ? 0 : 255;
+                data[i] = value;
+                data[i + 1] = value;
+                data[i + 2] = value;
+            }
+            ctx.putImageData(image, 0, 0);
+            return canvas;
+        }
+
+        // Umbral calculado solo con la zona del número (papel + tinta).
+        function localInkThreshold(canvas, inkBox) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const x0 = Math.max(0, Math.round(inkBox.x - inkBox.width / 2));
+            const y0 = Math.max(0, Math.round(inkBox.y - inkBox.height / 2));
+            const w = Math.min(canvas.width - x0, Math.round(inkBox.width));
+            const h = Math.min(canvas.height - y0, Math.round(inkBox.height));
+            if (w < 4 || h < 4) return 128;
+
+            const data = ctx.getImageData(x0, y0, w, h).data;
+            const total = w * h;
+            const histogram = new Uint32Array(256);
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+                histogram[gray]++;
+            }
+            let cumulative = 0;
+            let median = 128;
+            for (let gray = 0; gray < 256; gray++) {
+                cumulative += histogram[gray];
+                if (cumulative >= total * 0.5) { median = gray; break; }
+            }
+            return median - Math.max(20, median * 0.16);
+        }
+
+        // Recorta una región y la amplía conservando la proporción. Añade un
+        // margen blanco porque Tesseract lee mucho mejor con aire alrededor.
+        function cropAndScale(sourceCanvas, centerX, centerY, width, height, targetHeight, borderRatio) {
+            const sx = Math.max(0, Math.round(centerX - width / 2));
+            const sy = Math.max(0, Math.round(centerY - height / 2));
+            const sw = Math.max(1, Math.min(sourceCanvas.width - sx, Math.round(width)));
+            const sh = Math.max(1, Math.min(sourceCanvas.height - sy, Math.round(height)));
+            const scale = Math.min(10, Math.max(1, targetHeight / sh));
+            const innerWidth = Math.max(1, Math.round(sw * scale));
+            const innerHeight = Math.max(1, Math.round(sh * scale));
+            const border = borderRatio ? Math.round(innerHeight * borderRatio) : 0;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = innerWidth + border * 2;
+            canvas.height = innerHeight + border * 2;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(sourceCanvas, sx, sy, sw, sh, border, border, innerWidth, innerHeight);
+            return canvas;
+        }
+
+        async function sourceToCanvas(source) {
+            if (source instanceof HTMLCanvasElement) return source;
+
+            const url = URL.createObjectURL(source);
+            try {
+                const img = await loadImageElement(url);
+                const maxSide = 2400;
+                const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+                canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                return canvas;
+            } finally {
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Oscurece/elimina las líneas rectas de la cuadrícula: Tesseract lee mucho
+        // mejor los números de un cartón cuando no hay rejilla. Solo elimina
+        // trazos largos y finos (no fondos oscuros).
+        function removeLongGridLines(canvas, inkThreshold) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = image.data;
+            const width = canvas.width;
+            const height = canvas.height;
+            const total = width * height;
+            const dark = new Uint8Array(total);
+            const threshold = Number.isFinite(inkThreshold) ? inkThreshold : 150;
+
+            for (let i = 0, pixel = 0; i < data.length; i += 4, pixel++) {
+                const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                dark[pixel] = gray < threshold ? 1 : 0;
+            }
+
+            const removals = new Uint8Array(total);
+            // Distancia a la que se comprueba si hay papel: sirve para no borrar
+            // manchas o fondos oscuros, solo trazos finos (líneas de la rejilla).
+            const offset = Math.max(10, Math.round(Math.min(width, height) * 0.035));
+            // Las líneas impresas pueden tener zonas claras: se toleran huecos
+            // pequeños para no perder el trazo completo.
+            const gapTolerance = Math.max(2, Math.round(Math.min(width, height) * 0.004));
+
+            // Líneas horizontales
+            const minHorizontalRun = Math.round(width * 0.3);
+            for (let y = 0; y < height; y++) {
+                let runStart = -1;
+                let gap = 0;
+                for (let x = 0; x <= width; x++) {
+                    const isDark = x < width && dark[y * width + x];
+                    if (isDark) {
+                        if (runStart < 0) runStart = x;
+                        gap = 0;
+                    } else if (runStart >= 0) {
+                        gap++;
+                        if (gap > gapTolerance) {
+                            const runEnd = x - gap + 1;
+                            if (runEnd - runStart >= minHorizontalRun) {
+                                const middle = (runStart + runEnd) >> 1;
+                                const above = y - offset >= 0 && dark[(y - offset) * width + middle];
+                                const below = y + offset < height && dark[(y + offset) * width + middle];
+                                if (!above || !below) {
+                                    for (let k = runStart; k < runEnd; k++) removals[y * width + k] = 1;
+                                }
+                            }
+                            runStart = -1;
+                            gap = 0;
+                        }
+                    }
+                }
+            }
+
+            // Líneas verticales
+            const minVerticalRun = Math.round(height * 0.25);
+            for (let x = 0; x < width; x++) {
+                let runStart = -1;
+                let gap = 0;
+                for (let y = 0; y <= height; y++) {
+                    const isDark = y < height && dark[y * width + x];
+                    if (isDark) {
+                        if (runStart < 0) runStart = y;
+                        gap = 0;
+                    } else if (runStart >= 0) {
+                        gap++;
+                        if (gap > gapTolerance) {
+                            const runEnd = y - gap + 1;
+                            if (runEnd - runStart >= minVerticalRun) {
+                                const middle = (runStart + runEnd) >> 1;
+                                const left = x - offset >= 0 && dark[middle * width + (x - offset)];
+                                const right = x + offset < width && dark[middle * width + (x + offset)];
+                                if (!left || !right) {
+                                    for (let k = runStart; k < runEnd; k++) removals[k * width + x] = 1;
+                                }
+                            }
+                            runStart = -1;
+                            gap = 0;
+                        }
+                    }
+                }
+            }
+
+            let cleaned = false;
+            for (let pixel = 0; pixel < total; pixel++) {
+                if (removals[pixel]) {
+                    const i = pixel * 4;
+                    data[i] = 255;
+                    data[i + 1] = 255;
+                    data[i + 2] = 255;
+                    cleaned = true;
+                }
+            }
+            if (cleaned) ctx.putImageData(image, 0, 0);
+        }
+
+        // Recorta los bordes, amplía si hace falta y limpia la rejilla.
+        // Todo ocurre en el propio navegador: ninguna imagen sale del dispositivo.
+        function prepareImageForOcr(sourceCanvas) {
+            const sourceWidth = sourceCanvas.width;
+            const sourceHeight = sourceCanvas.height;
+            const crop = { left: 0.02, right: 0.02, top: 0.04, bottom: 0.04 };
+
+            const sx = Math.round(sourceWidth * crop.left);
+            const sy = Math.round(sourceHeight * crop.top);
+            const cropWidth = Math.max(1, sourceWidth - sx - Math.round(sourceWidth * crop.right));
+            const cropHeight = Math.max(1, sourceHeight - sy - Math.round(sourceHeight * crop.bottom));
+
+            const scale = Math.min(2, Math.max(1, 1000 / cropWidth));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(cropWidth * scale);
+            canvas.height = Math.round(cropHeight * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(sourceCanvas, sx, sy, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+
+            // El umbral se calcula sobre la propia foto: así funciona también con
+            // fotos oscuras, donde un umbral fijo borraría medio cartón.
+            const inkThreshold = computeOtsuThreshold(canvas);
+            removeLongGridLines(canvas, Math.min(250, inkThreshold + 10));
+            canvas.inkThreshold = inkThreshold;
+            // De dónde sale esta imagen dentro del original (para trasladar la
+            // cuadrícula detectada en el original a estas coordenadas).
+            canvas.sourceOffsetX = sx;
+            canvas.sourceOffsetY = sy;
+            canvas.sourceScale = scale;
+            return canvas;
+        }
+
+        // ---------- Geometría del cartón: 3 filas x 9 columnas ----------
+
+        function columnValueRange(column) {
+            if (column === 0) return [1, 9];
+            if (column === 8) return [80, 90];
+            return [column * 10, column * 10 + 9];
+        }
+
+        // Agrupa índices consecutivos con mucha tinta: cada grupo es una de las
+        // líneas de la cuadrícula del cartón.
+        function detectLineBands(counts, ratio) {
+            const max = counts.reduce((a, b) => Math.max(a, b), 0);
+            if (!max) return [];
+            const limit = max * ratio;
+            const bands = [];
+            let start = -1;
+            for (let i = 0; i <= counts.length; i++) {
+                const value = i < counts.length ? counts[i] : 0;
+                if (value >= limit && start < 0) start = i;
+                if (value < limit && start >= 0) {
+                    let peak = 0;
+                    for (let k = start; k < i; k++) peak = Math.max(peak, counts[k]);
+                    bands.push({ start, end: i - 1, center: (start + i - 1) / 2, peak });
+                    start = -1;
+                }
+            }
+            return bands;
+        }
+
+        // De un conjunto de líneas candidatas elige las que están repartidas de
+        // forma regular (las líneas reales de la cuadrícula).
+        function pickEvenlySpacedBands(bands, count, minSpacing, maxDeviation) {
+            if (bands.length < count) return null;
+            // Solo las líneas más marcadas: mantiene la búsqueda rápida.
+            if (bands.length > 14) {
+                bands = bands.slice().sort((a, b) => b.peak - a.peak).slice(0, 14).sort((a, b) => a.center - b.center);
+            }
+            let best = null;
+            const picked = [];
+
+            const evaluate = () => {
+                const centers = picked.map(index => bands[index].center).sort((a, b) => a - b);
+                const gap = (centers[count - 1] - centers[0]) / (count - 1);
+                if (gap < minSpacing) return;
+                let deviation = 0;
+                for (let i = 0; i < count; i++) {
+                    deviation += Math.abs(centers[i] - (centers[0] + gap * i));
+                }
+                deviation /= gap;
+                if (deviation > maxDeviation) return;
+
+                // Entre las opciones regulares se queda con las líneas más marcadas:
+                // las líneas del cartón tienen más tinta que las filas de números.
+                const weight = picked.reduce((sum, index) => sum + bands[index].peak, 0);
+                if (!best || weight > best.weight) best = { centers, gap, deviation, weight };
+            };
+
+            const search = (start) => {
+                if (picked.length === count) { evaluate(); return; }
+                for (let i = start; i < bands.length; i++) {
+                    picked.push(i);
+                    search(i + 1);
+                    picked.pop();
+                }
+            };
+            search(0);
+            return best;
+        }
+
+        // Localiza la cuadrícula real del cartón usando las líneas impresas.
+        // Es mucho más fiable que deducirla de un OCR de página completa,
+        // sobre todo con fotos oscuras o con poco contraste.
+        function detectCardGrid(canvas, inkThreshold) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const data = ctx.getImageData(0, 0, width, height).data;
+            const threshold = Number.isFinite(inkThreshold) ? inkThreshold : computeOtsuThreshold(canvas);
+
+            const dark = new Uint8Array(width * height);
+            for (let i = 0, pixel = 0; i < data.length; i += 4, pixel++) {
+                const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                dark[pixel] = gray < threshold ? 1 : 0;
+            }
+
+            // 1) Líneas horizontales (cruzan casi todo el cartón).
+            const rowCounts = new Int32Array(height);
+            for (let y = 0; y < height; y++) {
+                let count = 0;
+                const base = y * width;
+                for (let x = 0; x < width; x++) count += dark[base + x];
+                rowCounts[y] = count;
+            }
+
+            const rowCandidates = detectLineBands(rowCounts, 0.6)
+                .filter(band => (band.end - band.start + 1) <= height * 0.05);
+            const rows = pickEvenlySpacedBands(rowCandidates, 4, height * 0.06, 0.25);
+            if (!rows) return null;
+
+            const top = rows.centers[0];
+            const bottom = rows.centers[3];
+            const rowHeight = rows.gap;
+            if (rowHeight < height * 0.05) return null;
+
+            // 2) Líneas verticales, contando solo dentro de la altura del cartón.
+            const topRow = Math.max(0, Math.round(top));
+            const bottomRow = Math.min(height - 1, Math.round(bottom));
+            const colCounts = new Int32Array(width);
+            for (let x = 0; x < width; x++) {
+                let count = 0;
+                for (let y = topRow; y <= bottomRow; y++) count += dark[y * width + x];
+                colCounts[x] = count;
+            }
+
+            const cardHeight = Math.max(1, bottomRow - topRow + 1);
+            const colCandidates = detectLineBands(colCounts, 0.5)
+                .filter(band => (band.end - band.start + 1) <= width * 0.03);
+            if (colCandidates.length < 2) return null;
+
+            // Si se ven las 10 líneas verticales se usan sus posiciones reales;
+            // si no, se reparte el ancho del cartón en 9 columnas iguales.
+            const columns = pickEvenlySpacedBands(colCandidates, 10, width * 0.025, 0.28);
+            let left;
+            let right;
+            let colWidth;
+            let colCenters;
+            if (columns) {
+                left = columns.centers[0];
+                right = columns.centers[9];
+                colWidth = columns.gap;
+                // Centro de cada columna: punto medio entre sus dos líneas.
+                colCenters = Array.from({ length: 9 }, (_, column) => (columns.centers[column] + columns.centers[column + 1]) / 2);
+            } else {
+                left = colCandidates[0].center;
+                right = colCandidates[colCandidates.length - 1].center;
+                colWidth = (right - left) / 9;
+                colCenters = null;
+            }
+            if (colWidth < width * 0.03) return null;
+
+            const rowCenters = [0, 1, 2].map(row => top + rowHeight * (row + 0.5));
+            if (!colCenters) {
+                colCenters = Array.from({ length: 9 }, (_, column) => left + colWidth * (column + 0.5));
+            }
+
+            return {
+                left, right, top, bottom,
+                colWidth, rowHeight,
+                colCenters, rowCenters,
+                width: right - left,
+                height: bottom - top
+            };
+        }
+
+        // Busca el número dentro de una celda: devuelve su recuadro real o null
+        // si la celda está vacía. Usa un umbral local (relativo al papel de esa
+        // misma celda), así funciona igual con fotos claras y oscuras y no marca
+        // celdas vacías por ruido ni por restos de las líneas.
+        function findCellInk(canvas, centerX, centerY, width, height) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const x0 = Math.max(0, Math.round(centerX - width / 2));
+            const y0 = Math.max(0, Math.round(centerY - height / 2));
+            const w = Math.min(canvas.width - x0, Math.round(width));
+            const h = Math.min(canvas.height - y0, Math.round(height));
+            if (w < 8 || h < 8) return null;
+
+            const data = ctx.getImageData(x0, y0, w, h).data;
+            const total = w * h;
+            const histogram = new Uint32Array(256);
+            const gray = new Uint8Array(total);
+            for (let i = 0, pixel = 0; i < data.length; i += 4, pixel++) {
+                const value = Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+                gray[pixel] = value;
+                histogram[value]++;
+            }
+
+            let cumulative = 0;
+            let median = 128;
+            for (let value = 0; value < 256; value++) {
+                cumulative += histogram[value];
+                if (cumulative >= total * 0.5) { median = value; break; }
+            }
+
+            // La tinta del número es claramente más oscura que el papel.
+            const inkThreshold = median - Math.max(22, median * 0.18);
+            let dark = 0;
+            let minX = w;
+            let maxX = -1;
+            let minY = h;
+            let maxY = -1;
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    if (gray[y * w + x] >= inkThreshold) continue;
+                    dark++;
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
+            if (maxX < 0 || dark / total < 0.012) return null;
+
+            const boxWidth = maxX - minX + 1;
+            const boxHeight = maxY - minY + 1;
+            // Si el "número" es demasiado alargado es una línea suelta, no un número.
+            if (boxHeight < h * 0.12 || boxWidth > boxHeight * 2.6) return null;
+
+            return {
+                x: x0 + (minX + maxX) / 2,
+                y: y0 + (minY + maxY) / 2,
+                width: boxWidth,
+                height: boxHeight,
+                ratio: dark / total
+            };
+        }
+
+        // Prepara la imagen de una celda dejando solo el número: todo lo que hay
+        // fuera de su recuadro se pone en blanco. Así los restos de las líneas o
+        // los números vecinos no interfieren con el OCR.
+        function buildCellCrop(canvas, cell, inkBox) {
+            const cellLeft = Math.round(cell.x - cell.width / 2);
+            const cellTop = Math.round(cell.y - cell.height / 2);
+            const sourceX = Math.max(0, cellLeft);
+            const sourceY = Math.max(0, cellTop);
+            const width = Math.min(canvas.width - sourceX, Math.round(cell.width));
+            const height = Math.min(canvas.height - sourceY, Math.round(cell.height));
+
+            const out = document.createElement('canvas');
+            out.width = Math.max(1, width);
+            out.height = Math.max(1, height);
+            const ctx = out.getContext('2d', { willReadFrequently: true });
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, out.width, out.height);
+            // Copia 1:1 (si la celda se sale de la imagen, el resto queda blanco).
+            ctx.drawImage(canvas, sourceX, sourceY, width, height, sourceX - cellLeft, sourceY - cellTop, width, height);
+
+            const marginX = Math.max(8, inkBox.height * 0.55);
+            const marginY = Math.max(8, inkBox.height * 0.35);
+            const keepLeft = inkBox.x - inkBox.width / 2 - marginX - cellLeft;
+            const keepTop = inkBox.y - inkBox.height / 2 - marginY - cellTop;
+            const keepRight = inkBox.x + inkBox.width / 2 + marginX - cellLeft;
+            const keepBottom = inkBox.y + inkBox.height / 2 + marginY - cellTop;
+
+            ctx.fillStyle = '#ffffff';
+            if (keepLeft > 0) ctx.fillRect(0, 0, keepLeft, out.height);
+            if (keepRight < out.width) ctx.fillRect(keepRight, 0, out.width - keepRight, out.height);
+            if (keepTop > 0) ctx.fillRect(0, 0, out.width, keepTop);
+            if (keepBottom < out.height) ctx.fillRect(0, keepBottom, out.width, out.height - keepBottom);
+
+            return { canvas: out, x: inkBox.x - cellLeft, y: inkBox.y - cellTop };
+        }
+
+        // Lee el número de una celda con varias variantes y vota. La columna del
+        // cartón limita los valores posibles: se descartan lecturas imposibles.
+        async function readCellValue(worker, canvas, cell, inkBox, column, excludedValues) {
+            const [minValue, maxValue] = columnValueRange(column);
+            const masked = buildCellCrop(canvas, cell, inkBox);
+            const height = inkBox.height;
+            // Varias alturas y versiones (color y blanco y negro): se vota el
+            // resultado. Así una lectura dudosa no decide el número por sí sola.
+            const inkThreshold = localInkThreshold(canvas, inkBox);
+            const binaryCache = new WeakMap();
+            const binarizedSource = (source) => {
+                if (!binaryCache.has(source.canvas)) {
+                    binaryCache.set(source.canvas, binarizeWithThreshold(source.canvas, inkThreshold));
+                }
+                return { canvas: binaryCache.get(source.canvas), x: source.x, y: source.y };
+            };
+            // Tesseract trabaja mejor con el número a un tamaño moderado: si se
+            // amplía demasiado, el suavizado deforma los dígitos.
+            const target = Math.round(Math.min(260, Math.max(90, height * 1.8)));
+            // El recorte ajustado al número (pad bajo) es el que mejor lee: si se
+            // deja mucho fondo gris alrededor, Tesseract devuelve la celda vacía.
+            const variants = [
+                { pad: 0.2, height: target, border: 0, mode: 'raw' },
+                { pad: 0.2, height: Math.round(target * 1.25), border: 0, mode: 'raw' },
+                { pad: 0.4, height: target, border: 0, mode: 'raw' },
+                { pad: 0.4, height: target, border: 0, mode: 'binary' },
+                { pad: 0.6, height: Math.round(target * 0.75), border: 0, mode: 'raw' },
+                { pad: 0.4, height: Math.round(target * 1.25), border: 0, mode: 'binary' }
+            ];
+
+            const collect = async (list, source) => {
+                const result = [];
+                for (const variant of list) {
+                    const cellHeight = height * (1 + variant.pad * 0.8);
+                    const pick = variant.mode === 'binary' ? binarizedSource(source) : source;
+                    const crop = cropAndScale(pick.canvas, pick.x, pick.y, pick.canvas.width, cellHeight, variant.height, variant.border);
+
+                    await worker.setParameters({
+                        tessedit_char_whitelist: '0123456789',
+                        tessedit_pageseg_mode: '7'
+                    });
+                    const { data } = await worker.recognize(crop);
+                    const text = String(data.text || '').replace(/\D/g, '').slice(0, 2);
+                    if (!text) continue;
+                    const value = parseInt(text, 10);
+                    if (!Number.isInteger(value) || value < 1 || value > 90) continue;
+                    result.push({
+                        value,
+                        text,
+                        conf: Math.max(1, Number(data.confidence) || 0)
+                    });
+                }
+                return result;
+            };
+
+            let readings = await collect(variants, masked);
+            if (readings.length === 0) return null;
+
+            const inColumn = readings.filter(reading => reading.value >= minValue && reading.value <= maxValue);
+            const pool = inColumn.length ? inColumn : readings;
+
+            const tally = new Map();
+            pool.forEach(reading => {
+                const entry = tally.get(reading.value) || { value: reading.value, total: 0, count: 0, bestConf: 0 };
+                entry.total += reading.conf;
+                entry.count += 1;
+                entry.bestConf = Math.max(entry.bestConf, reading.conf);
+                tally.set(reading.value, entry);
+            });
+
+            // Puntúa cada valor posible: pesa la mejor confianza, la media y el
+            // número de variantes que coinciden. Así un fantasma repetido con
+            // poca confianza no gana a un número leído claro una sola vez.
+            const strength = new Map();
+            [...tally.values()].forEach(entry => {
+                strength.set(entry.value, entry.bestConf * 0.7 + (entry.total / entry.count) * 0.3 + entry.count * 5);
+            });
+
+            const rank = (entries) => entries
+                .slice()
+                .sort((a, b) => (strength.get(b.value) - strength.get(a.value)));
+
+            // Evita duplicados: si el número ya está en el cartón, usa la siguiente opción.
+            let ranked = rank([...tally.values()]);
+            if (excludedValues && excludedValues.size) {
+                const preferred = ranked.filter(entry => !excludedValues.has(entry.value));
+                if (preferred.length) ranked = preferred.concat(ranked.filter(entry => excludedValues.has(entry.value)));
+            }
+
+            const best = ranked[0];
+            // Lecturas pésimas: la celda está vacía o el número no es legible.
+            if (best.bestConf < 30) return null;
+            const runnerUp = ranked[1];
+            const bestScore = strength.get(best.value);
+            const runnerUpScore = runnerUp ? strength.get(runnerUp.value) : 0;
+            return {
+                value: best.value,
+                confidence: best.bestConf,
+                votes: best.count,
+                inColumn: inColumn.length > 0,
+                readings: readings.map(reading => `${reading.text}:${Math.round(reading.conf)}`).join(','),
+                ambiguous: !!runnerUp && (bestScore - runnerUpScore) < Math.max(6, bestScore * 0.15)
+            };
+        }
+
+        // Lee las 27 celdas de la cuadrícula y devuelve la matriz final 3x9.
+        async function readCardCells(worker, prepared, grid, onStatus) {
+            const matrix = Array.from({ length: 3 }, () => Array(9).fill(''));
+            const used = new Set();
+            const cellWidth = Math.max(30, grid.colWidth * 0.96);
+            const cellHeight = Math.max(30, grid.rowHeight * 0.9);
+            let detected = 0;
+            let doubtful = 0;
+            let checked = 0;
+            let confidenceSum = 0;
+            const scanDetails = [];
+
+            for (let row = 0; row < 3; row++) {
+                for (let column = 0; column < 9; column++) {
+                    const centerX = grid.colCenters[column];
+                    const centerY = grid.rowCenters[row];
+                    // Se busca la tinta en el interior de la celda: los bordes ya
+                    // se borraron, pero así se ignoran restos pegados a ellos.
+                    const inkBox = findCellInk(prepared, centerX, centerY, cellWidth * 0.88, cellHeight * 0.86);
+                    if (!inkBox) continue;
+
+                    checked++;
+                    if (onStatus) onStatus(`Leyendo número ${checked}...`, `Fila ${row + 1}, columna ${column + 1} (${columnValueRange(column).join('-')})`);
+
+                    const cell = { x: centerX, y: centerY, width: cellWidth, height: cellHeight };
+                    const reading = await readCellValue(worker, prepared, cell, inkBox, column, used);
+                    if (reading) scanDetails.push({ row, column, value: reading.value, text: reading.readings, conf: reading.confidence });
+                    if (!reading) continue;
+
+                    matrix[row][column] = String(reading.value);
+                    used.add(reading.value);
+                    detected++;
+                    confidenceSum += reading.inColumn ? reading.confidence : reading.confidence * 0.5;
+                    if (reading.ambiguous || reading.votes < 2 || !reading.inColumn) doubtful++;
+                }
+            }
+
+            // Detalle del último escaneo (útil para depurar desde la consola).
+            window.scanAttempts = window.scanAttempts || [];
+            window.scanAttempts.push({ grid, cells: scanDetails, detected, doubtful, confidenceSum });
+            return { matrix, detected, doubtful, confidenceSum };
+        }
+
+        // Traslada la cuadrícula detectada en la imagen original a las
+        // coordenadas de la imagen preparada (recortada y escalada).
+        function mapGridToPrepared(grid, prepared) {
+            const offsetX = Number.isFinite(prepared.sourceOffsetX) ? prepared.sourceOffsetX : 0;
+            const offsetY = Number.isFinite(prepared.sourceOffsetY) ? prepared.sourceOffsetY : 0;
+            const scale = Number.isFinite(prepared.sourceScale) ? prepared.sourceScale : 1;
+            return {
+                ...grid,
+                left: grid.left * scale - offsetX,
+                right: grid.right * scale - offsetX,
+                top: grid.top * scale - offsetY,
+                bottom: grid.bottom * scale - offsetY,
+                colWidth: grid.colWidth * scale,
+                rowHeight: grid.rowHeight * scale,
+                colCenters: grid.colCenters.map(x => x * scale - offsetX),
+                rowCenters: grid.rowCenters.map(y => y * scale - offsetY)
+            };
+        }
+
+        // Borra las líneas de la cuadrícula en las posiciones exactas ya detectadas.
+        // Es más fiable que el borrado genérico: así dentro de cada celda solo
+        // queda el número impreso.
+        function eraseGridLines(canvas, grid) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const rowBand = Math.max(5, Math.round(grid.rowHeight * 0.09));
+            const colBand = Math.max(5, Math.round(grid.colWidth * 0.095));
+
+            const horizontal = [grid.top, grid.bottom];
+            for (let row = 1; row < 3; row++) horizontal.push(grid.top + grid.rowHeight * row);
+
+            const vertical = [grid.left, grid.right];
+            for (let column = 1; column < 9; column++) vertical.push(grid.left + grid.colWidth * column);
+
+            let erase = false;
+            horizontal.forEach(y => {
+                const y0 = Math.max(0, Math.round(y - rowBand));
+                const height = Math.min(canvas.height - y0, rowBand * 2 + 1);
+                if (height < 1) return;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, y0, canvas.width, height);
+                erase = true;
+            });
+            vertical.forEach(x => {
+                const x0 = Math.max(0, Math.round(x - colBand));
+                const width = Math.min(canvas.width - x0, colBand * 2 + 1);
+                if (width < 1) return;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x0, 0, width, canvas.height);
+                erase = true;
+            });
+            return erase;
+        }
+
+        async function recognizeCard(worker, canvas, onStatus) {
+            // Las líneas se buscan en la imagen original (en la preparada se
+            // borran a propósito para que el OCR lea mejor).
+            const detectedGrid = detectCardGrid(canvas, computeOtsuThreshold(canvas));
+            if (!detectedGrid) return { matrix: Array.from({ length: 3 }, () => Array(9).fill('')), detected: 0, doubtful: 0, confidenceSum: 0, grid: null };
+
+            const prepared = prepareImageForOcr(canvas);
+            const grid = mapGridToPrepared(detectedGrid, prepared);
+            eraseGridLines(prepared, grid);
+            const result = await readCardCells(worker, prepared, grid, onStatus);
+            return { ...result, grid };
+        }
+
+
+        async function processImageForOCR(imageSource) {
+            const loading = document.getElementById('ocr-loading');
+            const statusText = document.getElementById('ocr-status-text');
+            const subText = document.getElementById('ocr-subtext');
+            loading.classList.remove('hidden');
+            statusText.innerText = 'Preparando imagen...';
+            subText.innerText = 'OCR local en tu dispositivo · sin APIs ni coste';
+
+            try {
+                window.scanAttempts = [];
+                const sourceCanvas = await sourceToCanvas(imageSource);
+
+                statusText.innerText = 'Cargando motor OCR local...';
+                let lastProgress = -1;
+                ocrProgressHandler = (message) => {
+                    if (message.status === 'recognizing text') {
+                        const progress = Math.round((message.progress || 0) * 100);
+                        if (progress !== lastProgress) {
+                            lastProgress = progress;
+                            statusText.innerText = `Analizando cartón... ${progress}%`;
+                        }
+                    } else if (message.status === 'loading language traineddata' || message.status === 'loading tesseract core') {
+                        statusText.innerText = 'Cargando motor OCR (solo la primera vez)...';
+                    }
+                };
+
+                const worker = await getOcrWorker();
+                await worker.setParameters({
+                    tessedit_char_whitelist: '0123456789',
+                    tessedit_pageseg_mode: '6'
+                });
+
+                // Los cartones son apaisados (9 columnas), así que si la foto es
+                // vertical hay que girarla. Se prueban los giros posibles y se
+                // queda con el que encaja mejor en una cuadrícula 3x9.
+                const isPortrait = sourceCanvas.height > sourceCanvas.width * 1.05;
+                const orientations = isPortrait
+                    ? [{ angle: -90, canvas: rotateCanvas(sourceCanvas, -90) },
+                       { angle: 90, canvas: rotateCanvas(sourceCanvas, 90) }]
+                    : [{ angle: 0, canvas: sourceCanvas },
+                       { angle: 180, canvas: rotateCanvas(sourceCanvas, 180) },
+                       { angle: -90, canvas: rotateCanvas(sourceCanvas, -90) },
+                       { angle: 90, canvas: rotateCanvas(sourceCanvas, 90) }];
+
+                let best = null;
+                for (const orientation of orientations) {
+                    statusText.innerText = 'Buscando la cuadrícula del cartón...';
+                    subText.innerText = 'Coloca el cartón recto y con buena luz';
+
+                    const attempt = await recognizeCard(worker, orientation.canvas, (title, detail) => {
+                        statusText.innerText = title;
+                        subText.innerText = detail;
+                    });
+                    attempt.angle = orientation.angle;
+
+                    // El giro correcto se reconoce por la confianza total del OCR:
+                    // con el cartón al revés los dígitos se leen mal.
+                    const score = attempt.confidenceSum + attempt.detected * 5;
+                    if (!best || score > best.score) {
+                        attempt.score = score;
+                        best = attempt;
+                    }
+                    if (best.detected >= 10 && best.confidenceSum > 400) break;
+                }
+
+                const matrix = best ? best.matrix : Array.from({ length: 3 }, () => Array(9).fill(''));
+                const detected = best ? best.detected : 0;
+                const doubtful = best ? best.doubtful : 0;
+
+                state.currentEditCardId = null;
+                state.editingMatrix = matrix;
+                closeCameraModal();
+                document.getElementById('chk-save-library').checked = false;
+                renderEditGrid();
+                document.getElementById('edit-modal-title').innerText = 'Validar Cartón Escaneado';
+                document.getElementById('edit-modal').classList.remove('hidden');
+
+                const validation = validateMatrix(matrix);
+                validation.errors.forEach(error => markEditError(error.r, error.c));
+
+                if (detected === 0) {
+                    showEditStatus('No se han detectado números. Acerca la cámara, mejora la luz o introdúcelos manualmente.', 'error');
+                } else if (validation.errors.length > 0) {
+                    showEditStatus(`Detectados ${detected} de 15 números. Hay ${validation.errors.length} casilla(s) en rojo: comprueba la columna de esos números antes de guardar.`, 'warn');
+                } else if (detected < 15) {
+                    showEditStatus(`Detectados ${detected} de 15 números. Revisa el cartón y completa las casillas que falten.`, 'warn');
+                } else if (doubtful > 0) {
+                    showEditStatus(`Detectados los 15 números. Revisa las ${doubtful} casilla(s) dudosas antes de guardar.`, 'warn');
+                } else {
+                    showEditStatus('Detectados 15 números. Comprueba que todo coincide con el cartón antes de guardar.', 'ok');
+                }
+            } catch (error) {
+                console.error('Error OCR:', error);
+                alert('No se pudo procesar la imagen con OCR local. ' + (error && error.message ? error.message : '') + '\nPuedes introducir el cartón manualmente.');
+            } finally {
+                ocrProgressHandler = null;
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Event Listeners Globale
+        function setupEventListeners() {
+            document.getElementById('btn-manual-add').onclick = openManualAdd;
+            document.getElementById('btn-open-camera').onclick = openCameraModal;
+            document.getElementById('btn-empty-scan').onclick = openCameraModal;
+            document.getElementById('btn-close-camera').onclick = closeCameraModal;
+            document.getElementById('btn-switch-camera').onclick = switchCamera;
+            
+            document.getElementById('btn-library').onclick = openLibraryModal;
+            document.getElementById('btn-empty-library').onclick = openLibraryModal;
+            document.getElementById('btn-close-library').onclick = closeLibraryModal;
+            document.getElementById('btn-add-current-to-library').onclick = saveCurrentToLibrary;
+            document.getElementById('btn-load-all-library').onclick = loadAllFromLibrary;
+
+            document.getElementById('btn-reset-game').onclick = openResetModal;
+            document.getElementById('btn-reset-balls').onclick = () => resetGame(false);
+            document.getElementById('btn-reset-all').onclick = () => resetGame(true);
+            document.getElementById('btn-cancel-reset').onclick = closeResetModal;
+
+            document.getElementById('btn-capture').onclick = () => {
+                const video = document.getElementById('camera-feed');
+                if (!video.videoWidth) {
+                    alert('La cámara aún no está lista. Espera un momento e inténtalo de nuevo.');
+                    return;
+                }
+                const canvas = document.getElementById('snapshot-canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                processImageForOCR(canvas);
+            };
+
+            document.getElementById('file-input').onchange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    processImageForOCR(e.target.files[0]);
+                    e.target.value = '';
+                }
+            };
+
+            document.getElementById('btn-close-edit').onclick = () => document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('btn-cancel-edit').onclick = () => document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('btn-save-edit').onclick = saveEditModal;
+
+            setupKeypadSheet();
+        }
+    </script>
+</body>
+</html>

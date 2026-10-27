@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10111b">
+<title>404 — Página no encontrada | JRZ Labs</title>
+<style>
+:root{color-scheme:dark;--bg:#10111b;--panel:#171925;--line:rgba(255,255,255,.1);--text:#f3f4fb;--muted:#9da2b8;--accent:#b8a6ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0%,#7c68e626,transparent 42%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{width:min(100%,580px);text-align:center;padding:clamp(26px,6vw,54px);border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,#ffffff06,transparent 60%),var(--panel);box-shadow:0 25px 80px #0005}
+.logo{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:800;letter-spacing:-.03em;margin-bottom:36px}.mark{width:34px;height:34px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#a78bfa,#6c78ed);color:#151322;font-size:18px}
+.code{font-size:clamp(82px,20vw,132px);font-weight:850;letter-spacing:-.09em;line-height:.95;margin:0;color:var(--accent)}
+h1{font-size:clamp(24px,5vw,32px);letter-spacing:-.045em;margin:23px 0 10px}p{max-width:390px;color:var(--muted);margin:0 auto 28px}
+.actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:12px;border:1px solid var(--line);color:var(--text);text-decoration:none;background:#ffffff07;transition:.2s}.btn:hover{transform:translateY(-2px);background:#ffffff12}.btn.primary{background:var(--accent);color:#171426;border-color:transparent;font-weight:750}
+footer{margin-top:35px;color:#777e97;font-size:11px}
+</style>
+</head>
+<body>
+<main>
+  <a class="logo" href="https://jrz-labs.com/" aria-label="JRZ Labs"><span class="mark">◎</span><span>JRZ <span style="color:#b8a6ff">LABS</span></span></a>
+  <div class="code">404</div>
+  <h1>Esta página se ha perdido.</h1>
+  <p>La dirección puede ser incorrecta o la página ya no existe. Vuelve al inicio para encontrar el proyecto que buscas.</p>
+  <div class="actions">
+    <a class="btn primary" href="https://jrz-labs.com/">Volver al inicio ↗</a>
+    <a class="btn" href="javascript:history.back()">← Página anterior</a>
+  </div>
+  <footer>© <span id="year"></span> JRZ Labs</footer>
+</main>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+</body>
+</html>

@@ -1,0 +1,1319 @@
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Marvel — Orden cronológico Fotogramas</title>
+    <style>
+        :root {
+            --bg: #070b12;
+            --panel: #101722;
+            --border: #283447;
+            --text: #f4f7fb;
+            --muted: #8997aa;
+            --accent: #e11d48;
+            --green: #22c55e;
+            --gold: #f5c542
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            color: var(--text);
+            font-family: Inter, system-ui, sans-serif;
+            background: radial-gradient(circle at 5% 0%, rgba(225, 29, 72, .15), transparent 28%), radial-gradient(circle at 95% 15%, rgba(59, 130, 246, .08), transparent 28%), var(--bg)
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(18px);
+            background: rgba(7, 11, 18, .92);
+            border-bottom: 1px solid rgba(255, 255, 255, .07)
+        }
+
+        .header-inner,
+        main {
+            max-width: 1550px;
+            margin: auto;
+            padding: 22px 28px
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(26px, 3vw, 40px);
+            letter-spacing: -.045em
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-top: 5px
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: minmax(250px, 1fr) auto auto;
+            gap: 10px;
+            margin-top: 18px
+        }
+
+        .search,
+        .filter {
+            min-height: 44px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 10px 14px;
+            outline: 0
+        }
+
+        .search:focus,
+        .filter:focus {
+            border-color: var(--accent)
+        }
+
+        .filter {
+            cursor: pointer
+        }
+
+        .reset {
+            border: 0;
+            border-radius: 12px;
+            padding: 0 18px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer
+        }
+
+        .progress-panel {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            margin-bottom: 28px;
+            background: linear-gradient(135deg, rgba(225, 29, 72, .14), rgba(16, 23, 34, .94));
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .25)
+        }
+
+        .progress-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px
+        }
+
+        .progress-text {
+            font-weight: 800
+        }
+
+        .progress-percent {
+            color: var(--gold);
+            font-weight: 900
+        }
+
+        .progress-bar {
+            height: 9px;
+            border-radius: 99px;
+            background: #202b3d;
+            overflow: hidden
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--accent), #fb7185);
+            transition: width .3s
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+            gap: 22px
+        }
+
+        .card {
+            min-width: 0;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: .2s;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .18)
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #43526a
+        }
+
+        .poster-wrap {
+            position: relative;
+            aspect-ratio: 2/3;
+            background: #1b2432;
+            overflow: hidden
+        }
+
+        .poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: .25s
+        }
+
+        .card:hover .poster {
+            transform: scale(1.025)
+        }
+
+        .card.watched .poster {
+            filter: saturate(.45) brightness(.58)
+        }
+
+        .image-error {
+            display: none
+        }
+
+        .image-fallback {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 30px;
+            text-align: center
+        }
+
+        .image-fallback span {
+            font-size: 12px
+        }
+
+        .poster.image-error+.image-fallback {
+            display: flex
+        }
+
+        .order {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            padding: 4px 8px;
+            border-radius: 7px;
+            background: rgba(5, 8, 13, .8);
+            font-size: 11px;
+            font-weight: 900
+        }
+
+        .watched-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .22);
+            background: rgba(5, 8, 13, .8);
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 900
+        }
+
+        .card.watched {
+            border-color: rgba(34, 197, 94, .55)
+        }
+
+        .card.watched .watched-btn {
+            background: var(--green);
+            border-color: var(--green)
+        }
+
+        .watched-label {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            display: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--green);
+            color: #04110a;
+            font-size: 10px;
+            font-weight: 950
+        }
+
+        .card.watched .watched-label {
+            display: block
+        }
+
+        .card-info {
+            padding: 13px 14px 15px
+        }
+
+        .card h2 {
+            margin: 0;
+            min-height: 42px;
+            font-size: 14px;
+            line-height: 1.35
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .type {
+            color: #fda4af;
+            background: rgba(225, 29, 72, .12);
+            border: 1px solid rgba(225, 29, 72, .22);
+            padding: 3px 7px;
+            border-radius: 6px
+        }
+
+        .source {
+            margin-top: 9px;
+            color: #66758a;
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .empty {
+            display: none;
+            text-align: center;
+            padding: 70px 20px;
+            color: var(--muted)
+        }
+
+        .empty.show {
+            display: block
+        }
+
+        @media(max-width:700px) {
+
+            .header-inner,
+            main {
+                padding: 18px
+            }
+
+            .controls {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .search {
+                grid-column: 1/-1
+            }
+
+            .reset {
+                min-height: 44px
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px
+            }
+
+            .card-info {
+                padding: 10px
+            }
+
+            .card h2 {
+                font-size: 13px;
+                min-height: 52px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-inner">
+            <h1>Marvel — Orden cronológico</h1>
+            <div class="subtitle">54 películas, series y especiales · orden de Fotogramas</div>
+            <div class="controls">
+                <input id="search" class="search" type="search" placeholder="Buscar película, serie o especial…">
+                <select id="filter" class="filter" aria-label="Filtrar contenido">
+                    <option value="all">Todas</option>
+                    <option value="movie">Películas</option>
+                    <option value="series">Series</option>
+                    <option value="special">Especiales</option>
+                    <option value="watched">Vistas</option>
+                    <option value="pending">Pendientes</option>
+                </select>
+                <button id="reset" class="reset" type="button">Reiniciar progreso</button>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="progress-panel">
+            <div class="progress-top"><span id="progressText" class="progress-text">0 de 54 vistas</span><span
+                    id="progressPercent" class="progress-percent">0%</span></div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+            </div>
+        </section>
+        <section id="grid" class="grid">
+            <article class="card" data-id="1" data-key="capitán américa: el primer vengador" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/capitan-america-66574afd78951.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Capitán América: El primer vengador" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#01</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Capitán América: El primer vengador</h2>
+                    <div class="meta"><span class="type">Película</span><span>2011</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="2" data-key="capitana marvel" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/capitana-marvel-665751548cbd1.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Capitana Marvel" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#02</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Capitana Marvel</h2>
+                    <div class="meta"><span class="type">Película</span><span>2019</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="3" data-key="iron man" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/ironman-6657515cd63c5.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Iron Man" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#03</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Iron Man</h2>
+                    <div class="meta"><span class="type">Película</span><span>2008</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="4" data-key="iron man 2" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/ironman-2-6657515b563bf.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Iron Man 2" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#04</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Iron Man 2</h2>
+                    <div class="meta"><span class="type">Película</span><span>2010</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="5" data-key="el increíble hulk" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/hulk-6657515ace7eb.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de El increíble Hulk" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#05</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>El increíble Hulk</h2>
+                    <div class="meta"><span class="type">Película</span><span>2008</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="6" data-key="thor" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/thor-6657516085699.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Thor" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#06</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Thor</h2>
+                    <div class="meta"><span class="type">Película</span><span>2011</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="7" data-key="los vengadores" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/vengadores-6657516213bd5.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Los Vengadores" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#07</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Los Vengadores</h2>
+                    <div class="meta"><span class="type">Película</span><span>2012</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="8" data-key="iron man 3" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/ironman-3-6657515c806e1.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Iron Man 3" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#08</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Iron Man 3</h2>
+                    <div class="meta"><span class="type">Película</span><span>2013</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="9" data-key="thor: el mundo oscuro" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/thor-2-6657515fcffd9.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Thor: El mundo oscuro" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#09</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Thor: El mundo oscuro</h2>
+                    <div class="meta"><span class="type">Película</span><span>2013</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="10" data-key="capitán américa: el soldado de invierno" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/capitan-america-soldado-invierno-665751547fc5b.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Capitán América: El soldado de invierno" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#10</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Capitán América: El soldado de invierno</h2>
+                    <div class="meta"><span class="type">Película</span><span>2014</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="11" data-key="guardianes de la galaxia" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/guardianes-galaxia-6657515a35576.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Guardianes de la Galaxia" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#11</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Guardianes de la Galaxia</h2>
+                    <div class="meta"><span class="type">Película</span><span>2014</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="12" data-key="guardianes de la galaxia vol. 2" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/guardianes-galaxia-2-66575158e8315.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Guardianes de la Galaxia Vol. 2" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#12</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Guardianes de la Galaxia Vol. 2</h2>
+                    <div class="meta"><span class="type">Película</span><span>2017</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="13" data-key="yo soy groot" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/yo-soy-groot-66575162771df.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Yo soy Groot" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#13</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Yo soy Groot</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2022</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="14" data-key="vengadores: la era de ultrón" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/vengadores-ultron-665751618832c.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Vengadores: La era de Ultrón" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#14</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Vengadores: La era de Ultrón</h2>
+                    <div class="meta"><span class="type">Película</span><span>2015</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="15" data-key="ant-man" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/antman-6657515470a32.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Ant-Man" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#15</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Ant-Man</h2>
+                    <div class="meta"><span class="type">Película</span><span>2015</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="16" data-key="capitán américa: civil war" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/capitan-america-civil-war-665751547392f.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Capitán América: Civil War" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#16</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Capitán América: Civil War</h2>
+                    <div class="meta"><span class="type">Película</span><span>2016</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="17" data-key="spider-man: homecoming" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/spiderman-homecoming-6657515e44001.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Spider-Man: Homecoming" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#17</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Spider-Man: Homecoming</h2>
+                    <div class="meta"><span class="type">Película</span><span>2017</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="18" data-key="doctor strange" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/doctor-strange-6657515787c7f.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Doctor Strange" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#18</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Doctor Strange</h2>
+                    <div class="meta"><span class="type">Película</span><span>2016</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="19" data-key="viuda negra" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/viuda-negra-665751625c195.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Viuda Negra" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#19</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Viuda Negra</h2>
+                    <div class="meta"><span class="type">Película</span><span>2021</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="20" data-key="black panther" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://hips.hearstapps.com/hmg-prod/images/black-panther-66575155df558.jpg?crop=1xw:1xh;center,top"
+                        alt="Carátula de Black Panther" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#20</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Black Panther</h2>
+                    <div class="meta"><span class="type">Película</span><span>2018</span></div>
+                    <div class="source">Carátula: Fotogramas (MHT)</div>
+                </div>
+            </article>
+            <article class="card" data-id="21" data-key="thor: ragnarok" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/7/7d/Thor_Ragnarok_poster.jpg"
+                        alt="Carátula de Thor: Ragnarok" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#21</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Thor: Ragnarok</h2>
+                    <div class="meta"><span class="type">Película</span><span>2017</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="22" data-key="ant-man y la avispa" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
+                        alt="Carátula de Ant-Man y la Avispa" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#22</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Ant-Man y la Avispa</h2>
+                    <div class="meta"><span class="type">Película</span><span>2018</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="23" data-key="vengadores: infinity war" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/4/4d/Avengers_Infinity_War_poster.jpg"
+                        alt="Carátula de Vengadores: Infinity War" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#23</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Vengadores: Infinity War</h2>
+                    <div class="meta"><span class="type">Película</span><span>2018</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="24" data-key="vengadores: endgame" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
+                        alt="Carátula de Vengadores: Endgame" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#24</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Vengadores: Endgame</h2>
+                    <div class="meta"><span class="type">Película</span><span>2019</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="25" data-key="loki" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/4/4e/Loki_%28TV_series%29_logo.png"
+                        alt="Carátula de Loki" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#25</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Loki</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="26" data-key="bruja escarlata y visión" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/2/20/WandaVision_logo.png"
+                        alt="Carátula de Bruja Escarlata y Visión" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#26</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Bruja Escarlata y Visión</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="27" data-key="shang-chi y la leyenda de los diez anillos" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/7/74/Shang-Chi_and_the_Legend_of_the_Ten_Rings_poster.jpeg"
+                        alt="Carátula de Shang-Chi y la leyenda de los diez anillos" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#27</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Shang-Chi y la leyenda de los diez anillos</h2>
+                    <div class="meta"><span class="type">Película</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="28" data-key="falcon y el soldado de invierno" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/9/9a/The_Falcon_and_the_Winter_Soldier_logo.png"
+                        alt="Carátula de Falcon y el Soldado de Invierno" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#28</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Falcon y el Soldado de Invierno</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="29" data-key="spider-man: lejos de casa" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/b/bd/Spider-Man_Far_From_Home_poster.jpg"
+                        alt="Carátula de Spider-Man: Lejos de casa" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#29</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Spider-Man: Lejos de casa</h2>
+                    <div class="meta"><span class="type">Película</span><span>2019</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="30" data-key="spider-man: no way home" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/0/00/Spider-Man_No_Way_Home_poster.jpg"
+                        alt="Carátula de Spider-Man: No Way Home" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#30</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Spider-Man: No Way Home</h2>
+                    <div class="meta"><span class="type">Película</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="31" data-key="eternals" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/9/9b/Eternals_%28film%29_poster.jpeg"
+                        alt="Carátula de Eternals" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#31</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Eternals</h2>
+                    <div class="meta"><span class="type">Película</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="32" data-key="ojo de halcón" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/7/7a/Hawkeye_%28miniseries%29_logo.png"
+                        alt="Carátula de Ojo de Halcón" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#32</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Ojo de Halcón</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2021</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="33" data-key="echo" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/9/99/Echo_%28miniseries%29_logo.jpg"
+                        alt="Carátula de Echo" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#33</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Echo</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2024</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="34" data-key="doctor strange en el multiverso de la locura"
+                data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/1/17/Doctor_Strange_in_the_Multiverse_of_Madness_poster.jpg"
+                        alt="Carátula de Doctor Strange en el multiverso de la locura" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#34</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Doctor Strange en el multiverso de la locura</h2>
+                    <div class="meta"><span class="type">Película</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="35" data-key="caballero luna" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/a/a8/Moon_Knight_%28miniseries%29_logo.jpg"
+                        alt="Carátula de Caballero Luna" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#35</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Caballero Luna</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="36" data-key="she-hulk: abogada hulka" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/3/32/She-Hulk_Attorney_at_Law_logo.jpg"
+                        alt="Carátula de She-Hulk: Abogada Hulka" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#36</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>She-Hulk: Abogada Hulka</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="37" data-key="ms. marvel" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/a/ac/Ms._Marvel_%28miniseries%29_logo.jpg"
+                        alt="Carátula de Ms. Marvel" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#37</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Ms. Marvel</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="38" data-key="thor: love and thunder" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/8/88/Thor_Love_and_Thunder_poster.jpeg"
+                        alt="Carátula de Thor: Love and Thunder" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#38</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Thor: Love and Thunder</h2>
+                    <div class="meta"><span class="type">Película</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="39" data-key="black panther: wakanda forever" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/3/3b/Black_Panther_Wakanda_Forever_poster.jpg"
+                        alt="Carátula de Black Panther: Wakanda Forever" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#39</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Black Panther: Wakanda Forever</h2>
+                    <div class="meta"><span class="type">Película</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="40" data-key="the guardians of the galaxy: holiday special"
+                data-type="special">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/e/e3/The_Guardians_of_the_Galaxy_Holiday_Special_poster.jpg"
+                        alt="Carátula de The Guardians of the Galaxy: Holiday Special" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#40</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>The Guardians of the Galaxy: Holiday Special</h2>
+                    <div class="meta"><span class="type">Especial</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="41" data-key="ant-man y la avispa: quantumania" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/3/30/Ant-Man_and_the_Wasp_Quantumania_poster.jpg"
+                        alt="Carátula de Ant-Man y la Avispa: Quantumania" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#41</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Ant-Man y la Avispa: Quantumania</h2>
+                    <div class="meta"><span class="type">Película</span><span>2023</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="42" data-key="guardianes de la galaxia vol. 3" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/7/74/Guardians_of_the_Galaxy_Vol._3_poster.jpg"
+                        alt="Carátula de Guardianes de la Galaxia Vol. 3" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#42</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Guardianes de la Galaxia Vol. 3</h2>
+                    <div class="meta"><span class="type">Película</span><span>2023</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="43" data-key="secret invasion" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/9/91/Secret_Invasion_%28miniseries%29_logo.jpg"
+                        alt="Carátula de Secret Invasion" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#43</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Secret Invasion</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2023</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="44" data-key="loki — temporada 2" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/4/4b/Loki_season_2_poster.jpg"
+                        alt="Carátula de Loki — temporada 2" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#44</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Loki — temporada 2</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2023</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="45" data-key="¿qué pasaría si...? — temporada 2" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/b/b4/What_If...%3F_season_2_poster.jpeg"
+                        alt="Carátula de ¿Qué pasaría si...? — temporada 2" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#45</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>¿Qué pasaría si...? — temporada 2</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2023</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="46" data-key="the marvels" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/7/7a/The_Marvels_poster.jpg"
+                        alt="Carátula de The Marvels" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#46</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>The Marvels</h2>
+                    <div class="meta"><span class="type">Película</span><span>2023</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="47" data-key="deadpool y lobezno" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg"
+                        alt="Carátula de Deadpool y Lobezno" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#47</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Deadpool y Lobezno</h2>
+                    <div class="meta"><span class="type">Película</span><span>2024</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="48" data-key="werewolf by night" data-type="special">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/0/06/Werewolf_by_Night_%28TV_special%29_poster.jpg"
+                        alt="Carátula de Werewolf by Night" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#48</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Werewolf by Night</h2>
+                    <div class="meta"><span class="type">Especial</span><span>2022</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="49" data-key="x-men '97" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/commons/6/6a/X-Men_%2797_logo.png"
+                        alt="Carátula de X-Men '97" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#49</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>X-Men '97</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2024</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="50" data-key="agatha, ¿quién si no?" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/7/70/Agatha_All_Along_logo.jpg"
+                        alt="Carátula de Agatha, ¿quién si no?" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#50</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Agatha, ¿quién si no?</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2024</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="51" data-key="tu amigo y vecino spider-man" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/a/a8/Your_Friendly_Neighborhood_Spider-Man_logo.png"
+                        alt="Carátula de Tu amigo y vecino Spider-Man" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#51</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Tu amigo y vecino Spider-Man</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2025</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="52" data-key="capitán américa: brave new world" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/a/a4/Captain_America_Brave_New_World_poster.jpg"
+                        alt="Carátula de Capitán América: Brave New World" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#52</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Capitán América: Brave New World</h2>
+                    <div class="meta"><span class="type">Película</span><span>2025</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="53" data-key="daredevil: born again" data-type="series">
+                <div class="poster-wrap">
+                    <img class="poster"
+                        src="https://upload.wikimedia.org/wikipedia/en/d/d9/Daredevil_Born_Again_logo.jpeg"
+                        alt="Carátula de Daredevil: Born Again" loading="lazy"
+                        onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#53</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Daredevil: Born Again</h2>
+                    <div class="meta"><span class="type">Serie</span><span>2025</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+            <article class="card" data-id="54" data-key="thunderbolts*" data-type="movie">
+                <div class="poster-wrap">
+                    <img class="poster" src="https://upload.wikimedia.org/wikipedia/en/9/90/Thunderbolts%2A_poster.jpg"
+                        alt="Carátula de Thunderbolts*" loading="lazy" onerror="this.classList.add('image-error')">
+                    <div class="image-fallback">🖼️<span>Imagen no disponible</span></div>
+                    <span class="order">#54</span>
+                    <button class="watched-btn" type="button" aria-label="Marcar como vista">✓</button>
+                    <div class="watched-label">VISTA</div>
+                </div>
+                <div class="card-info">
+                    <h2>Thunderbolts*</h2>
+                    <div class="meta"><span class="type">Película</span><span>2025</span></div>
+                    <div class="source">Carátula: Wikimedia Commons / Wikipedia</div>
+                </div>
+            </article>
+        </section>
+        <div id="empty" class="empty">🔎<br>No hay resultados.</div>
+    </main>
+    <script>
+        const STORAGE_KEY = "marvel_watchlist_v4";
+        const cards = [...document.querySelectorAll(".card")];
+        const search = document.getElementById("search");
+        const filter = document.getElementById("filter");
+        const empty = document.getElementById("empty");
+        const progressText = document.getElementById("progressText");
+        const progressPercent = document.getElementById("progressPercent");
+        const progressFill = document.getElementById("progressFill");
+
+        let watched = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+
+        function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...watched])) }
+
+        function updateProgress() {
+            const n = cards.filter(c => watched.has(c.dataset.id)).length;
+            const p = cards.length ? Math.round(n / cards.length * 100) : 0;
+            progressText.textContent = `${n} de ${cards.length} vistas`;
+            progressPercent.textContent = `${p}%`;
+            progressFill.style.width = `${p}%`;
+        }
+
+        function render() {
+            const q = search.value.trim().toLowerCase();
+            const mode = filter.value;
+            let visible = 0;
+            cards.forEach(c => {
+                const seen = watched.has(c.dataset.id);
+                const matchesSearch = !q || c.dataset.key.includes(q);
+                let matchesFilter = true;
+                if (mode === "movie") matchesFilter = c.dataset.type === "movie";
+                else if (mode === "series") matchesFilter = c.dataset.type === "series";
+                else if (mode === "special") matchesFilter = c.dataset.type === "special";
+                else if (mode === "watched") matchesFilter = seen;
+                else if (mode === "pending") matchesFilter = !seen;
+                const show = matchesSearch && matchesFilter;
+                c.style.display = show ? "" : "none";
+                c.classList.toggle("watched", seen);
+                if (show) visible++;
+            });
+            empty.classList.toggle("show", visible === 0);
+            updateProgress();
+        }
+
+        cards.forEach(c => c.querySelector(".watched-btn").addEventListener("click", () => {
+            const id = c.dataset.id;
+            watched.has(id) ? watched.delete(id) : watched.add(id);
+            save(); render();
+        }));
+
+        search.addEventListener("input", render);
+        filter.addEventListener("change", render);
+
+        document.getElementById("reset").addEventListener("click", () => {
+            if (watched.size && confirm("¿Seguro que quieres borrar todo el progreso?")) {
+                watched.clear(); save(); render();
+            }
+        });
+
+        render();
+    </script>
+
+</body>
+
+</html>
