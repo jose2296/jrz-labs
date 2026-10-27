@@ -91,7 +91,7 @@
         .troop-avatar .avatar-head{position:absolute;top:3px;width:17px;height:17px;background:#f5cba7;border:2px solid #0f172a;border-radius:4px;z-index:2;box-shadow:inset -3px -2px 0 #0002}
         .troop-avatar .avatar-gear{position:absolute;right:-1px;bottom:7px;z-index:3;font-size:15px;line-height:1;text-shadow:0 1px 2px #000}
         .troop-avatar .avatar-helmet{position:absolute;top:0;width:21px;height:8px;background:var(--troop-color,#64748b);border:2px solid #0f172a;border-radius:5px 5px 1px 1px;z-index:3}
-        .troop-count-badge{display:block;flex:none;align-self:center;margin:5px auto 0;min-width:34px;padding:3px 8px;border-radius:999px;background:#0f172a;color:#67e8f9;font:900 12px/1.2 system-ui;border:1px solid #155e75}
+        .troop-count-badge{position:absolute;top:2px;right:2px;min-width:18px;padding:1px 5px;border-radius:999px;background:#0f172a;color:#67e8f9;font:900 10px/1.2 system-ui;border:1px solid #155e75;z-index:2}
         #troop-panel .troop-btn .troop-name{font-size:10px;line-height:1.15;font-weight:900;min-height:22px;display:flex;align-items:center;justify-content:center;width:100%}
         #troop-panel .troop-btn .troop-role{display:none}
         #troop-panel .troop-btn.troop-hidden{display:none!important}
@@ -101,7 +101,7 @@
         #army-config-modal{background:rgba(2,6,23,.82);backdrop-filter:blur(8px)}
         .army-config-mode{border:1px solid #475569;border-radius:12px;padding:10px;background:#0f172a;color:#e2e8f0;text-align:left}
         .army-config-mode.active{border-color:#22d3ee;background:rgba(8,145,178,.2)}
-        @media(max-width:800px){#build-tools-panel{display:none!important} #troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} #troop-panel .troop-btn{flex-basis:52px;min-width:52px;min-height:68px;padding:3px 2px 2px!important}.troop-avatar{transform:scale(.94)}.turret-type-btn{min-width:38px;min-height:38px} #battle-controls{left:50%!important;right:auto!important;transform:translateX(-50%);top:8px!important;width:min(260px,calc(100vw - 16px))!important}}
+        @media(max-width:800px){#build-tools-panel{display:none!important} #battle-controls{display:none!important} #troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} #troop-panel .troop-btn{flex-basis:52px;min-width:52px;min-height:68px;padding:3px 2px 2px!important}.troop-avatar{transform:scale(.94)}.turret-type-btn{min-width:38px;min-height:38px} #battle-hud{top:8px!important;left:50%!important;transform:translateX(-50%);min-width:0!important;padding:6px 10px!important;border-radius:12px!important} #battle-hud .text-\[11px\],#battle-hud .text-\[9px\],#battle-hud .text-\[10px\]{display:none!important} #battle-hud .h-2{height:4px!important;width:120px!important}}
         @media(max-width:800px){#battle-hud{top:56px!important;left:8px!important}#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{right:8px!important;top:56px!important}#gesture-hint{display:none}}
 
         @media (orientation: portrait) {
@@ -177,6 +177,24 @@
             </button>
         </div>
 
+        <!-- HERRAMIENTAS DE CONSTRUCCIÓN (Animadas / Ocultables) -->
+        <div id="build-tools-panel" class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-1.5 rounded-2xl shadow-2xl flex flex-col gap-1.5 ui-animate-fade">
+            <button data-mode="erase" class="mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16">
+                <i data-lucide="eraser" class="w-4 h-4 text-red-400"></i>
+                <span class="text-[8px] uppercase tracking-wider font-extrabold">Demoler</span>
+            </button>
+            
+            <div class="w-full h-[1px] bg-slate-800 my-0.5"></div>
+
+            <button id="btn-toggle-drag" class="p-2 rounded-xl flex flex-col items-center gap-0.5 bg-cyan-500 text-slate-950 font-bold shadow-lg transition-all w-16" title="Pintar de forma continua al arrastrar">
+                <i data-lucide="paint-brush-broad" class="w-4 h-4"></i>
+                <span class="text-[7px] uppercase tracking-wider font-extrabold leading-tight text-center">Trazo Drag</span>
+            </button>
+            <button id="btn-toggle-snap" class="p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16" title="Bloquear trazo en línea recta (1 Eje)">
+                <i data-lucide="ruler" class="w-4 h-4 text-emerald-400"></i>
+                <span class="text-[7px] uppercase tracking-wider font-extrabold leading-tight text-center">Recta Snap</span>
+            </button>
+        </div>
     </div>
 
     <!-- Panel Inferior (Pinceles + Paleta) (Animado / Ocultable en Modo Cámara) -->
