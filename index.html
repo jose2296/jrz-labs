@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1d232a">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
 <title>JRZ Labs — Tu espacio de proyectos</title>
 <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
 <script src="https://cdn.tailwindcss.com"></script>
@@ -464,8 +466,6 @@
           </div>
         </div>
 
-      </div>
-
       <!-- Siege Forge Maze Defense -->
       <div class="project-card card bg-base-200 shadow-xl border border-base-300 card-hover" data-category="games" data-name="siege forge maze defense tower defense voxel" data-status="active">
         <div class="card-body p-6">
@@ -494,6 +494,8 @@
             </div>
           </div>
         </div>
+      </div>
+
       </div>
 
     </div>
@@ -601,6 +603,10 @@
     toast.classList.add('show');
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+  // PWA: register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
   }
 </script>
 </body>
