@@ -102,7 +102,7 @@
         .army-config-mode{border:1px solid #475569;border-radius:12px;padding:10px;background:#0f172a;color:#e2e8f0;text-align:left}
         .army-config-mode.active{border-color:#22d3ee;background:rgba(8,145,178,.2)}
         @media(max-width:800px){#build-tools-panel{display:none!important} #battle-controls{display:none!important} #troop-panel{max-width:calc(100vw - 16px);overflow-x:auto} #troop-panel .troop-btn{flex-basis:52px;min-width:52px;min-height:68px;padding:3px 2px 2px!important}.troop-avatar{transform:scale(.94)}.turret-type-btn{min-width:38px;min-height:38px} #battle-hud{top:8px!important;left:50%!important;transform:translateX(-50%);min-width:0!important;padding:6px 10px!important;border-radius:12px!important} #battle-hud .text-\[11px\],#battle-hud .text-\[9px\],#battle-hud .text-\[10px\]{display:none!important} #battle-hud .h-2{height:4px!important;width:120px!important}}
-        @media(max-width:800px){#battle-hud{top:56px!important;left:8px!important}#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{right:8px!important;top:56px!important}#gesture-hint{display:none}}
+        @media(max-width:800px){#battle-hud{top:8px!important;left:50%!important;transform:translateX(-50%);min-width:0!important;padding:6px 10px!important;border-radius:12px!important}#troop-panel{right:8px!important;bottom:8px!important}#battle-controls{display:none!important}#gesture-hint{display:none}}
 
         @media (orientation: portrait) {
             #landscape-prompt {
@@ -177,24 +177,6 @@
             </button>
         </div>
 
-        <!-- HERRAMIENTAS DE CONSTRUCCIÓN (Animadas / Ocultables) -->
-        <div id="build-tools-panel" class="bg-slate-900/90 backdrop-blur-md border border-slate-700/60 p-1.5 rounded-2xl shadow-2xl flex flex-col gap-1.5 ui-animate-fade">
-            <button data-mode="erase" class="mode-btn p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16">
-                <i data-lucide="eraser" class="w-4 h-4 text-red-400"></i>
-                <span class="text-[8px] uppercase tracking-wider font-extrabold">Demoler</span>
-            </button>
-            
-            <div class="w-full h-[1px] bg-slate-800 my-0.5"></div>
-
-            <button id="btn-toggle-drag" class="p-2 rounded-xl flex flex-col items-center gap-0.5 bg-cyan-500 text-slate-950 font-bold shadow-lg transition-all w-16" title="Pintar de forma continua al arrastrar">
-                <i data-lucide="paint-brush-broad" class="w-4 h-4"></i>
-                <span class="text-[7px] uppercase tracking-wider font-extrabold leading-tight text-center">Trazo Drag</span>
-            </button>
-            <button id="btn-toggle-snap" class="p-2 rounded-xl flex flex-col items-center gap-0.5 hover:bg-slate-800 text-slate-400 transition-all w-16" title="Bloquear trazo en línea recta (1 Eje)">
-                <i data-lucide="ruler" class="w-4 h-4 text-emerald-400"></i>
-                <span class="text-[7px] uppercase tracking-wider font-extrabold leading-tight text-center">Recta Snap</span>
-            </button>
-        </div>
     </div>
 
     <!-- Panel Inferior (Pinceles + Paleta) (Animado / Ocultable en Modo Cámara) -->
@@ -280,10 +262,6 @@
                 <i data-lucide="arrow-up-circle" class="w-4 h-4"></i>
                 <span id="drawer-upgrade-text">MEJORAR A NIVEL 2</span>
             </button>
-            <button id="drawer-action-btn" class="w-full py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                <span>Demoler esta pieza</span>
-            </button>
         </div>
     </div>
 
@@ -298,66 +276,6 @@
       <div class="flex justify-between mt-1 text-[10px] text-slate-300"><span>Ayuntamiento</span><span id="health-label">100%</span></div>
       <div id="battle-status" class="text-[11px] text-slate-300 mt-2">Elige una tropa y toca el terreno azul para desplegarla.</div><div class="text-[9px] text-cyan-300 mt-1">▰ Zona azul: despliegue permitido</div>
     </div>
-    <div id="battle-controls" class="hidden absolute top-16 right-3 z-20 flex flex-col gap-2">
-      <button id="btn-collapse-battle-panel" class="battle-panel-toggle" aria-expanded="true"><span>⚙️ Controles de incursión</span><span id="battle-panel-chevron">▾</span></button>
-      <div id="battle-controls-content" class="flex flex-col gap-2">
-      <button id="btn-start-attack" class="game-btn rounded-xl px-4 py-3 bg-orange-500 text-slate-950 text-xs font-black shadow-xl">▶ INICIAR OLEADA</button>
-      <div class="hud-card rounded-xl p-2 flex flex-col gap-1">
-        <div class="text-[9px] uppercase tracking-widest text-slate-400 font-black">Aldeas de prueba</div>
-        <button id="preset-village-balanced" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🏘️ Aldea equilibrada</button>
-        <button id="preset-village-maze" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🧱 Aldea laberinto</button>
-        <button id="preset-village-air" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🪽 Defensa antiaérea</button>
-        <button id="btn-open-army-config" class="game-btn rounded-lg px-3 py-2 bg-cyan-700 text-white text-[10px] font-black">🧩 CONFIGURAR MI EJÉRCITO</button><div class="text-[9px] uppercase tracking-widest text-slate-400 font-black mt-1">Ejércitos de prueba</div>
-        <button id="preset-army-balanced" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">⚔️ Ejército mixto</button>
-        <button id="preset-army-wall" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">🧨 Asalto a muros</button>
-        <button id="preset-army-air" class="game-btn rounded-lg px-3 py-2 bg-indigo-700 text-white text-[10px] font-bold">🪽 Escuadrón aéreo</button>
-        <button id="preset-army-manual" class="game-btn rounded-lg px-3 py-2 bg-cyan-800 text-white text-[10px] font-bold">🎮 Sin ejército automático · Desplegar yo</button>
-        <div class="px-2 py-1 text-[9px] leading-snug text-cyan-200">Zona azul = zona de despliegue. Se amplía al destruir muros y defensas.</div>
-      </div>
-      <div class="hud-card rounded-xl p-2 flex flex-col gap-1">
-        <div class="text-[9px] uppercase tracking-widest text-slate-400 font-black">Depuración en partida</div>
-        <button id="btn-toggle-routes" aria-pressed="false" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🧭 Rutas: OFF</button>
-        <button id="btn-toggle-unit-labels" aria-pressed="false" class="game-btn rounded-lg px-3 py-2 bg-slate-700 text-white text-[10px] font-bold">🏷️ Indicadores: OFF</button>
-        <div class="text-[9px] text-slate-400 leading-tight">Muestra el camino, el objetivo y el estado de cada tropa. Puedes activar cada capa por separado.</div>
-      </div>
-      <button id="btn-end-attack" class="game-btn rounded-xl px-4 py-2 bg-slate-800 text-white text-xs font-bold">↩ VOLVER AL EDITOR</button>
-      </div>
-    </div>
-    <div id="troop-inspector" class="hidden absolute left-3 bottom-24 z-30 hud-card rounded-2xl p-3">
-      <div class="flex items-start justify-between gap-3"><div><div id="troop-inspector-title" class="font-black text-sm">Tropa seleccionada</div><div id="troop-inspector-subtitle" class="text-[10px] text-slate-300 mt-1"></div></div><button id="btn-close-troop-inspector" class="rounded-lg bg-slate-700 px-2 py-1 text-xs">✕</button></div>
-      <div class="h-2 bg-slate-700 rounded-full overflow-hidden mt-3"><div id="troop-inspector-hp" class="h-full bg-emerald-400" style="width:100%"></div></div>
-      <div id="troop-inspector-details" class="text-[10px] text-slate-300 mt-2 leading-relaxed"></div>
-    </div>
-    <div id="army-config-modal" class="hidden fixed inset-0 z-[90] items-center justify-center p-3"><div class="hud-card rounded-3xl w-full max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-5 border border-cyan-500/40"><div class="flex items-start justify-between gap-3"><div><div class="text-[10px] uppercase tracking-widest text-cyan-300 font-black">Preparación de incursión</div><h2 class="text-xl font-black mt-1">Configura tu ejército</h2><p class="text-xs text-slate-400 mt-1">En modo limitado, cada despliegue consume una unidad.</p></div><button id="btn-army-config-close" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">✕</button></div><div class="grid grid-cols-2 gap-2 mt-4"><button id="army-config-limited" class="army-config-mode active"><div class="font-black text-sm">🎒 Ejército limitado</div><div class="text-[10px] text-slate-400 mt-1">Límites por unidad</div></button><button id="army-config-infinite" class="army-config-mode"><div class="font-black text-sm">♾️ Despliegue infinito</div><div class="text-[10px] text-slate-400 mt-1">Sin límite de unidades</div></button></div><div id="army-config-limited-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-<label class="army-config-row"><span>🪓 Bárbaros</span><input data-army-count="barbarian" type="number" min="0" max="40" value="8" /></label>
-<label class="army-config-row"><span>🏹 Arqueras</span><input data-army-count="archer" type="number" min="0" max="40" value="10" /></label>
-<label class="army-config-row"><span>🛡️ Gigantes</span><input data-army-count="giant" type="number" min="0" max="20" value="4" /></label>
-<label class="army-config-row"><span>💣 Bombarderos</span><input data-army-count="bomber" type="number" min="0" max="20" value="3" /></label>
-<label class="army-config-row"><span>🎯 Cazatorres</span><input data-army-count="hunter" type="number" min="0" max="20" value="3" /></label>
-<label class="army-config-row"><span>🧨 Rompemuros</span><input data-army-count="wallbreaker" type="number" min="0" max="20" value="4" /></label>
-<label class="army-config-row"><span>🦘 Saltamuros</span><input data-army-count="jumper" type="number" min="0" max="20" value="2" /></label>
-<label class="army-config-row"><span>🪽 Voladores</span><input data-army-count="flyer" type="number" min="0" max="20" value="2" /></label>
-</div><div class="flex items-center justify-between gap-3 mt-4"><div class="text-xs text-slate-300">Total: <b id="army-config-total" class="text-cyan-300">36</b></div><button id="btn-army-config-save" class="game-btn rounded-xl bg-cyan-500 text-slate-950 font-black px-5 py-3 text-xs">GUARDAR EJÉRCITO</button></div></div></div>
-    <div id="battle-result-modal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4">
-      <div class="hud-card rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 border border-slate-500/50">
-        <div id="result-icon" class="text-4xl text-center">🏆</div><h2 id="result-title" class="text-2xl font-black text-center mt-2">Resultado de la incursión</h2><p id="result-subtitle" class="text-sm text-slate-300 text-center mt-1"></p>
-        <div class="grid grid-cols-3 gap-2 mt-5"><div class="rounded-xl bg-slate-950/70 p-3 text-center"><div class="text-[9px] text-slate-400 uppercase font-black">Destrucción</div><div id="result-destruction" class="text-xl font-black">0%</div></div><div class="rounded-xl bg-slate-950/70 p-3 text-center"><div class="text-[9px] text-slate-400 uppercase font-black">Daño causado</div><div id="result-damage" class="text-xl font-black">0</div></div><div class="rounded-xl bg-slate-950/70 p-3 text-center"><div class="text-[9px] text-slate-400 uppercase font-black">Supervivientes</div><div id="result-survivors" class="text-xl font-black">0</div></div></div>
-        <div class="mt-5"><div class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2">Daño por tipo de unidad</div><div class="text-[9px] text-slate-400 mb-2">Cada barra se divide por tipo de estructura dañada; los porcentajes muestran cómo repartió su daño cada unidad.</div><div id="result-damage-legend" class="result-legend mb-3"><span class="result-legend-item"><i class="result-legend-dot" style="background:#f59e0b"></i>Muros</span><span class="result-legend-item"><i class="result-legend-dot" style="background:#ef4444"></i>Torretas</span><span class="result-legend-item"><i class="result-legend-dot" style="background:#a78bfa"></i>Ayuntamiento</span><span class="result-legend-item"><i class="result-legend-dot" style="background:#22c55e"></i>Otros edificios</span></div><div id="result-unit-stats" class="rounded-xl overflow-hidden bg-slate-950/60"></div></div>
-        <div class="flex gap-2 mt-5"><button id="btn-result-retry" class="game-btn flex-1 rounded-xl bg-orange-500 text-slate-950 font-black py-3 text-xs">↻ REPETIR INCURSIÓN</button><button id="btn-result-close" class="game-btn flex-1 rounded-xl bg-slate-700 text-white font-black py-3 text-xs">CERRAR</button></div>
-      </div>
-    </div>
-    <div id="troop-panel" class="hidden absolute bottom-3 left-3 z-20 hud-card rounded-2xl p-2 flex gap-1 items-stretch" style="max-width:calc(100vw - 12px);overflow-x:auto;touch-action:pan-x">
-      <button data-troop="barbarian" style="--troop-color:#b45309" class="troop-btn deploy-selected game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-helmet"></span><span class="avatar-body"></span><span class="avatar-gear">🪓</span></div><div class="troop-name">Bárbaro</div></div></button>
-      <button data-troop="archer" style="--troop-color:#047857" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-gear">🏹</span></div><div class="troop-name">Arquera</div></div></button>
-      <button data-troop="giant" style="--troop-color:#7c3aed" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar" style="transform:scale(1.08)"><span class="avatar-head" style="width:20px;height:20px"></span><span class="avatar-body" style="width:31px;height:27px"></span><span class="avatar-gear">🛡️</span></div><div class="troop-name">Gigante</div></div></button>
-      <button data-troop="bomber" style="--troop-color:#475569" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-gear">💣</span></div><div class="troop-name">Bombardero</div></div></button>
-      <button data-troop="hunter" style="--troop-color:#6d28d9" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-helmet"></span><span class="avatar-body"></span><span class="avatar-gear">🎯</span></div><div class="troop-name">Cazatorres</div></div></button>
-      <button data-troop="wallbreaker" style="--troop-color:#c2410c" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-gear">🧨</span></div><div class="troop-name">Rompemuros</div></div></button>
-      <button data-troop="jumper" style="--troop-color:#0891b2" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-gear">🦘</span></div><div class="troop-name">Saltamuros</div></div></button>
-      <button data-troop="flyer" style="--troop-color:#a21caf" class="troop-btn game-btn rounded-xl bg-slate-800 text-center"><div class="troop-card-main"><div class="troop-avatar"><span class="avatar-head"></span><span class="avatar-body"></span><span class="avatar-gear">🪽</span></div><div class="troop-name">Volador</div></div></button>
-      <button id="btn-gesture-mode" class="game-btn rounded-xl bg-indigo-600 px-2 py-2 text-center min-w-16"><div class="text-xl">☝️</div><div class="text-[10px] font-black">Desplegar</div><div class="text-[9px] text-indigo-100">Tocar y arrastrar</div></button>
-    </div>
-
     <script>
         // Inicializar iconos Lucide
         lucide.createIcons();
@@ -1331,7 +1249,7 @@
                 setBrushSize(state.brushWidth, h);
             });
 
-            document.getElementById('drawer-action-btn').addEventListener('click', () => {
+            document.getElementById('drawer-action-btn')?.addEventListener('click', () => {
                 const { x, z } = state.selectedCell;
                 if (!isCellTownHall(x, z)) {
                     if (state.topGrid[x][z]) removeBlock(x, z, 2);
@@ -1340,15 +1258,15 @@
                 }
             });
 
-            document.getElementById('close-drawer').addEventListener('click', hideBlockDrawer);
+            document.getElementById('close-drawer')?.addEventListener('click', hideBlockDrawer);
 
-            document.getElementById('btn-focus-th').addEventListener('click', () => {
+            document.getElementById('btn-focus-th')?.addEventListener('click', () => {
                 cameraTarget.set(0, 0, 0);
                 cameraDistance = 18;
                 updateCameraPosition();
             });
 
-            document.getElementById('btn-clear-all').addEventListener('click', () => {
+            document.getElementById('btn-clear-all')?.addEventListener('click', () => {
                 for (let x = 0; x < GRID_SIZE; x++) {
                     for (let z = 0; z < GRID_SIZE; z++) {
                         if (!isCellTownHall(x, z)) {
@@ -1359,26 +1277,26 @@
                 }
                 hideBlockDrawer();
             });
-            document.getElementById('btn-mode-build').addEventListener('click',()=>setGameMode('build'));
-            document.getElementById('btn-mode-attack').addEventListener('click',()=>setGameMode('attack'));
-            document.getElementById('btn-start-attack').addEventListener('click',()=>{if(!battleStarted)startBattle();else startBattle();});
-            document.getElementById('btn-end-attack').addEventListener('click',endBattle);
-            document.getElementById('btn-collapse-battle-panel').addEventListener('click',()=>{const panel=document.getElementById('battle-controls'),collapsed=panel.classList.toggle('collapsed');document.getElementById('btn-collapse-battle-panel').setAttribute('aria-expanded',String(!collapsed));document.getElementById('battle-panel-chevron').textContent=collapsed?'◂':'▾';document.querySelector('#btn-collapse-battle-panel span:first-child').textContent=collapsed?'⚙️ Controles':'⚙️ Controles de incursión';});
-            document.getElementById('btn-close-troop-inspector').addEventListener('click',hideTroopInspector);
-            document.getElementById('btn-result-close').addEventListener('click',()=>{const m=document.getElementById('battle-result-modal');m.classList.add('hidden');m.classList.remove('flex');});
-            document.getElementById('btn-result-retry').addEventListener('click',()=>{const m=document.getElementById('battle-result-modal');m.classList.add('hidden');m.classList.remove('flex');clearBattleEntities();startBattle();});
-            document.getElementById('preset-village-balanced').addEventListener('click',()=>loadVillagePreset('balanced'));
-            document.getElementById('preset-village-maze').addEventListener('click',()=>loadVillagePreset('maze'));
-            document.getElementById('preset-village-air').addEventListener('click',()=>loadVillagePreset('air'));
-            document.getElementById('preset-army-balanced').addEventListener('click',()=>setArmyPreset('balanced'));
-            document.getElementById('preset-army-wall').addEventListener('click',()=>setArmyPreset('wall'));
-            document.getElementById('preset-army-air').addEventListener('click',()=>setArmyPreset('air'));
-            document.getElementById('preset-army-manual').addEventListener('click',setManualArmy);document.getElementById('btn-open-army-config').addEventListener('click',openArmyConfigurator);document.getElementById('btn-army-config-close').addEventListener('click',closeArmyConfigurator);document.getElementById('army-config-limited').addEventListener('click',()=>chooseArmyConfigMode(false));document.getElementById('army-config-infinite').addEventListener('click',()=>chooseArmyConfigMode(true));document.getElementById('btn-army-config-save').addEventListener('click',saveArmyConfig);document.querySelectorAll('[data-army-count]').forEach(i=>i.addEventListener('input',updateArmyConfigTotal));chooseArmyConfigMode(false);updateArmyConfigTotal();updateTroopCards();
+            document.getElementById('btn-mode-build')?.addEventListener('click',()=>setGameMode('build'));
+            document.getElementById('btn-mode-attack')?.addEventListener('click',()=>setGameMode('attack'));
+            document.getElementById('btn-start-attack')?.addEventListener('click',()=>{if(!battleStarted)startBattle();else startBattle();});
+            document.getElementById('btn-end-attack')?.addEventListener('click',endBattle);
+            document.getElementById('btn-collapse-battle-panel')?.addEventListener('click',()=>{const panel=document.getElementById('battle-controls'),collapsed=panel.classList.toggle('collapsed');document.getElementById('btn-collapse-battle-panel').setAttribute('aria-expanded',String(!collapsed));document.getElementById('battle-panel-chevron').textContent=collapsed?'◂':'▾';document.querySelector('#btn-collapse-battle-panel span:first-child').textContent=collapsed?'⚙️ Controles':'⚙️ Controles de incursión';});
+            document.getElementById('btn-close-troop-inspector')?.addEventListener('click',hideTroopInspector);
+            document.getElementById('btn-result-close')?.addEventListener('click',()=>{const m=document.getElementById('battle-result-modal');m.classList.add('hidden');m.classList.remove('flex');});
+            document.getElementById('btn-result-retry')?.addEventListener('click',()=>{const m=document.getElementById('battle-result-modal');m.classList.add('hidden');m.classList.remove('flex');clearBattleEntities();startBattle();});
+            document.getElementById('preset-village-balanced')?.addEventListener('click',()=>loadVillagePreset('balanced'));
+            document.getElementById('preset-village-maze')?.addEventListener('click',()=>loadVillagePreset('maze'));
+            document.getElementById('preset-village-air')?.addEventListener('click',()=>loadVillagePreset('air'));
+            document.getElementById('preset-army-balanced')?.addEventListener('click',()=>setArmyPreset('balanced'));
+            document.getElementById('preset-army-wall')?.addEventListener('click',()=>setArmyPreset('wall'));
+            document.getElementById('preset-army-air')?.addEventListener('click',()=>setArmyPreset('air'));
+            document.getElementById('preset-army-manual')?.addEventListener('click',setManualArmy);document.getElementById('btn-open-army-config')?.addEventListener('click',openArmyConfigurator);document.getElementById('btn-army-config-close')?.addEventListener('click',closeArmyConfigurator);document.getElementById('army-config-limited')?.addEventListener('click',()=>chooseArmyConfigMode(false));document.getElementById('army-config-infinite')?.addEventListener('click',()=>chooseArmyConfigMode(true));document.getElementById('btn-army-config-save')?.addEventListener('click',saveArmyConfig);document.querySelectorAll('[data-army-count]').forEach(i=>i.addEventListener('input',updateArmyConfigTotal));try{chooseArmyConfigMode(false);}catch(e){}updateArmyConfigTotal();updateTroopCards();
             document.querySelectorAll('.troop-btn').forEach(btn=>btn.addEventListener('click',()=>{if(btn.disabled)return;selectedTroop=btn.dataset.troop;if(attackGestureMode==='camera')setAttackGestureMode('deploy');if(deploymentGhost)createDeploymentGhost(selectedTroop);document.querySelectorAll('.troop-btn').forEach(b=>b.classList.remove('deploy-selected'));btn.classList.add('deploy-selected');document.getElementById('battle-status').textContent=`${troopStats[selectedTroop].name} seleccionado: toca o arrastra sobre el terreno azul para desplegar.`;updateDeploymentGhost();}));
             document.getElementById('btn-toggle-routes')?.addEventListener('click',()=>setPathDebug(!pathDebugEnabled));
             document.getElementById('btn-toggle-unit-labels')?.addEventListener('click',()=>setTroopLabels(!troopLabelsEnabled));
             renderer.domElement.addEventListener('pointerdown',e=>{if(state.gameMode!=='attack'||!battleActive||e.pointerType==='touch')return;if(attackGestureMode==='deploy')deployAtScreen(e.clientX,e.clientY);});
-            document.getElementById('btn-gesture-mode').addEventListener('click',()=>setAttackGestureMode(attackGestureMode==='deploy'?'camera':'deploy'));
+            document.getElementById('btn-gesture-mode')?.addEventListener('click',()=>setAttackGestureMode(attackGestureMode==='deploy'?'camera':'deploy'));
             // Selector de tipos de torreta integrado en la paleta existente.
             const turretPicker=document.createElement('div');turretPicker.className='flex items-center gap-1 ml-2 pl-2 border-l border-slate-700';turretPicker.innerHTML='<span class="text-[9px] text-slate-300 font-black mr-1">TORRETAS</span>';
             TURRET_TYPES.forEach((t,i)=>{const b=document.createElement('button');b.className='turret-type-btn rounded-xl text-[11px] font-black text-white';b.style.background=t.hex;b.title=`${t.name} · Daño ${t.damage} · Alcance ${t.range}`;b.setAttribute('aria-label',b.title);b.innerHTML=['✦','💥','❄','➶','◉'][i]||'✦';b.addEventListener('click',()=>{selectedTurretType=t;document.querySelectorAll('.turret-type-btn').forEach(x=>x.classList.remove('selected-turret'));b.classList.add('selected-turret');switchMode('top');document.getElementById('hint-status-text').textContent=`${t.name} seleccionada · Daño ${t.damage} · Alcance ${t.range}. Toca una base para colocarla.`;});b.classList.add('turret-type-btn');if(t.id===selectedTurretType.id)b.classList.add('selected-turret');turretPicker.appendChild(b);});palette.appendChild(turretPicker);
@@ -1536,10 +1454,10 @@
         function setArmyPreset(kind){autoDeployArmy=true;armyConfigEnabled=false;infiniteDeployMode=false;selectedArmyPreset=kind;document.querySelectorAll('[id^="preset-army-"]').forEach(b=>b.classList.remove('preset-active'));const id=kind==='balanced'?'preset-army-balanced':kind==='wall'?'preset-army-wall':'preset-army-air';document.getElementById(id)?.classList.add('preset-active');document.getElementById('preset-army-manual')?.classList.remove('preset-active');document.getElementById('battle-status').textContent=`Ejército automático seleccionado: ${kind==='wall'?'Asalto a muros':kind==='air'?'Escuadrón aéreo':'Mixto'}. Se desplegará al iniciar.`;updateTroopCards();}
         function setManualArmy(){autoDeployArmy=false;armyConfigEnabled=false;infiniteDeployMode=true;selectedArmyPreset=null;document.querySelectorAll('[id^="preset-army-"]').forEach(b=>b.classList.remove('preset-active'));document.getElementById('preset-army-manual')?.classList.add('preset-active');document.getElementById('battle-status').textContent='Modo infinito: despliegue manual sin límite.';updateTroopCards();}
                 function updateTroopCards(){document.querySelectorAll('.troop-btn[data-troop]').forEach(btn=>{const k=btn.dataset.troop;let badge=btn.querySelector('.troop-count-badge');if(!badge){badge=document.createElement('span');badge.className='troop-count-badge';btn.appendChild(badge);}const presetCounts=(autoDeployArmy&&selectedArmyPreset&&typeof armyPresets!=='undefined')?Object.fromEntries(armyPresets[selectedArmyPreset]||[]):null;const configured=Number((presetCounts?presetCounts[k]:configuredArmyCounts[k])||0);if(!battleActive){const hasLimitedArmy=armyConfigEnabled||!!presetCounts;const show=infiniteDeployMode||!hasLimitedArmy||configured>0;btn.classList.toggle('troop-hidden',!show);badge.textContent=hasLimitedArmy&&!infiniteDeployMode?String(configured):(infiniteDeployMode?'∞':'—');btn.classList.remove('troop-exhausted');btn.disabled=false;}else if(infiniteDeployMode){btn.classList.remove('troop-hidden');badge.textContent='∞';btn.classList.remove('troop-exhausted');btn.disabled=false;}else{const show=configured>0;btn.classList.toggle('troop-hidden',!show);const n=remainingArmyCounts[k]||0;badge.textContent=String(n);btn.classList.toggle('troop-exhausted',n<=0);btn.disabled=n<=0;}});} 
-        function updateArmyConfigTotal(){let total=0;document.querySelectorAll('[data-army-count]').forEach(i=>{const n=Math.max(0,Math.min(Number(i.max)||40,parseInt(i.value||'0',10)||0));i.value=String(n);total+=n;});document.getElementById('army-config-total').textContent=String(total);}
+        function updateArmyConfigTotal(){let total=0;document.querySelectorAll('[data-army-count]').forEach(i=>{const n=Math.max(0,Math.min(Number(i.max)||40,parseInt(i.value||'0',10)||0));i.value=String(n);total+=n;});const _act=document.getElementById('army-config-total'); if(_act) _act.textContent=String(total);}
         function openArmyConfigurator(){document.getElementById('army-config-modal').classList.remove('hidden');document.getElementById('army-config-modal').classList.add('flex');updateArmyConfigTotal();}
         function closeArmyConfigurator(){document.getElementById('army-config-modal').classList.add('hidden');document.getElementById('army-config-modal').classList.remove('flex');}
-        function chooseArmyConfigMode(infinite){infiniteDeployMode=infinite;document.getElementById('army-config-infinite').classList.toggle('active',infinite);document.getElementById('army-config-limited').classList.toggle('active',!infinite);document.getElementById('army-config-limited-fields').style.opacity=infinite?'.35':'1';document.getElementById('army-config-limited-fields').style.pointerEvents=infinite?'none':'auto';}
+        function chooseArmyConfigMode(infinite){infiniteDeployMode=infinite;const ai=document.getElementById('army-config-infinite');const al=document.getElementById('army-config-limited');const alf=document.getElementById('army-config-limited-fields');if(ai)ai.classList.toggle('active',infinite);if(al)al.classList.toggle('active',!infinite);if(alf){alf.style.opacity=infinite?'.35':'1';alf.style.pointerEvents=infinite?'none':'auto';}}
         function saveArmyConfig(){updateArmyConfigTotal();configuredArmyCounts={};document.querySelectorAll('[data-army-count]').forEach(i=>configuredArmyCounts[i.dataset.armyCount]=Math.max(0,parseInt(i.value||'0',10)||0));if(!infiniteDeployMode&&!Object.values(configuredArmyCounts).some(n=>n>0)){document.getElementById('army-config-total').textContent='Elige al menos una tropa';return;}armyConfigEnabled=true;autoDeployArmy=false;selectedArmyPreset=null;document.querySelectorAll('[id^="preset-army-"]').forEach(b=>b.classList.remove('preset-active'));document.getElementById('btn-open-army-config').classList.add('preset-active');remainingArmyCounts={...configuredArmyCounts};document.getElementById('battle-status').textContent=infiniteDeployMode?'Ejército preparado: despliegue manual infinito.':'Ejército preparado: despliegue manual limitado.';updateTroopCards();closeArmyConfigurator();}
         function startBattle(){
           if(battleActive)return; if(troops.length||projectiles.length||particles.length)clearBattleEntities();
